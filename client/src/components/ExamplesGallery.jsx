@@ -21,7 +21,7 @@ const THREE_EXAMPLES = [
 
 export function ExamplesGallery({ onSelectExample }) {
   return (
-    <section id="examples" className="scroll-mt-24 pt-16 sm:pt-24 border-t border-[#E7E0D6]">
+    <section id="examples" className="scroll-mt-24 pt-16 sm:pt-24 border-t border-[#EDE8E1]">
       {/* Section Header */}
       <div className="space-y-2 mb-8">
         <h2 className="text-2xl sm:text-3xl font-semibold text-[#111827] tracking-tight">
@@ -37,7 +37,7 @@ export function ExamplesGallery({ onSelectExample }) {
         {THREE_EXAMPLES.map((item, idx) => (
           <div
             key={idx}
-            className="rounded-[12px] border border-[#E7E0D6] bg-[#FFFFFF] p-6 shadow-xs flex flex-col justify-between space-y-5"
+            className="rounded-none border border-[#EDE8E1] bg-[#FFFFFF] p-6 shadow-xs flex flex-col justify-between space-y-5"
           >
             <div className="space-y-4">
               {/* Category */}
@@ -56,7 +56,7 @@ export function ExamplesGallery({ onSelectExample }) {
               </div>
 
               {/* Clean Hairline Divider */}
-              <div className="border-t border-[#E7E0D6]"></div>
+              <div className="border-t border-[#EDE8E1]"></div>
 
               {/* Improved Version */}
               <div className="space-y-1.5">
@@ -70,7 +70,7 @@ export function ExamplesGallery({ onSelectExample }) {
             </div>
 
             {/* Bottom link: Try this example */}
-            <div className="pt-4 border-t border-[#E7E0D6]">
+            <div className="pt-4 border-t border-[#EDE8E1]">
               <button
                 type="button"
                 onClick={() => onSelectExample(item.raw)}

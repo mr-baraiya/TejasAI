@@ -83,7 +83,7 @@ Original request goal:
   if (isRetry) {
     messages.push({
       role: 'user',
-      content: 'STRICT REMINDER: Your previous response failed validation. Return ONLY a valid JSON object matching {"enhancedPrompt": "...", "whyBetter": [...]}. Follow all rules strictly: No bracket labels like [ROLE], no headings, no code fences, no filler intros like "Here\'s" or "Sure". The output must not be identical to input. whyBetter must have exactly 2 or 3 items, each under 140 characters.',
+      content: 'STRICT REMINDER: Your previous response failed validation. Return ONLY a valid JSON object matching {"enhancedPrompt": "...", "whyBetter": [...]}. Follow all rules strictly: Preserve the exact deliverable type (image requests MUST remain direct image generation requests, NEVER "write a prompt for an image"). Preserve all numeric limits, budgets, negative constraints, and verbatim source content. No bracket labels like [ROLE], no headings, no code fences. whyBetter must have exactly 2 or 3 items, each under 140 characters.',
     });
   }
 
@@ -98,10 +98,9 @@ Original request goal:
  * - Bracket labels like [ROLE]
  * - Markdown headings (#) or code fences (```)
  * - Intros like "Here's", "Sure", etc.
- * - Output identical to input
  * - whyBetter not having 2-3 items
- * - Bullets over 140 characters
- * - Word count over 150 words
+ * - Bullets over 150 characters
+ * - Word count over 220 words
  */
 export function validateOutput(rawText, originalInput) {
   if (!rawText || typeof rawText !== 'string') {
@@ -110,10 +109,9 @@ export function validateOutput(rawText, originalInput) {
 
   let cleaned = rawText.trim();
 
-  // Strip accidental outer code fences for parsing check, but reject if raw contained fences
-  const hasCodeFences = /```/.test(cleaned);
-  if (hasCodeFences) {
-    return { isValid: false, reason: 'Output contains code fences' };
+  // Strip accidental outer code fences around the JSON object
+  if (cleaned.startsWith('```')) {
+    cleaned = cleaned.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '').trim();
   }
 
   let parsed;
@@ -133,17 +131,29 @@ export function validateOutput(rawText, originalInput) {
   }
 
   const enhancedPrompt = parsed.enhancedPrompt;
-  const whyBetter = parsed.whyBetter;
+  let whyBetter = parsed.whyBetter;
 
   if (typeof enhancedPrompt !== 'string' || enhancedPrompt.trim().length === 0) {
     return { isValid: false, reason: 'enhancedPrompt is missing or empty' };
   }
 
-  const trimmedPrompt = enhancedPrompt.trim();
+  let trimmedPrompt = enhancedPrompt.trim();
+
+  // Intent preservation repair for image generation:
+  // "Create an image" must not become "Write a prompt for an image"
+  const isDirectImageRequest = /\b(create|generate|make|produce)\s+(an?\s+)?image\b/i.test(originalInput);
+  if (isDirectImageRequest) {
+    trimmedPrompt = trimmedPrompt.replace(/^(please\s+)?(create|write|provide|give\s+me)\s+(a\s+)?(detailed\s+)?prompt\s+for\s+(an?\s+image\s+of\s+)?/i, 'Create an image of ');
+  }
 
   // Reject bracket labels like [ROLE], [GOAL], [CONTEXT], [FORMAT], [STEP]
   if (/\[[A-Za-z0-9_\s-]{2,}\]/.test(trimmedPrompt)) {
     return { isValid: false, reason: 'Contains bracket labels' };
+  }
+
+  // Reject if the enhanced prompt itself contains markdown code fences
+  if (/```/.test(trimmedPrompt)) {
+    return { isValid: false, reason: 'Enhanced prompt contains code fences' };
   }
 
   // Reject markdown headings (# Heading)
@@ -156,30 +166,35 @@ export function validateOutput(rawText, originalInput) {
     return { isValid: false, reason: 'Contains conversational intro' };
   }
 
-  // Reject output identical to input (case-insensitive)
-  if (cleanInput(trimmedPrompt).toLowerCase() === cleanInput(originalInput).toLowerCase()) {
-    return { isValid: false, reason: 'Output is identical to input' };
-  }
-
-  // Reject word count over 150 words
+  // Reject word count over 220 words
   const words = trimmedPrompt.split(/\s+/).filter(Boolean);
-  if (words.length > 150) {
-    return { isValid: false, reason: `Word count exceeds 150 words (${words.length} words)` };
+  if (words.length > 220) {
+    return { isValid: false, reason: `Word count exceeds 220 words (${words.length} words)` };
   }
 
-  // Validate whyBetter: must have 2 or 3 items
-  if (!Array.isArray(whyBetter) || whyBetter.length < 2 || whyBetter.length > 3) {
-    return { isValid: false, reason: 'whyBetter must contain exactly 2 or 3 items' };
+  // Normalize string whyBetter into array if model returned a string
+  if (typeof whyBetter === 'string' && whyBetter.trim().length > 0) {
+    const segments = whyBetter.split(/(?:\r?\n|(?<=[.!?])\s+)/).map((s) => s.trim()).filter(Boolean);
+    if (segments.length >= 1) {
+      whyBetter = segments.slice(0, 3);
+    } else {
+      whyBetter = [whyBetter.trim()];
+    }
   }
 
-  // Validate each bullet: string, <= 140 characters, no bracket labels
+  // Validate whyBetter: must have 1 to 3 items
+  if (!Array.isArray(whyBetter) || whyBetter.length < 1 || whyBetter.length > 3) {
+    return { isValid: false, reason: 'whyBetter must contain 1 to 3 items' };
+  }
+
+  // Validate each bullet: string, <= 150 characters, no bracket labels
   for (const bullet of whyBetter) {
     if (typeof bullet !== 'string' || bullet.trim().length === 0) {
       return { isValid: false, reason: 'Bullet must be a non-empty string' };
     }
     const trimmedBullet = bullet.trim();
-    if (trimmedBullet.length > 140) {
-      return { isValid: false, reason: `Bullet exceeds 140 characters (${trimmedBullet.length} chars)` };
+    if (trimmedBullet.length > 150) {
+      return { isValid: false, reason: `Bullet exceeds 150 characters (${trimmedBullet.length} chars)` };
     }
     if (/\[[A-Za-z0-9_\s-]{2,}\]/.test(trimmedBullet)) {
       return { isValid: false, reason: 'Bullet contains bracket labels' };
@@ -199,41 +214,55 @@ export function validateOutput(rawText, originalInput) {
 /**
  * Calls Groq API with configured parameters.
  */
-async function callGroqChat(groq, model, messages, timeoutMs) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+async function callGroqChat(groq, primaryModel, messages, timeoutMs) {
+  const modelChain = [
+    primaryModel,
+    'openai/gpt-oss-120b',
+    'openai/gpt-oss-20b',
+  ].filter((m, i, arr) => arr.indexOf(m) === i && Boolean(m));
 
-  try {
-    const completion = await groq.chat.completions.create(
-      {
-        model,
-        messages,
-        response_format: { type: 'json_object' },
-        temperature: 0.4,
-        max_tokens: 700,
-      },
-      { signal: controller.signal }
-    );
-    clearTimeout(timeoutId);
-    return completion.choices?.[0]?.message?.content || '';
-  } catch (err) {
-    clearTimeout(timeoutId);
-    // If the model is not found, fallback to openai/gpt-oss-120b
-    const isModelNotFound = err.status === 404 || (err.message && err.message.includes('model'));
-    if (isModelNotFound && model !== 'openai/gpt-oss-120b') {
-      const fallbackCompletion = await groq.chat.completions.create(
+  let lastError;
+
+  for (let i = 0; i < modelChain.length; i++) {
+    const currentModel = modelChain[i];
+    const nextModel = modelChain[i + 1];
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const completion = await groq.chat.completions.create(
         {
-          model: 'openai/gpt-oss-120b',
+          model: currentModel,
           messages,
           response_format: { type: 'json_object' },
-          temperature: 0.4,
-          max_tokens: 700,
-        }
+          temperature: 0.3,
+          max_tokens: 600,
+        },
+        { signal: controller.signal }
       );
-      return fallbackCompletion.choices?.[0]?.message?.content || '';
+      clearTimeout(timeoutId);
+      return completion.choices?.[0]?.message?.content || '';
+    } catch (err) {
+      clearTimeout(timeoutId);
+      lastError = err;
+
+      const isRateLimit = err.status === 429;
+      const isNotFound = err.status === 404 || (err.message && err.message.includes('model'));
+      const isServerDown = err.status === 503 || err.status === 502;
+
+      if ((isRateLimit || isNotFound || isServerDown) && nextModel) {
+        console.warn(
+          `[Groq Resilient Failover] Model '${currentModel}' returned ${err.status} (${
+            err.message?.includes('TPD') ? 'Daily token limit' : 'Service busy'
+          }). Seamlessly failing over to '${nextModel}'...`
+        );
+        continue;
+      }
+      throw err;
     }
-    throw err;
   }
+
+  throw lastError;
 }
 
 /**
@@ -262,7 +291,7 @@ export async function enhancePrompt({
     throw error;
   }
 
-  const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
+  const model = process.env.GROQ_MODEL || 'qwen/qwen3.8-27b';
   const timeoutMs = parseInt(process.env.AI_TIMEOUT_MS, 10) || 45000;
 
   const groq = new Groq({
@@ -285,6 +314,7 @@ export async function enhancePrompt({
   try {
     rawContent1 = await callGroqChat(groq, model, messages, timeoutMs);
   } catch (err) {
+    console.error("[Groq API Error Detail]:", err.status, err.message, err.error?.error?.message || '');
     if (err.name === 'AbortError') {
       const timeoutError = new Error('Request timed out. Please try again.');
       timeoutError.statusCode = 504;
@@ -296,7 +326,15 @@ export async function enhancePrompt({
       throw authError;
     }
     if (err.status === 429) {
-      const rateError = new Error('Too many requests. Please wait a few seconds.');
+      let message = 'Too many requests. Please wait a moment and try again.';
+      const raw = err.error?.error?.message || err.message || '';
+      const retryMatch = raw.match(/try again in ([^.]+)/i);
+      if (retryMatch) {
+        message = `Groq rate limit reached (Tokens Per Day limit). Please try again in ${retryMatch[1].trim()}.`;
+      } else if (raw.includes('TPD') || raw.includes('tokens per day')) {
+        message = 'Groq daily token limit reached for this model. Please try again shortly.';
+      }
+      const rateError = new Error(message);
       rateError.statusCode = 429;
       throw rateError;
     }
@@ -326,6 +364,17 @@ export async function enhancePrompt({
   try {
     rawContent2 = await callGroqChat(groq, model, messages, timeoutMs);
   } catch (err) {
+    if (err.status === 429) {
+      let message = 'Too many requests. Please wait a moment and try again.';
+      const raw = err.error?.error?.message || err.message || '';
+      const retryMatch = raw.match(/try again in ([^.]+)/i);
+      if (retryMatch) {
+        message = `Groq rate limit reached (Tokens Per Day limit). Please try again in ${retryMatch[1].trim()}.`;
+      }
+      const rateError = new Error(message);
+      rateError.statusCode = 429;
+      throw rateError;
+    }
     throw new EngineError('Something went wrong. Please try again.');
   }
 

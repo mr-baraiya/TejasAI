@@ -178,7 +178,7 @@ export default function App() {
       {/* Skip to main content link for accessibility */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#C2410C] focus:text-white focus:rounded-[8px] focus:outline-none"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#C2410C] focus:text-white focus:rounded-none focus:outline-none"
       >
         Skip to main content
       </a>
@@ -188,7 +188,7 @@ export default function App() {
         <aside
           role="status"
           aria-live="polite"
-          className="fixed top-4 left-4 right-4 sm:left-auto sm:right-6 sm:top-6 z-50 max-w-sm bg-[#111827] text-white px-4 py-3 rounded-[8px] shadow-sm flex items-center space-x-2.5 border border-[#374151]"
+          className="fixed top-4 left-4 right-4 sm:left-auto sm:right-6 sm:top-6 z-50 max-w-sm bg-[#111827] text-white px-4 py-3 rounded-none shadow-sm flex items-center space-x-2.5 border border-[#374151]"
         >
           <Check className="w-4 h-4 text-[#15803D] shrink-0" strokeWidth={1.75} />
           <span className="text-xs sm:text-sm font-medium">
@@ -297,7 +297,7 @@ export default function App() {
           type="button"
           onClick={scrollToTop}
           aria-label="Scroll to top"
-          className="fixed bottom-6 right-6 z-40 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#FFFFFF] border border-[#E7E0D6] hover:border-[#C2410C] text-[#C2410C] shadow-md flex items-center justify-center transition-all hover:bg-[#FAF8F5] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2410C]"
+          className="fixed bottom-6 right-6 z-40 w-10 h-10 sm:w-11 sm:h-11 rounded-none bg-[#FFFFFF] border border-[#EDE8E1] hover:border-[#C2410C] text-[#C2410C] shadow-md flex items-center justify-center transition-all hover:bg-[#FAF8F5] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2410C]"
         >
           <ChevronUp className="w-5 h-5" strokeWidth={2.25} />
         </button>

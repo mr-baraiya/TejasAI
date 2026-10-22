@@ -24,7 +24,7 @@ export function HowItWorks() {
   ];
 
   return (
-    <section id="how-it-works" className="scroll-mt-24 pt-16 sm:pt-24 border-t border-[#E7E0D6]">
+    <section id="how-it-works" className="scroll-mt-24 pt-16 sm:pt-24 border-t border-[#EDE8E1]">
       <div className="space-y-2 mb-8">
         <h2 className="text-2xl sm:text-3xl font-semibold text-[#111827] tracking-tight">
           How it works
@@ -38,7 +38,7 @@ export function HowItWorks() {
         {steps.map((item) => (
           <div
             key={item.step}
-            className="rounded-[12px] border border-[#E7E0D6] bg-[#FFFFFF] p-6 shadow-xs space-y-3"
+            className="rounded-none border border-[#EDE8E1] bg-[#FFFFFF] p-6 shadow-xs space-y-3"
           >
             <span className="text-xs font-semibold text-[#6B7280] block">
               Step {item.step}

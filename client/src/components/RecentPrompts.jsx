@@ -30,8 +30,8 @@ export function RecentPrompts({
 
       {/* Expanded list */}
       {isOpen && (
-        <div className="mt-2.5 p-3.5 rounded-[12px] border border-[#E7E0D6] bg-[#FFFFFF] shadow-xs space-y-2.5">
-          <div className="flex items-center justify-between text-xs text-[#6B7280] pb-1 border-b border-[#E7E0D6]">
+        <div className="mt-2.5 p-3.5 rounded-none border border-[#EDE8E1] bg-[#FFFFFF] shadow-xs space-y-2.5">
+          <div className="flex items-center justify-between text-xs text-[#6B7280] pb-1 border-b border-[#EDE8E1]">
             <span>Saved only on this device.</span>
             <button
               type="button"
@@ -48,7 +48,7 @@ export function RecentPrompts({
                 key={index}
                 type="button"
                 onClick={() => onSelectPrompt(item)}
-                className="w-full text-left p-2.5 rounded-[8px] border border-[#E7E0D6] bg-[#FAF8F5] hover:bg-[#FFFFFF] hover:border-[#D4CCC0] text-xs sm:text-sm text-[#374151] transition-colors truncate block cursor-pointer"
+                className="w-full text-left p-2.5 rounded-none border border-[#EDE8E1] bg-[#FAF8F5] hover:bg-[#FFFFFF] hover:border-[#C2410C] text-xs sm:text-sm text-[#374151] transition-colors truncate block cursor-pointer"
               >
                 {item}
               </button>

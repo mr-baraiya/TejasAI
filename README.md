@@ -29,7 +29,7 @@ TejasAI is a full-stack, single-page application that transforms brief, unstruct
 
 Prompt quality is often the primary bottleneck when working with modern AI systems. TejasAI addresses this challenge by applying domain-informed prompt engineering principles, structured framing, role delineation, constraint enforcement, and contextual scaffolding.
 
-The platform provides a responsive web interface paired with a secure Node.js backend gateway that interfaces directly with Groq models (such as `llama-3.3-70b-versatile`), delivering near-instant prompt upgrades without exposing API credentials to client browsers.
+The platform provides a responsive web interface paired with a secure Node.js backend gateway that interfaces directly with Groq models (specifically `qwen/qwen3.8-27b`), delivering near-instant prompt upgrades without exposing API credentials to client browsers.
 
 ---
 
@@ -210,8 +210,8 @@ FRONTEND_URL=http://localhost:5173
 # Replace with your actual Groq API key
 GROQ_API_KEY=gsk_your_groq_api_key_here
 
-# Model identifier (e.g. llama-3.3-70b-versatile)
-GROQ_MODEL=llama-3.3-70b-versatile
+# Model identifier (e.g. qwen/qwen3.8-27b)
+GROQ_MODEL=qwen/qwen3.8-27b
 
 MAX_PROMPT_LENGTH=10000
 AI_TIMEOUT_MS=60000
@@ -297,7 +297,7 @@ Returns backend connectivity status, Groq key configuration state, and the activ
   "status": "online",
   "app": "TejasAI Server",
   "groqConfigured": true,
-  "groqModel": "llama-3.3-70b-versatile",
+  "groqModel": "qwen/qwen3.8-27b",
   "timestamp": "2026-10-22T02:20:00.000Z"
 }
 ```

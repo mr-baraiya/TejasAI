@@ -6,7 +6,7 @@
  * Ignores category and tone.
  */
 
-const ALLOWED_TARGET_AIS = ['any', 'chatgpt', 'gemini', 'claude'];
+const ALLOWED_TARGET_AIS = ['any', 'chatgpt', 'gemini', 'claude', 'perplexity', 'deepseek'];
 const ALLOWED_TWEAKS = ['shorter', 'simpler', 'moreDetail', 'more_detail'];
 
 export function validatePrompt(body) {

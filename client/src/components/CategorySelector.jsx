@@ -32,6 +32,8 @@ const AI_OPTIONS = [
   { id: 'any', label: 'Any AI' },
   { id: 'chatgpt', label: 'ChatGPT' },
   { id: 'gemini', label: 'Gemini' },
+  { id: 'perplexity', label: 'Perplexity' },
+  { id: 'deepseek', label: 'DeepSeek' },
   { id: 'claude', label: 'Claude' },
 ];
 
@@ -58,7 +60,7 @@ export function CategorySelector({
                 type="button"
                 disabled={disabled}
                 onClick={() => onSelectSample(chip.sample)}
-                className="h-10 px-3 rounded-[8px] border border-[#E7E0D6] bg-[#FFFFFF] hover:bg-[#FAF8F5] text-[#374151] text-xs font-medium transition-colors flex items-center space-x-2 cursor-pointer truncate"
+                className="h-10 px-3 rounded-none border border-[#EDE8E1] bg-[#FFFFFF] hover:bg-[#FAF8F5] text-[#374151] text-xs font-medium transition-colors flex items-center space-x-2 cursor-pointer truncate"
               >
                 <IconComponent className="w-3.5 h-3.5 text-[#6B7280] shrink-0" strokeWidth={1.75} />
                 <span className="truncate">{chip.label}</span>
@@ -83,11 +85,11 @@ export function CategorySelector({
         </button>
 
         {showMoreOptions && (
-          <div className="mt-2.5 p-3 rounded-[8px] border border-[#E7E0D6] bg-[#FAF8F5] space-y-2">
+          <div className="mt-2.5 p-3 rounded-none border border-[#EDE8E1] bg-[#FAF8F5] space-y-2">
             <span className="text-xs font-medium text-[#111827] block">
               Which AI will you use?
             </span>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
               {AI_OPTIONS.map((choice) => {
                 const isSelected = targetAI === choice.id;
                 return (
@@ -96,10 +98,10 @@ export function CategorySelector({
                     type="button"
                     disabled={disabled}
                     onClick={() => setTargetAI(choice.id)}
-                    className={`h-9 px-2.5 rounded-[8px] text-xs font-medium text-center border transition-colors cursor-pointer ${
+                    className={`h-9 px-2.5 rounded-none text-xs font-medium text-center border transition-colors cursor-pointer ${
                       isSelected
                         ? 'bg-[#111827] text-white border-[#111827]'
-                        : 'bg-[#FFFFFF] text-[#374151] border-[#E7E0D6] hover:bg-[#F3EFEA]'
+                        : 'bg-[#FFFFFF] text-[#374151] border-[#EDE8E1] hover:bg-[#F3EFEA]'
                     }`}
                   >
                     {choice.label}

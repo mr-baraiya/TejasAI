@@ -5,8 +5,15 @@ import rateLimit from 'express-rate-limit';
 import enhanceRoutes from './routes/enhance.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // Load environment variables from .env
-dotenv.config({ override: true });
+dotenv.config({ path: path.resolve(__dirname, '.env'), override: true });
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -63,7 +70,7 @@ app.get('/api/health', (req, res) => {
     status: 'online',
     app: 'TejasAI Server',
     groqConfigured: hasKey,
-    groqModel: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+    groqModel: process.env.GROQ_MODEL || 'qwen/qwen3.8-27b',
     timestamp: new Date().toISOString(),
   });
 });
@@ -87,7 +94,7 @@ const server = app.listen(PORT, () => {
   console.log(`=========================================`);
   console.log(`  TejasAI Backend Server running!        `);
   console.log(`  Port: http://localhost:${PORT}         `);
-  console.log(`  Model: ${process.env.GROQ_MODEL || 'llama-3.3-70b-versatile'}`);
+  console.log(`  Model: ${process.env.GROQ_MODEL || 'qwen/qwen3.8-27b'}`);
   console.log(`  Mode: ${process.env.NODE_ENV || 'development'}`);
   console.log(`=========================================`);
 });

@@ -7,8 +7,12 @@ const FAQS = [
     a: 'Yes. TejasAI is completely free to use. There are no paid tiers, subscriptions, or credit card requirements.',
   },
   {
+    q: 'Which AI model powers TejasAI?',
+    a: 'TejasAI is powered by the high-performance qwen/qwen3.8-27b model hosted on Groq ultra-low latency LPUs to optimize and rewrite prompts in real time.',
+  },
+  {
     q: 'Where does my text go?',
-    a: 'Your text is sent securely over HTTPS to our AI provider (Groq) to generate the enhanced prompt. We do not store, log, or sell your text on our servers.',
+    a: 'Your text is sent securely over HTTPS to our AI provider (Groq) using the qwen/qwen3.8-27b model to generate the enhanced prompt. We do not store, log, or sell your text on our servers.',
   },
   {
     q: 'Which AI should I paste the result into?',
@@ -32,7 +36,7 @@ export function FaqSection() {
   };
 
   return (
-    <section id="faq" className="scroll-mt-24 pt-16 sm:pt-24 border-t border-[#E7E0D6]">
+    <section id="faq" className="scroll-mt-24 pt-16 sm:pt-24 border-t border-[#EDE8E1]">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
         
         {/* Left Column: Heading, Subtext, and Contact */}
@@ -56,7 +60,7 @@ export function FaqSection() {
 
         {/* Right Column: Unified Q&A Card with Hairline Dividers */}
         <div className="lg:col-span-8">
-          <div className="rounded-[12px] border border-[#E7E0D6] bg-[#FFFFFF] divide-y divide-[#E7E0D6] shadow-xs overflow-hidden">
+          <div className="rounded-none border border-[#EDE8E1] bg-[#FFFFFF] divide-y divide-[#EDE8E1] shadow-xs overflow-hidden">
             {FAQS.map((faq, idx) => {
               const isOpen = openIdx === idx;
               return (
@@ -70,17 +74,17 @@ export function FaqSection() {
                     <span className="text-sm sm:text-base font-medium text-[#111827] pr-4">
                       {faq.q}
                     </span>
-                    <span className="shrink-0 w-6 h-6 rounded-full border border-[#E7E0D6] bg-[#FFFFFF] flex items-center justify-center text-[#6B7280] shadow-2xs">
+                    <span className="shrink-0 text-[#6B7280] flex items-center justify-center">
                       {isOpen ? (
-                        <Minus className="w-3.5 h-3.5" strokeWidth={1.75} />
+                        <Minus className="w-4 h-4" strokeWidth={1.75} />
                       ) : (
-                        <Plus className="w-3.5 h-3.5" strokeWidth={1.75} />
+                        <Plus className="w-4 h-4" strokeWidth={1.75} />
                       )}
                     </span>
                   </button>
 
                   {isOpen && (
-                    <div className="px-4 pb-4 sm:px-5 sm:pb-5 text-sm text-[#4B5563] leading-relaxed border-t border-[#E7E0D6]/60 bg-[#FAF8F5]/50 pt-3">
+                    <div className="px-4 pb-4 sm:px-5 sm:pb-5 text-sm text-[#4B5563] leading-relaxed border-t border-[#EDE8E1] bg-[#FAF8F5]/50 pt-3">
                       {faq.a}
                     </div>
                   )}

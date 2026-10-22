@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Loader2 } from 'lucide-react';
+import { Mic, MicOff, Loader2, X } from 'lucide-react';
 
 export function PromptInput({
   prompt,
@@ -63,6 +63,21 @@ export function PromptInput({
     }
   };
 
+  const handleClear = () => {
+    if (isListening && recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch {
+        // ignore
+      }
+      setIsListening(false);
+    }
+    setPrompt('');
+    if (textareaRef?.current) {
+      textareaRef.current.focus();
+    }
+  };
+
   const handleKeyDown = (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
@@ -73,7 +88,7 @@ export function PromptInput({
   };
 
   return (
-    <div className="rounded-[12px] border border-[#E7E0D6] bg-[#FFFFFF] p-5 sm:p-6 shadow-xs space-y-4">
+    <div className="rounded-none border border-[#EDE8E1] bg-[#FFFFFF] p-5 sm:p-6 shadow-xs space-y-4">
       {/* Label */}
       <label
         htmlFor="prompt-input"
@@ -93,66 +108,85 @@ export function PromptInput({
           disabled={isLoading}
           rows={5}
           placeholder="e.g. Write a polite email to my manager asking for a sick leave for 2 days due to fever..."
-          className="w-full bg-[#FFFFFF] rounded-[8px] border border-[#E7E0D6] p-3.5 pb-12 text-sm sm:text-base text-[#374151] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#C2410C] focus:ring-2 focus:ring-[#C2410C]/20 leading-relaxed min-h-[140px] resize-y"
+          className="w-full bg-[#FFFFFF] rounded-none border border-[#EDE8E1] p-3.5 pb-12 text-sm sm:text-base text-[#374151] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#C2410C] focus:ring-1 focus:ring-[#C2410C] leading-relaxed min-h-[140px] resize-y"
         />
 
-        {/* Mic button inside textarea */}
-        {hasSpeechSupport && (
-          <div className="absolute bottom-3 right-3 flex items-center space-x-2">
-            {isListening && (
-              <span className="text-xs font-medium text-[#C2410C] animate-pulse">
-                Listening...
-              </span>
-            )}
+        {/* Bottom-right controls inside textarea */}
+        <div className="absolute bottom-3 right-3 flex items-center space-x-1.5">
+          {prompt && prompt.length > 0 && (
             <button
               type="button"
-              onClick={toggleMic}
+              onClick={handleClear}
               disabled={isLoading}
-              title={isListening ? 'Stop listening' : 'Speak your prompt'}
-              aria-label={isListening ? 'Stop listening' : 'Speak your prompt'}
-              className={`p-2 rounded-[6px] text-xs transition-colors flex items-center justify-center cursor-pointer border ${
-                isListening
-                  ? 'bg-[#C2410C] text-white border-[#C2410C]'
-                  : 'bg-[#FFFFFF] hover:bg-[#FAF8F5] text-[#6B7280] hover:text-[#111827] border-[#E7E0D6]'
-              }`}
+              title="Clear text"
+              aria-label="Clear text"
+              className="p-1.5 text-xs transition-colors flex items-center justify-center cursor-pointer text-[#6B7280] hover:text-[#B91C1C]"
             >
-              {isListening ? (
-                <MicOff className="w-4 h-4 text-white" strokeWidth={1.75} />
-              ) : (
-                <Mic className="w-4 h-4" strokeWidth={1.75} />
-              )}
+              <X className="w-4 h-4" strokeWidth={1.75} />
             </button>
-          </div>
-        )}
+          )}
+
+          {hasSpeechSupport && (
+            <div className="flex items-center space-x-2">
+              {isListening && (
+                <span className="text-xs font-medium text-[#C2410C] animate-pulse">
+                  Listening...
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={toggleMic}
+                disabled={isLoading}
+                title={isListening ? 'Stop listening' : 'Speak your prompt'}
+                aria-label={isListening ? 'Stop listening' : 'Speak your prompt'}
+                className={`p-1.5 text-xs transition-colors flex items-center justify-center cursor-pointer ${
+                  isListening
+                    ? 'text-[#C2410C]'
+                    : 'text-[#6B7280] hover:text-[#111827]'
+                }`}
+              >
+                {isListening ? (
+                  <MicOff className="w-4 h-4 text-[#C2410C]" strokeWidth={1.75} />
+                ) : (
+                  <Mic className="w-4 h-4" strokeWidth={1.75} />
+                )}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Footer row with Primary Button */}
-      <div className="pt-2 border-t border-[#E7E0D6] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      {/* Footer row with Action Buttons */}
+      <div className="pt-2 border-t border-[#EDE8E1] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         {/* Ctrl + Enter hint on desktop */}
         <span className="hidden lg:inline text-xs text-[#6B7280]">
           Ctrl + Enter to submit
         </span>
 
-        {/* Primary button: compact, sleek h-9, 6px radius */}
-        <button
-          type="button"
-          onClick={() => onEnhance()}
-          disabled={isLoading || !prompt.trim()}
-          className={`h-9 px-4 rounded-[6px] font-medium text-xs sm:text-sm transition-colors flex items-center justify-center space-x-2 cursor-pointer w-full sm:w-auto ${
-            isLoading || !prompt.trim()
-              ? 'bg-[#EDE7DD] text-[#8A8178] cursor-not-allowed border border-[#EDE7DD]'
-              : 'bg-[#C2410C] hover:bg-[#9A3412] text-white shadow-xs'
-          }`}
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin text-current" strokeWidth={1.75} />
-              <span>Improving...</span>
-            </>
-          ) : (
-            <span>Make it better</span>
-          )}
-        </button>
+        {/* Primary button: compact, sleek h-9, sharp radius */}
+        <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
+
+          {/* Primary button: compact, sleek h-9, sharp radius */}
+          <button
+            type="button"
+            onClick={() => onEnhance()}
+            disabled={isLoading || !prompt.trim()}
+            className={`h-9 px-4 rounded-none font-medium text-xs sm:text-sm transition-colors flex items-center justify-center space-x-2 cursor-pointer flex-1 sm:flex-initial ${
+              isLoading || !prompt.trim()
+                ? 'bg-[#EDE7DD] text-[#8A8178] cursor-not-allowed border border-[#EDE7DD]'
+                : 'bg-[#C2410C] hover:bg-[#9A3412] text-white shadow-xs'
+            }`}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin text-current" strokeWidth={1.75} />
+                <span>Improving...</span>
+              </>
+            ) : (
+              <span>Make it better</span>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Single Privacy line under button */}

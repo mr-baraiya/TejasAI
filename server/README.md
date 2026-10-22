@@ -105,7 +105,7 @@ Copy-Item .env.example .env
 | NODE_ENV | String | development | Environment mode (development or production). |
 | FRONTEND_URL | String | http://localhost:5173 | Allowed origin for CORS in production. |
 | GROQ_API_KEY | String | Required | Secret API key obtained from Groq Console. |
-| GROQ_MODEL | String | llama-3.3-70b-versatile | Target Groq model identifier. |
+| GROQ_MODEL | String | qwen/qwen3.8-27b | Target Groq model identifier. |
 | MAX_PROMPT_LENGTH | Number | 10000 | Maximum permissible character count for requests. |
 | AI_TIMEOUT_MS | Number | 60000 | Timeout threshold for inference calls in milliseconds. |
 
@@ -152,7 +152,7 @@ Returns the operational status of the backend and whether Groq credentials are c
   "status": "online",
   "app": "TejasAI Server",
   "groqConfigured": true,
-  "groqModel": "llama-3.3-70b-versatile",
+  "groqModel": "qwen/qwen3.8-27b",
   "timestamp": "2026-10-22T02:20:00.000Z"
 }
 ```

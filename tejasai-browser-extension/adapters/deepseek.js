@@ -18,12 +18,14 @@ window.TejasAIAdapters['deepseek'] = {
   findInput() {
     const selectors = [
       'textarea#chat-input',
-      'textarea[placeholder*="Send a message"]',
-      'textarea[placeholder*="Message DeepSeek"]',
-      'textarea[placeholder*="Ask anything"]',
+      'textarea[placeholder*="Ask anything" i]',
+      'textarea[placeholder*="Message DeepSeek" i]',
+      'textarea[placeholder*="Send a message" i]',
       'textarea.ds-textarea',
       'textarea[tabindex="0"]',
+      'div[contenteditable="true"]',
       'form textarea',
+      'textarea',
     ];
 
     for (const sel of selectors) {
@@ -35,7 +37,7 @@ window.TejasAIAdapters['deepseek'] = {
 
   getText(el) {
     if (!el) return '';
-    return el.value ? el.value.trim() : '';
+    return el.value ? el.value.trim() : (el.innerText ? el.innerText.trim() : '');
   },
 
   setText(el, text) {
@@ -57,25 +59,49 @@ window.TejasAIAdapters['deepseek'] = {
   findAttachContainer(inputEl) {
     if (!inputEl) return null;
 
+    // 1. Next to submit button
     const submitBtn = this.findSubmitButton();
     if (submitBtn && submitBtn.parentElement) {
       return submitBtn.parentElement;
     }
 
-    const parent = inputEl.closest('[class*="input-box"], [class*="chat-input"]') || inputEl.parentElement;
-    const actions = parent?.querySelector('[class*="actions"], [class*="footer"], .flex.items-center');
-    if (actions) return actions;
+    const box = inputEl.closest('div[class*="input-box"], div[class*="chat-input"], div[class*="container"], form') || document;
+
+    // 2. Parent of DeepThink / Search toggle buttons
+    const featureBtn = Array.from(box.querySelectorAll('div[role="button"], button')).find((b) =>
+      b.textContent?.includes('DeepThink') || b.textContent?.includes('Search')
+    );
+    if (featureBtn && featureBtn.parentElement) {
+      return featureBtn.parentElement;
+    }
+
+    // 3. Bottom action bar / footer
+    const toolbarSelectors = [
+      'div[class*="bottom"]',
+      'div[class*="footer"]',
+      'div[class*="actions"]',
+      'div[class*="toolbar"]',
+      'div.flex.items-center:last-child',
+      'div[class*="buttons"]',
+    ];
+
+    for (const sel of toolbarSelectors) {
+      const bar = box.querySelector(sel);
+      if (bar && bar !== inputEl && bar.offsetParent !== null) return bar;
+    }
 
     return inputEl.parentElement;
   },
 
   findSubmitButton() {
     const selectors = [
-      'div[role="button"][aria-label*="Send"]',
-      'button[aria-label*="Send"]',
+      'div[role="button"][aria-label*="Send" i]',
+      'button[aria-label*="Send" i]',
       '.chat-input-send-button',
       'div[class*="send-button"]',
       'button[type="submit"]',
+      'div[role="button"]:has(svg)',
+      'button:has(svg)',
     ];
 
     for (const sel of selectors) {

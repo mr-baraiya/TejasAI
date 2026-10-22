@@ -9,21 +9,23 @@
   align-items: center !important;
   justify-content: center !important;
   gap: 6px !important;
-  height: 32px !important;
-  padding: 0 12px !important;
+  height: 28px !important;
+  padding: 0 11px 0 7px !important;
   margin: 0 4px !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
-  font-size: 13px !important;
-  font-weight: 600 !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
   line-height: 1 !important;
-  color: #FFFFFF !important;
-  background-color: #C2410C !important; /* TejasAI Terracotta Red */
-  border: 1px solid #9A3412 !important;
-  border-radius: 6px !important;
+  color: #ECECF1 !important;
+  background: rgba(255, 255, 255, 0.09) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 9999px !important;
   cursor: pointer !important;
   outline: none !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
-  transition: all 0.15s ease-in-out !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
   user-select: none !important;
   z-index: 100 !important;
   vertical-align: middle !important;
@@ -31,24 +33,36 @@
 }
 
 .tejasai-enhance-button:hover:not(:disabled) {
-  background-color: #9A3412 !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-color: rgba(249, 115, 22, 0.5) !important;
+  color: #FFFFFF !important;
   transform: translateY(-1px) !important;
-  box-shadow: 0 2px 4px rgba(194, 65, 12, 0.25) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25), 0 0 10px rgba(249, 115, 22, 0.2) !important;
 }
 
 .tejasai-enhance-button:active:not(:disabled) {
   transform: translateY(0) !important;
-  background-color: #7C2D12 !important;
+  background: rgba(255, 255, 255, 0.1) !important;
 }
 
 .tejasai-enhance-button:focus-visible {
-  box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #C2410C !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2), 0 0 0 4px #C2410C !important;
 }
 
 .tejasai-enhance-button:disabled {
-  opacity: 0.7 !important;
+  opacity: 0.65 !important;
   cursor: not-allowed !important;
   transform: none !important;
+}
+
+/* TejasAI logo inside injected button */
+.tejasai-btn-logo {
+  width: 16px !important;
+  height: 16px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  flex-shrink: 0 !important;
+  display: block !important;
 }
 
 .tejasai-sparkle-icon {
@@ -56,6 +70,35 @@
   height: 14px !important;
   fill: currentColor !important;
   flex-shrink: 0 !important;
+}
+
+/* Light mode host adaptation (only when host page is truly light) */
+@media (prefers-color-scheme: light) {
+  html:not(.dark):not([data-theme="dark"]):not([class*="dark"]) body:not([class*="dark"]) .tejasai-enhance-button {
+    color: #374151 !important;
+    background: #FFFFFF !important;
+    border: 1px solid rgba(0, 0, 0, 0.14) !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  }
+  html:not(.dark):not([data-theme="dark"]):not([class*="dark"]) body:not([class*="dark"]) .tejasai-enhance-button:hover:not(:disabled) {
+    background: #F9FAFB !important;
+    border-color: rgba(194, 65, 12, 0.45) !important;
+    color: #111827 !important;
+    box-shadow: 0 2px 6px rgba(194, 65, 12, 0.15) !important;
+  }
+}
+
+/* Explicit dark theme protection across AI sites */
+:is(.dark, [data-theme="dark"], [class*="dark-theme"], [data-mode="dark"], body.dark) .tejasai-enhance-button {
+  color: #ECECF1 !important;
+  background: rgba(255, 255, 255, 0.09) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+}
+
+:is(.dark, [data-theme="dark"], [class*="dark-theme"], [data-mode="dark"], body.dark) .tejasai-enhance-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-color: rgba(249, 115, 22, 0.5) !important;
+  color: #FFFFFF !important;
 }
 
 /* Spinner for loading state */

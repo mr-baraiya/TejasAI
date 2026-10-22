@@ -78,22 +78,58 @@ window.TejasAIAdapters['gemini'] = {
   findAttachContainer(inputEl) {
     if (!inputEl) return null;
 
+    // 1. If send button exists, attach beside it
     const sendBtn = this.findSubmitButton();
     if (sendBtn && sendBtn.parentElement) {
       return sendBtn.parentElement;
     }
 
+    const root = inputEl.closest('div.input-area, div[class*="input-area"], .chat-window, main, form') || document.body;
+
+    // 2. Look for bottom action toolbar / footer in Gemini
+    const toolbarSelectors = [
+      '.input-area-footer',
+      'div[class*="bottom-bar"]',
+      'div[class*="trailing-actions"]',
+      'div[class*="bottom-row"]',
+      'div[class*="actions-container"]',
+      'div[class*="buttons-container"]',
+      'div.action-buttons',
+      'div[class*="leading-actions"]',
+    ];
+
+    for (const sel of toolbarSelectors) {
+      const el = root.querySelector(sel);
+      if (el && el.offsetParent !== null) return el;
+    }
+
+    // 3. Find parent of the microphone or Flash / tool buttons
+    const micOrToolBtn = root.querySelector('button[aria-label*="mic" i], button[aria-label*="Microphone" i], button[aria-label*="Add files" i], button[aria-label*="Tools" i], button:has(mat-icon)');
+    if (micOrToolBtn && micOrToolBtn.parentElement) {
+      return micOrToolBtn.parentElement;
+    }
+
+    // 4. Safe fallback: find sibling toolbar of rich-textarea, not inside text line
     const host = inputEl.closest('rich-textarea') || inputEl.parentElement;
+    const parentContainer = host?.parentElement;
+    if (parentContainer) {
+      const bottomToolbar = Array.from(parentContainer.children).find(
+        (child) => child !== host && !child.contains(inputEl) && child.querySelector('button, [role="button"]')
+      );
+      if (bottomToolbar) return bottomToolbar;
+    }
+
     return host?.parentElement || inputEl.parentElement;
   },
 
   findSubmitButton() {
     const selectors = [
-      'button[aria-label*="Send message"]',
-      'button[aria-label*="Send prompt"]',
-      'button[aria-label*="Submit"]',
+      'button[aria-label*="Send message" i]',
+      'button[aria-label*="Send prompt" i]',
+      'button[aria-label*="Submit" i]',
       'button.send-button',
-      'div[role="button"][aria-label*="Send"]',
+      'div[role="button"][aria-label*="Send" i]',
+      'button:has(mat-icon[data-mat-icon-name="send"])',
     ];
 
     for (const sel of selectors) {

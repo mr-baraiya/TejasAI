@@ -31,12 +31,19 @@
   let lastEnhancedResult = '';
   let isAutoSubmitting = false;
 
-  // Clean Sparkle SVG (TejasAI branded, never third-party logos)
-  const SPARKLE_SVG = `
-    <svg class="tejasai-sparkle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12 2L14.2 8.8L21 11L14.2 13.2L12 20L9.8 13.2L3 11L9.8 8.8L12 2Z" fill="currentColor"/>
-    </svg>
-  `;
+  // TejasAI logo with fallback
+  function getLogoHtml() {
+    try {
+      const logoUrl = chrome.runtime.getURL('icons/icon32.png');
+      return `<img src="${logoUrl}" class="tejasai-btn-logo" alt="TejasAI" />`;
+    } catch {
+      return `
+        <svg class="tejasai-sparkle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L14.2 8.8L21 11L14.2 13.2L12 20L9.8 13.2L3 11L9.8 8.8L12 2Z" fill="currentColor"/>
+        </svg>
+      `;
+    }
+  }
 
   // Fetch initial settings from background service worker
   function loadSettings() {
@@ -165,7 +172,7 @@
     } else {
       enhanceBtn.disabled = false;
       enhanceBtn.innerHTML = `
-        ${SPARKLE_SVG}
+        ${getLogoHtml()}
         <span>Enhance</span>
       `;
     }
@@ -290,11 +297,11 @@
 
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'tejasai-enhance-button';
+      btn.className = `tejasai-enhance-button tejasai-enhance-btn-${adapter.id}`;
       btn.title = `Enhance prompt with TejasAI (${adapter.name})`;
       btn.setAttribute('aria-label', 'Enhance prompt with TejasAI');
       btn.innerHTML = `
-        ${SPARKLE_SVG}
+        ${getLogoHtml()}
         <span>Enhance</span>
       `;
 
@@ -304,7 +311,13 @@
         performEnhance({ isAuto: false });
       });
 
-      container.appendChild(btn);
+      // Insert adjacent to submit button if submit button is inside the same container
+      const submitBtn = typeof adapter.findSubmitButton === 'function' ? adapter.findSubmitButton() : null;
+      if (submitBtn && submitBtn.parentElement === container) {
+        container.insertBefore(btn, submitBtn);
+      } else {
+        container.appendChild(btn);
+      }
       enhanceBtn = btn;
     }
 

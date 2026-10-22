@@ -17,13 +17,16 @@ window.TejasAIAdapters['perplexity'] = {
 
   findInput() {
     const selectors = [
-      'textarea[placeholder*="Ask anything"]',
-      'textarea[placeholder*="Ask follow-up"]',
-      'textarea[placeholder*="Ask a question"]',
-      'textarea[placeholder*="Search or ask"]',
+      'textarea[placeholder*="Ask" i]',
+      'textarea[placeholder*="Search" i]',
+      'textarea[placeholder*="What do you want to know" i]',
+      'textarea[placeholder*="question" i]',
+      'textarea[placeholder*="follow-up" i]',
       'textarea.overflow-auto',
       '[data-testid="search-input"]',
+      'div[contenteditable="true"]',
       'form textarea',
+      'textarea',
     ];
 
     for (const sel of selectors) {
@@ -35,7 +38,7 @@ window.TejasAIAdapters['perplexity'] = {
 
   getText(el) {
     if (!el) return '';
-    return el.value ? el.value.trim() : '';
+    return el.value ? el.value.trim() : (el.innerText ? el.innerText.trim() : '');
   },
 
   setText(el, text) {
@@ -58,26 +61,50 @@ window.TejasAIAdapters['perplexity'] = {
   findAttachContainer(inputEl) {
     if (!inputEl) return null;
 
+    // 1. Next to submit button
     const submitBtn = this.findSubmitButton();
     if (submitBtn && submitBtn.parentElement) {
       return submitBtn.parentElement;
     }
 
-    const form = inputEl.closest('form');
-    if (form) {
-      const actions = form.querySelector('.flex.items-center.gap-x-1, .flex.items-center.gap-x-2, .flex.items-center');
-      if (actions) return actions;
+    // 2. Beside right-side control buttons (e.g. Model, mic)
+    const box = inputEl.closest('div.relative, div[class*="border"], div[class*="rounded"], div[class*="box"], form') || document;
+    const rightControls = box.querySelector('div.flex.items-center:has(button[aria-label*="mic" i], button[aria-label*="voice" i], button:has(svg))');
+    if (rightControls && rightControls.offsetParent !== null) {
+      return rightControls;
     }
+
+    // 3. Search for the bottom controls bar
+    const toolbarSelectors = [
+      'div.flex.items-center.justify-between',
+      'div.flex.items-center:last-child',
+      'div[class*="bottom"]',
+      '.flex.items-center.gap-x-1',
+      '.flex.items-center.gap-x-2',
+      'div.flex.items-center',
+    ];
+
+    for (const sel of toolbarSelectors) {
+      const bar = box.querySelector(sel);
+      if (bar && bar !== inputEl && bar.offsetParent !== null) return bar;
+    }
+
+    const anyBtn = box.querySelector('button');
+    if (anyBtn && anyBtn.parentElement) return anyBtn.parentElement;
 
     return inputEl.parentElement;
   },
 
   findSubmitButton() {
     const selectors = [
-      'button[aria-label="Submit"]',
-      'button[aria-label="Submit query"]',
-      'button[aria-label*="Search"]',
+      'button[aria-label*="Submit" i]',
+      'button[aria-label*="Submit query" i]',
+      'button[aria-label*="Search" i]',
+      'button[aria-label*="Ask" i]',
+      'button[aria-label*="Send" i]',
+      'button.bg-super',
       'button[type="submit"]',
+      'button:has(svg path)',
     ];
 
     for (const sel of selectors) {

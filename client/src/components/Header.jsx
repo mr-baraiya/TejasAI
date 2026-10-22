@@ -80,47 +80,73 @@ export function Header({ onNewPrompt, hasActivePrompt = false }) {
               </button>
             </nav>
 
-            {/* Mobile menu button */}
+            {/* Mobile menu button (borderless, no box) */}
             <div className="flex items-center md:hidden">
               <button
                 type="button"
-                onClick={() => setMobileMenuOpen((prev) => !prev)}
-                aria-label="Toggle navigation menu"
-                className="p-2 rounded-none border border-[#EDE8E1] bg-[#FFFFFF] text-[#374151] hover:text-[#111827] cursor-pointer"
+                onClick={() => setMobileMenuOpen(true)}
+                aria-label="Open navigation menu"
+                className="p-1.5 text-[#374151] hover:text-[#111827] focus-visible:outline-none cursor-pointer"
               >
-                {mobileMenuOpen ? <X className="w-5 h-5" strokeWidth={1.75} /> : <Menu className="w-5 h-5" strokeWidth={1.75} />}
+                <Menu className="w-6 h-6" strokeWidth={1.75} />
               </button>
             </div>
 
           </div>
         </div>
-
-        {/* Mobile dropdown */}
-        {mobileMenuOpen && (
-          <div className="md:hidden border-t border-[#EDE8E1] bg-[#FFFBF5] px-4 py-3 space-y-1">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                onClick={(e) => handleNavClick(e, link.href)}
-                className="block text-sm font-medium text-[#374151] hover:text-[#C2410C] px-3 py-2 rounded-none hover:bg-[#FFFFFF]"
-              >
-                {link.label}
-              </a>
-            ))}
-            <button
-              type="button"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                setIsExtensionOpen(true);
-              }}
-              className="w-full text-left block text-sm font-medium text-[#374151] hover:text-[#C2410C] px-3 py-2 rounded-none hover:bg-[#FFFFFF] cursor-pointer"
-            >
-              Extension
-            </button>
-          </div>
-        )}
       </header>
+
+      {/* Mobile drawer backdrop */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/25 backdrop-blur-[1px] md:hidden transition-opacity"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Mobile drawer from right side up to 50% of screen */}
+      <aside
+        className={`fixed top-0 right-0 bottom-0 z-50 w-1/2 bg-[#FFFBF5] border-l border-[#EDE8E1] shadow-2xl flex flex-col md:hidden transform transition-transform duration-300 ease-in-out ${
+          mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+        aria-label="Mobile navigation"
+      >
+        <div className="flex items-center justify-end h-16 px-4 border-b border-[#EDE8E1]">
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="Close navigation menu"
+            className="p-1.5 text-[#374151] hover:text-[#111827] focus-visible:outline-none cursor-pointer"
+          >
+            <X className="w-6 h-6" strokeWidth={1.75} />
+          </button>
+        </div>
+
+        <nav className="flex-1 px-5 py-6 space-y-4 overflow-y-auto">
+          {navLinks.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              onClick={(e) => handleNavClick(e, link.href)}
+              className="block text-sm font-medium text-[#374151] hover:text-[#C2410C] py-1 transition-colors"
+            >
+              {link.label}
+            </a>
+          ))}
+
+          <button
+            type="button"
+            onClick={() => {
+              setMobileMenuOpen(false);
+              setIsExtensionOpen(true);
+            }}
+            className="w-full text-left block text-sm font-medium text-[#374151] hover:text-[#C2410C] py-1 transition-colors cursor-pointer"
+          >
+            Extension
+          </button>
+        </nav>
+      </aside>
 
       {/* Extension Modal */}
       <ExtensionModal

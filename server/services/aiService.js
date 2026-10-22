@@ -161,8 +161,10 @@ export function validateOutput(rawText, originalInput) {
     return { isValid: false, reason: 'Contains markdown headings' };
   }
 
-  // Reject intros like "Here's", "Sure", "Certainly", "Here is", "Here are"
-  if (/^(Here('?s| is| are)|Sure|Certainly|Of course|Gladly|Okay|Alright)\b/i.test(trimmedPrompt)) {
+  // Reject model conversational fluff like "Here's", "Sure", "Certainly" unless original input began with it
+  const startsWithFluff = /^(Here('?s| is| are)|Sure|Certainly|Of course|Gladly|Okay|Alright)\b/i.test(trimmedPrompt);
+  const inputStartsWithFluff = /^(Here('?s| is| are)|Sure|Certainly|Of course|Gladly|Okay|Alright)\b/i.test(originalInput);
+  if (startsWithFluff && !inputStartsWithFluff) {
     return { isValid: false, reason: 'Contains conversational intro' };
   }
 

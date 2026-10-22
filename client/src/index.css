@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-serif: 'Fraunces', Georgia, serif;
+  }
+
+  html {
+    font-size: 16px;
+    background-color: #FFFBF5;
+    letter-spacing: 0;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #FFFBF5;
+    color: #374151;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    letter-spacing: 0;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: #111827;
+    letter-spacing: -0.01em;
+  }
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+.font-sans {
+  font-family: var(--font-sans);
+}
+
+/* Accessible 2px focus ring in primary #C2410C with offset */
+:focus-visible {
+  outline: 2px solid #C2410C !important;
+  outline-offset: 2px !important;
+}
+
+/* Clean micro transitions: 150ms to 200ms */
+* {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Reduced motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

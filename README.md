@@ -18,8 +18,9 @@ TejasAI is a full-stack, single-page application that transforms brief, unstruct
   - [POST /api/enhance](#post-apienhance)
 - [Testing and Verification](#testing-and-verification)
 - [Production Deployment](#production-deployment)
+  - [Single-Project Vercel Deployment (Recommended)](#single-project-vercel-deployment-recommended)
   - [Decoupled Architecture](#decoupled-architecture)
-  - [Unified Node.js Service](#unified-nodejs-service)
+  - [Unified Node.js Service](#unified-nodejs-service-vps--docker)
 - [Security and Privacy](#security-and-privacy)
 - [License](#license)
 
@@ -393,6 +394,57 @@ npm run lint
 
 ## Production Deployment
 
+### Single-Project Vercel Deployment (Recommended)
+
+TejasAI is pre-configured to deploy frontend (Vite React) and backend (Express API as a serverless function) together as a **single project on Vercel**!
+
+#### Prerequisites:
+- A GitHub repository containing this project
+- A free account on [vercel.com](https://vercel.com)
+- Your Groq API key from [console.groq.com](https://console.groq.com)
+
+#### Option A: Deploy via Vercel Web Dashboard (Easiest)
+
+1. **Push your code to GitHub**:
+   ```bash
+   git add .
+   git commit -m "feat: setup for vercel single project deployment"
+   git push origin main
+   ```
+2. **Import into Vercel**:
+   - Go to [vercel.com/new](https://vercel.com/new).
+   - Select your `TejasAI` repository and click **Import**.
+3. **Configure Project Settings**:
+   - **Framework Preset**: Select **Vite** (or leave as Other).
+   - **Root Directory**: `./` (leave default, do NOT select `client` or `server`).
+   - **Build & Development Settings**: Keep defaults (Vercel automatically detects `vercel.json` with `outputDirectory: client/dist` and `npm run build`).
+4. **Add Environment Variables**:
+   Under **Environment Variables**, add:
+   - `GROQ_API_KEY`: `gsk_...` (your Groq API key)
+   - (Optional) `GROQ_MODEL`: `qwen/qwen3.8-27b`
+   - (Optional) `NODE_ENV`: `production`
+5. **Click Deploy**:
+   Vercel will install dependencies, build the React frontend, and deploy the Express API function. Once finished, your full-stack app will be live at `https://<your-project>.vercel.app`!
+
+#### Option B: Deploy via Vercel CLI
+
+```bash
+# 1. Install Vercel CLI (if not installed)
+npm install -g vercel
+
+# 2. Login to your Vercel account
+vercel login
+
+# 3. Deploy from the repository root
+vercel
+
+# 4. Add your Groq API key to Vercel
+vercel env add GROQ_API_KEY production
+
+# 5. Deploy to Production
+vercel --prod
+```
+
 ### Decoupled Architecture
 
 #### Frontend:
@@ -406,28 +458,16 @@ Deploy `server/` to platforms like Render, Railway, Fly.io, or any containerized
 - Start command: `node server.js`
 - Set environment variables: `GROQ_API_KEY`, `GROQ_MODEL`, `PORT`, and `FRONTEND_URL` (to match your frontend domain).
 
-### Unified Node.js Service
+### Unified Node.js Service (VPS / Docker)
 
-To serve the frontend static files directly from the Express backend:
+To serve the frontend static files directly from the Express backend on a long-running Node.js server:
 
 1. Build the client bundle:
    ```bash
    npm run build
    ```
-2. Serve the generated `client/dist` directory in `server/server.js`:
-   ```javascript
-   import path from 'path';
-   import { fileURLToPath } from 'url';
+2. Run `npm start` from root or server to serve both frontend and backend on a single port.
 
-   const __filename = fileURLToPath(import.meta.url);
-   const __dirname = path.dirname(__filename);
-
-   app.use(express.static(path.join(__dirname, '../client/dist')));
-   app.get('*', (req, res) => {
-     res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-   });
-   ```
-3. Run `npm start` from root or server to serve both frontend and backend on a single port.
 
 ---
 

@@ -3,12 +3,24 @@
   "version": "1.0.0",
   "description": "TejasAI — Give Your Ideas an Edge (AI Prompt Enhancer)",
   "private": true,
+  "type": "module",
+  "workspaces": [
+    "client",
+    "server"
+  ],
   "scripts": {
-    "install:all": "npm --prefix server install && npm --prefix client install",
-    "dev:server": "npm --prefix server run dev",
-    "dev:client": "npm --prefix client run dev",
+    "install:all": "npm install",
+    "dev:server": "npm --workspace=server run dev",
+    "dev:client": "npm --workspace=client run dev",
     "dev": "node dev.js",
     "start": "node server/server.js",
-    "build": "npm --prefix client run build"
+    "build": "npm --workspace=client run build"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "groq-sdk": "^0.15.0"
   }
 }

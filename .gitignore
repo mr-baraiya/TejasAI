@@ -12,6 +12,8 @@ dist/
 dist-ssr/
 build/
 *.local
+.vercel
+
 
 # Cache and temporary directories
 .cache/

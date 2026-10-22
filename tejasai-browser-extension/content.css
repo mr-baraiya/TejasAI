@@ -1,0 +1,287 @@
+/**
+ * TejasAI Browser Extension - Content Styles
+ * Scoped strictly to avoid interfering with host site styles.
+ */
+
+/* Main button injected near AI composers */
+.tejasai-enhance-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  height: 32px !important;
+  padding: 0 12px !important;
+  margin: 0 4px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  color: #FFFFFF !important;
+  background-color: #C2410C !important; /* TejasAI Terracotta Red */
+  border: 1px solid #9A3412 !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  outline: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.15s ease-in-out !important;
+  user-select: none !important;
+  z-index: 100 !important;
+  vertical-align: middle !important;
+  box-sizing: border-box !important;
+}
+
+.tejasai-enhance-button:hover:not(:disabled) {
+  background-color: #9A3412 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 4px rgba(194, 65, 12, 0.25) !important;
+}
+
+.tejasai-enhance-button:active:not(:disabled) {
+  transform: translateY(0) !important;
+  background-color: #7C2D12 !important;
+}
+
+.tejasai-enhance-button:focus-visible {
+  box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #C2410C !important;
+}
+
+.tejasai-enhance-button:disabled {
+  opacity: 0.7 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+.tejasai-sparkle-icon {
+  width: 14px !important;
+  height: 14px !important;
+  fill: currentColor !important;
+  flex-shrink: 0 !important;
+}
+
+/* Spinner for loading state */
+.tejasai-spinner {
+  width: 13px !important;
+  height: 13px !important;
+  border: 2px solid rgba(255, 255, 255, 0.3) !important;
+  border-top-color: #FFFFFF !important;
+  border-radius: 50% !important;
+  animation: tejasai-spin 0.75s linear infinite !important;
+  flex-shrink: 0 !important;
+}
+
+@keyframes tejasai-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Floating Enhancement Preview Panel */
+.tejasai-preview-card {
+  position: absolute !important;
+  bottom: calc(100% + 12px) !important;
+  right: 0 !important;
+  width: min(440px, 92vw) !important;
+  background: #FFFFFF !important;
+  color: #1F2937 !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 10px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  z-index: 99999 !important;
+  overflow: hidden !important;
+  animation: tejasai-fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  text-align: left !important;
+}
+
+/* Dark mode host support */
+@media (prefers-color-scheme: dark) {
+  .tejasai-preview-card {
+    background: #18181B !important;
+    color: #F4F4F5 !important;
+    border-color: #27272A !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+  }
+}
+
+/* Also support dark mode if parent site has dark class */
+html.dark .tejasai-preview-card,
+body.dark .tejasai-preview-card,
+[data-theme="dark"] .tejasai-preview-card {
+  background: #18181B !important;
+  color: #F4F4F5 !important;
+  border-color: #27272A !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+}
+
+@keyframes tejasai-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tejasai-preview-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 10px 14px !important;
+  background-color: rgba(194, 65, 12, 0.05) !important;
+  border-bottom: 1px solid rgba(194, 65, 12, 0.15) !important;
+}
+
+.tejasai-preview-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #C2410C !important;
+}
+
+.tejasai-preview-close {
+  background: transparent !important;
+  border: none !important;
+  color: #6B7280 !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  padding: 4px 6px !important;
+  border-radius: 4px !important;
+  transition: color 0.15s !important;
+}
+
+.tejasai-preview-close:hover {
+  color: #111827 !important;
+}
+
+.tejasai-preview-body {
+  padding: 12px 14px !important;
+  max-height: 240px !important;
+  overflow-y: auto !important;
+}
+
+.tejasai-why-better-list {
+  margin: 0 0 10px 0 !important;
+  padding: 0 0 0 18px !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+  color: #4B5563 !important;
+}
+
+html.dark .tejasai-why-better-list,
+body.dark .tejasai-why-better-list {
+  color: #A1A1AA !important;
+}
+
+.tejasai-why-better-list li {
+  margin-bottom: 4px !important;
+}
+
+.tejasai-preview-text {
+  font-size: 12.5px !important;
+  line-height: 1.5 !important;
+  white-space: pre-wrap !important;
+  background: rgba(0, 0, 0, 0.03) !important;
+  padding: 8px 10px !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  color: inherit !important;
+  max-height: 120px !important;
+  overflow-y: auto !important;
+}
+
+html.dark .tejasai-preview-text,
+body.dark .tejasai-preview-text {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.tejasai-preview-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 8px 14px !important;
+  border-top: 1px solid #E5E7EB !important;
+  background-color: #FAFAFA !important;
+  gap: 8px !important;
+}
+
+html.dark .tejasai-preview-footer,
+body.dark .tejasai-preview-footer {
+  border-color: #27272A !important;
+  background-color: #121215 !important;
+}
+
+.tejasai-action-btn {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 5px 10px !important;
+  border-radius: 5px !important;
+  cursor: pointer !important;
+  border: 1px solid transparent !important;
+  transition: all 0.15s ease !important;
+  font-family: inherit !important;
+}
+
+.tejasai-btn-primary {
+  background-color: #C2410C !important;
+  color: #FFFFFF !important;
+  border-color: #9A3412 !important;
+}
+
+.tejasai-btn-primary:hover {
+  background-color: #9A3412 !important;
+}
+
+.tejasai-btn-secondary {
+  background-color: transparent !important;
+  color: #4B5563 !important;
+  border-color: #D1D5DB !important;
+}
+
+html.dark .tejasai-btn-secondary,
+body.dark .tejasai-btn-secondary {
+  color: #D4D4D8 !important;
+  border-color: #3F3F46 !important;
+}
+
+.tejasai-btn-secondary:hover {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+  color: #111827 !important;
+}
+
+/* Toast alert notification */
+.tejasai-toast {
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  padding: 10px 16px !important;
+  background: #18181B !important;
+  color: #FFFFFF !important;
+  border: 1px solid #3F3F46 !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2) !important;
+  z-index: 100000 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  animation: tejasai-fade-in 0.2s ease !important;
+}
+
+.tejasai-toast-error {
+  border-color: #DC2626 !important;
+  color: #FECACA !important;
+  background: #450A0A !important;
+}
+
+.tejasai-toast-success {
+  border-color: #16A34A !important;
+  color: #DCFCE7 !important;
+  background: #052E16 !important;
+}

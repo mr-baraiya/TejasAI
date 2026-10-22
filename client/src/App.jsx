@@ -212,16 +212,13 @@ export default function App() {
 
             {/* Left column: Headline & Subtext */}
             <div className="lg:col-span-5 space-y-4 pt-1 lg:pt-4">
-              <div className="inline-flex items-center gap-2 px-2.5 py-1 text-xs font-semibold tracking-wide uppercase bg-[#FAF8F5] border border-[#EDE8E1] text-[#C2410C]">
-                <span>Free AI Prompt Enhancer &amp; Improver</span>
-              </div>
               <h1 className="font-serif text-3xl sm:text-4xl lg:text-[46px] font-semibold text-[#111827] leading-[1.14] tracking-[-0.01em]">
                 Say it simply. <br className="hidden sm:inline" />
                 <span className="text-[#C2410C]">Ask AI better.</span>
               </h1>
 
               <p className="text-base sm:text-lg text-[#374151] max-w-[65ch] leading-relaxed">
-                Type what you need in your own words. <strong>TejasAI</strong> is the free <strong>prompt enhancer</strong> and <strong>prompt improver</strong> that transforms basic thoughts into high-precision, production-ready prompts for ChatGPT, Gemini, and Claude.
+                Type what you need in your own words. We rewrite it so ChatGPT, Gemini or Claude gives you a more useful answer.
               </p>
 
 
@@ -302,7 +299,7 @@ export default function App() {
           type="button"
           onClick={scrollToTop}
           aria-label="Scroll to top"
-          className="fixed bottom-6 right-6 z-40 w-10 h-10 sm:w-11 sm:h-11 rounded-none bg-[#FFFFFF] border border-[#EDE8E1] hover:border-[#C2410C] text-[#C2410C] shadow-md flex items-center justify-center transition-all hover:bg-[#FAF8F5] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2410C]"
+          className="fixed bottom-6 right-6 z-40 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#FFFFFF] border border-[#EDE8E1] hover:border-[#C2410C] text-[#C2410C] shadow-md hover:shadow-lg flex items-center justify-center transition-all hover:bg-[#FAF8F5] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2410C]"
         >
           <ChevronUp className="w-5 h-5" strokeWidth={2.25} />
         </button>

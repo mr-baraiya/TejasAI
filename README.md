@@ -18,6 +18,7 @@ TejasAI is a full-stack, single-page application that transforms brief, unstruct
 - [Environment Configuration](#environment-configuration)
 - [Installation and Setup](#installation-and-setup)
 - [Running the Application](#running-the-application)
+- [Browser Extension (Chrome / Brave / Edge)](#browser-extension-chrome--brave--edge)
 - [API Reference](#api-reference)
   - [GET /api/health](#get-apihealth)
   - [POST /api/enhance](#post-apienhance)
@@ -287,6 +288,23 @@ npm run dev
 ```
 
 Open `http://localhost:5173` in your browser.
+
+---
+
+## Browser Extension (Chrome / Brave / Edge)
+
+TejasAI includes an official Chrome Manifest V3 browser extension located in [`tejasai-browser-extension/`](tejasai-browser-extension/) that brings prompt enhancement directly into ChatGPT, Google Gemini, Claude, Perplexity, and DeepSeek.
+
+### 1. Download from Website
+Users can download the extension directly from your live website:
+- Click the **"Extension"** button in the header of [https://tejasai-eta.vercel.app/](https://tejasai-eta.vercel.app/)
+- Or download the ZIP package directly at: `https://tejasai-eta.vercel.app/tejasai-extension.zip`
+
+### 2. Install in Browser (30 seconds)
+1. Extract `tejasai-extension.zip`.
+2. Open `chrome://extensions` in Chrome, Brave, or Edge.
+3. Turn **ON** **Developer mode** in the top-right corner.
+4. Click **Load unpacked** (top-left) and select the extracted folder: `tejasai-browser-extension`.
 
 ---
 

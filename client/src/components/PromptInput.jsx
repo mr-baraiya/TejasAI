@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Loader2, X } from 'lucide-react';
+import { Mic, MicOff, Loader2, X, ArrowRight } from 'lucide-react';
 
 export function PromptInput({
   prompt,
@@ -88,17 +88,22 @@ export function PromptInput({
   };
 
   return (
-    <div className="rounded-none border border-[#EDE8E1] bg-[#FFFFFF] p-5 sm:p-6 shadow-xs space-y-4">
-      {/* Label */}
-      <label
-        htmlFor="prompt-input"
-        className="block text-sm font-medium text-[#111827]"
-      >
-        What do you want to ask or write?
-      </label>
+    <div className="space-y-3">
+      {/* Human, authentic label */}
+      <div className="flex items-center justify-between">
+        <label
+          htmlFor="prompt-input"
+          className="text-xs font-semibold uppercase tracking-wider text-[#6B7280]"
+        >
+          Your rough draft or question
+        </label>
+        <span className="text-xs text-[#9CA3AF]">
+          Plain text, questions, or notes
+        </span>
+      </div>
 
-      {/* Textarea container with mic */}
-      <div className="relative">
+      {/* Writing Canvas with integrated subtle action bar */}
+      <div className="border border-[#EDE8E1] bg-[#FFFFFF] focus-within:border-[#111827] transition-colors shadow-xs">
         <textarea
           id="prompt-input"
           ref={textareaRef}
@@ -107,91 +112,91 @@ export function PromptInput({
           onKeyDown={handleKeyDown}
           disabled={isLoading}
           rows={5}
-          placeholder="e.g. Write a polite email to my manager asking for a sick leave for 2 days due to fever..."
-          className="w-full bg-[#FFFFFF] rounded-none border border-[#EDE8E1] p-3.5 pb-12 text-sm sm:text-base text-[#374151] placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#C2410C] focus:ring-1 focus:ring-[#C2410C] leading-relaxed min-h-[140px] resize-y"
+          placeholder="What are you trying to accomplish? Write in your everyday voice—no prompt engineering or technical phrasing needed..."
+          className="w-full bg-transparent p-4 sm:p-5 text-sm sm:text-base text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 leading-relaxed min-h-[140px] resize-none"
         />
 
-        {/* Bottom-right controls inside textarea */}
-        <div className="absolute bottom-3 right-3 flex items-center space-x-1.5">
-          {prompt && prompt.length > 0 && (
-            <button
-              type="button"
-              onClick={handleClear}
-              disabled={isLoading}
-              title="Clear text"
-              aria-label="Clear text"
-              className="p-1.5 text-xs transition-colors flex items-center justify-center cursor-pointer text-[#6B7280] hover:text-[#B91C1C]"
-            >
-              <X className="w-4 h-4" strokeWidth={1.75} />
-            </button>
-          )}
-
-          {hasSpeechSupport && (
-            <div className="flex items-center space-x-2">
-              {isListening && (
-                <span className="text-xs font-medium text-[#C2410C] animate-pulse">
-                  Listening...
-                </span>
-              )}
+        {/* Clean Integrated Action Bar */}
+        <div className="px-4 py-3 border-t border-[#EDE8E1]/60 flex items-center justify-between gap-3 bg-[#FAF8F5]/60">
+          {/* Left tools: Speech recognition & Clear & Desktop shortcut */}
+          <div className="flex items-center space-x-3 text-xs text-[#6B7280]">
+            {hasSpeechSupport && (
               <button
                 type="button"
                 onClick={toggleMic}
                 disabled={isLoading}
-                title={isListening ? 'Stop listening' : 'Speak your prompt'}
-                aria-label={isListening ? 'Stop listening' : 'Speak your prompt'}
-                className={`p-1.5 text-xs transition-colors flex items-center justify-center cursor-pointer ${
+                title={isListening ? 'Stop listening' : 'Dictate your prompt'}
+                aria-label={isListening ? 'Stop listening' : 'Dictate your prompt'}
+                className={`flex items-center space-x-1.5 transition-colors cursor-pointer ${
                   isListening
                     ? 'text-[#C2410C]'
                     : 'text-[#6B7280] hover:text-[#111827]'
                 }`}
               >
                 {isListening ? (
-                  <MicOff className="w-4 h-4 text-[#C2410C]" strokeWidth={1.75} />
+                  <>
+                    <MicOff className="w-3.5 h-3.5 text-[#C2410C]" strokeWidth={2} />
+                    <span className="text-[11px] font-mono font-semibold text-[#C2410C] animate-pulse">
+                      Listening...
+                    </span>
+                  </>
                 ) : (
-                  <Mic className="w-4 h-4" strokeWidth={1.75} />
+                  <>
+                    <Mic className="w-3.5 h-3.5" strokeWidth={1.75} />
+                    <span className="hidden sm:inline text-[11px]">Dictate</span>
+                  </>
                 )}
               </button>
-            </div>
-          )}
-        </div>
-      </div>
+            )}
 
-      {/* Footer row with Action Buttons */}
-      <div className="pt-2 border-t border-[#EDE8E1] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        {/* Ctrl + Enter hint on desktop */}
-        <span className="hidden lg:inline text-xs text-[#6B7280]">
-          Ctrl + Enter to submit
-        </span>
+            {prompt && prompt.length > 0 && (
+              <button
+                type="button"
+                onClick={handleClear}
+                disabled={isLoading}
+                title="Clear text"
+                aria-label="Clear text"
+                className="flex items-center space-x-1 text-[11px] text-[#6B7280] hover:text-[#B91C1C] transition-colors cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" strokeWidth={1.75} />
+                <span>Clear</span>
+              </button>
+            )}
 
-        {/* Primary button: compact, sleek h-9, sharp radius */}
-        <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
+            <span className="hidden lg:inline text-[11px] text-[#9CA3AF]">
+              Ctrl + Enter
+            </span>
+          </div>
 
-          {/* Primary button: compact, sleek h-9, sharp radius */}
+          {/* Right: Authoritative Ink-Black Button */}
           <button
             type="button"
             onClick={() => onEnhance()}
             disabled={isLoading || !prompt.trim()}
-            className={`h-9 px-4 rounded-none font-medium text-xs sm:text-sm transition-colors flex items-center justify-center space-x-2 cursor-pointer flex-1 sm:flex-initial ${
+            className={`h-9 px-4 font-medium text-xs sm:text-sm transition-colors flex items-center justify-center space-x-2 cursor-pointer ${
               isLoading || !prompt.trim()
-                ? 'bg-[#EDE7DD] text-[#8A8178] cursor-not-allowed border border-[#EDE7DD]'
+                ? 'bg-[#EDE7DD] text-[#8A8178] cursor-not-allowed'
                 : 'bg-[#C2410C] hover:bg-[#9A3412] text-white shadow-xs'
             }`}
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin text-current" strokeWidth={1.75} />
-                <span>Improving...</span>
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-current" strokeWidth={2} />
+                <span>Enhancing...</span>
               </>
             ) : (
-              <span>Make it better</span>
+              <>
+                <span>Make it better</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </>
             )}
           </button>
         </div>
       </div>
 
-      {/* Single Privacy line under button */}
-      <p className="text-xs text-[#6B7280] leading-relaxed pt-1">
-        We don&apos;t store your text on our servers. It is processed by an AI provider to create your result.
+      {/* Subtle Privacy Footnote */}
+      <p className="text-xs text-[#9CA3AF] leading-relaxed">
+        Private by design &bull; Processed in real-time over encrypted HTTPS &bull; Never stored
       </p>
     </div>
   );

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TejasAI Settings</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <img src="icons/icon32.png" alt="TejasAI Logo" class="brand-logo" />
+        <div>
+          <div class="brand-title">TejasAI</div>
+          <div class="brand-subtitle">AI Prompt Enhancer</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="version-badge">v1.0.0</span>
+      </div>
+    </header>
+
+    <!-- API Health Status Banner -->
+    <div id="status-bar" class="status-bar status-checking">
+      <span class="status-dot"></span>
+      <span id="status-text">Checking TejasAI API...</span>
+    </div>
+
+    <!-- Main Controls -->
+    <main class="content">
+
+      <!-- Master Switch -->
+      <div class="setting-row primary-switch">
+        <div>
+          <div class="setting-label">Enable TejasAI</div>
+          <div class="setting-desc">Show Enhance button on supported AI tools</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="master-toggle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- Auto-Enhance Switch -->
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Auto-Enhance on Submit</div>
+          <div class="setting-desc">Automatically rewrite prompt when pressing Enter / Send</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="auto-enhance-toggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- Supported Sites Section -->
+      <div class="section-divider"></div>
+      <div class="section-title">Supported AI Platforms</div>
+      
+      <div class="sites-list">
+        
+        <!-- ChatGPT -->
+        <div class="site-row">
+          <div class="site-info">
+            <span class="site-name">ChatGPT</span>
+            <span class="site-domain">chatgpt.com</span>
+          </div>
+          <label class="switch switch-sm">
+            <input type="checkbox" class="site-toggle" data-site="chatgpt" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- Google Gemini -->
+        <div class="site-row">
+          <div class="site-info">
+            <span class="site-name">Google Gemini</span>
+            <span class="site-domain">gemini.google.com</span>
+          </div>
+          <label class="switch switch-sm">
+            <input type="checkbox" class="site-toggle" data-site="gemini" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- Claude -->
+        <div class="site-row">
+          <div class="site-info">
+            <span class="site-name">Claude</span>
+            <span class="site-domain">claude.ai</span>
+          </div>
+          <label class="switch switch-sm">
+            <input type="checkbox" class="site-toggle" data-site="claude" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- Perplexity -->
+        <div class="site-row">
+          <div class="site-info">
+            <span class="site-name">Perplexity</span>
+            <span class="site-domain">perplexity.ai</span>
+          </div>
+          <label class="switch switch-sm">
+            <input type="checkbox" class="site-toggle" data-site="perplexity" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <!-- DeepSeek -->
+        <div class="site-row">
+          <div class="site-info">
+            <span class="site-name">DeepSeek</span>
+            <span class="site-domain">chat.deepseek.com</span>
+          </div>
+          <label class="switch switch-sm">
+            <input type="checkbox" class="site-toggle" data-site="deepseek" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+      </div>
+
+      <!-- Action Button -->
+      <div class="actions">
+        <a href="https://tejasai-eta.vercel.app/" target="_blank" class="btn btn-primary" id="open-web-app">
+          Open TejasAI Web App ↗
+        </a>
+      </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <a href="PRIVACY.md" target="_blank" id="privacy-link" class="footer-link">Privacy Notice</a>
+      <span class="footer-sep">•</span>
+      <span class="footer-text">Zero data retention</span>
+    </footer>
+
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

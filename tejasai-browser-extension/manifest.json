@@ -1,0 +1,77 @@
+{
+  "manifest_version": 3,
+  "name": "TejasAI – AI Prompt Enhancer",
+  "version": "1.0.0",
+  "description": "Instantly enhance and optimize your prompts directly inside ChatGPT, Claude, Gemini, Perplexity, and DeepSeek.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://tejasai-eta.vercel.app/*",
+    "http://localhost:5000/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "TejasAI – AI Prompt Enhancer",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://chatgpt.com/*",
+        "*://*.chatgpt.com/*",
+        "*://gemini.google.com/*",
+        "*://perplexity.ai/*",
+        "*://*.perplexity.ai/*",
+        "*://chat.deepseek.com/*",
+        "*://claude.ai/*",
+        "*://*.claude.ai/*"
+      ],
+      "js": [
+        "adapters/chatgpt.js",
+        "adapters/gemini.js",
+        "adapters/perplexity.js",
+        "adapters/deepseek.js",
+        "adapters/claude.js",
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "icons/*",
+        "content.css"
+      ],
+      "matches": [
+        "*://chatgpt.com/*",
+        "*://*.chatgpt.com/*",
+        "*://gemini.google.com/*",
+        "*://perplexity.ai/*",
+        "*://*.perplexity.ai/*",
+        "*://chat.deepseek.com/*",
+        "*://claude.ai/*",
+        "*://*.claude.ai/*"
+      ]
+    }
+  ]
+}

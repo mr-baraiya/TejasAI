@@ -1,21 +1,27 @@
 import React from 'react';
 import { ArrowUpRight } from 'lucide-react';
 
-const THREE_EXAMPLES = [
+const EXAMPLES = [
   {
-    category: 'Work email',
-    raw: 'Write a sick leave email to my manager for 2 days due to fever.',
-    better: 'Please write a professional, polite sick leave email to my manager for a 2-day absence due to fever. Include clear dates, mention that I will monitor urgent emails, and provide a polite closing.',
+    category: 'Engineering',
+    tag: 'API & Reliability',
+    raw: 'make this api call retry if it fails',
+    better:
+      'Write a clean TypeScript wrapper for this fetch call with exponential backoff. Retry up to 3 times on 429 or 5xx errors, enforce a 10s timeout via AbortSignal, and fail fast on 4xx client errors.',
   },
   {
-    category: 'Study',
-    raw: 'Explain photosynthesis simply for my science class.',
-    better: 'Explain how photosynthesis works using everyday kitchen analogies for a 7th-grade science class. Keep the explanation under 4 short paragraphs and define chlorophyll simply.',
+    category: 'Workplace',
+    tag: 'Team Communication',
+    raw: 'tell my team the launch is delayed to friday',
+    better:
+      'Draft a calm, clear Slack announcement informing the team that the release is moving to Friday. Explain the testing rationale in one sentence, list the two remaining blocker tasks, and invite questions.',
   },
   {
-    category: 'Product sales',
-    raw: 'Write a 3-sentence description for handmade cotton kurtas for my online shop.',
-    better: 'Write a friendly, 3-sentence product description for handcrafted pure cotton kurtas. Highlight breathable comfort, artisan stitching, and everyday versatility with a clear call to shop.',
+    category: 'Learning',
+    tag: 'Technical Concepts',
+    raw: 'explain postgres indexing simply',
+    better:
+      'Explain B-Tree indexing in PostgreSQL to a developer who knows basic SQL. Use a library catalogue analogy, illustrate read vs write performance tradeoffs, and give 3 rules for choosing indexed columns.',
   },
 ];
 
@@ -23,64 +29,66 @@ export function ExamplesGallery({ onSelectExample }) {
   return (
     <section id="examples" className="scroll-mt-24 pt-16 sm:pt-24 border-t border-[#EDE8E1]">
       {/* Section Header */}
-      <div className="space-y-2 mb-8">
-        <h2 className="text-2xl sm:text-3xl font-semibold text-[#111827] tracking-tight">
-          See the difference
+      <div className="space-y-3 mb-10 sm:mb-14 max-w-2xl">
+        <h2 className="font-serif text-2xl sm:text-3xl font-semibold text-[#111827] tracking-tight">
+          Real prompts before and after.
         </h2>
-        <p className="text-sm sm:text-base text-[#6B7280] max-w-[65ch] leading-relaxed">
-          Compare rough everyday requests with structured prompts that get the right answer immediately.
+        <p className="text-sm sm:text-base text-[#6B7280] leading-relaxed">
+          See how small amounts of context and clear boundaries turn vague drafts into production-ready answers.
         </p>
       </div>
 
-      {/* 3 Human-crafted Editorial Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-        {THREE_EXAMPLES.map((item, idx) => (
+      {/* Open Editorial Columns — Zero Cards, Zero Boxes */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+        {EXAMPLES.map((item, idx) => (
           <div
             key={idx}
-            className="rounded-none border border-[#EDE8E1] bg-[#FFFFFF] p-6 shadow-xs flex flex-col justify-between space-y-5"
+            className="space-y-4 flex flex-col justify-between"
           >
-            <div className="space-y-4">
-              {/* Category */}
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#6B7280] block">
-                {item.category}
-              </span>
+              <div className="space-y-4">
+                {/* Category & Tag */}
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-xs font-semibold tracking-wider text-[#C2410C] uppercase">
+                    {item.category}
+                  </span>
+                  <span className="text-xs font-mono text-[#9CA3AF]">
+                    {item.tag}
+                  </span>
+                </div>
 
-              {/* Original Draft */}
-              <div className="space-y-1.5">
-                <span className="text-xs font-medium text-[#6B7280] block">
-                  You write:
-                </span>
-                <p className="text-sm text-[#4B5563] leading-relaxed">
-                  &ldquo;{item.raw}&rdquo;
-                </p>
+                {/* Rough Draft */}
+                <div className="space-y-1">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-[#9CA3AF] block">
+                    Rough draft
+                  </span>
+                  <p className="text-sm text-[#6B7280] italic leading-relaxed">
+                    &ldquo;{item.raw}&rdquo;
+                  </p>
+                </div>
+
+                {/* TejasAI Prompt */}
+                <div className="space-y-1.5 pt-3 border-t border-[#EDE8E1]">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-[#111827] font-semibold block">
+                    TejasAI prompt
+                  </span>
+                  <p className="text-sm text-[#111827] leading-relaxed">
+                    &ldquo;{item.better}&rdquo;
+                  </p>
+                </div>
               </div>
 
-              {/* Clean Hairline Divider */}
-              <div className="border-t border-[#EDE8E1]"></div>
-
-              {/* Improved Version */}
-              <div className="space-y-1.5">
-                <span className="text-xs font-medium text-[#111827] block">
-                  You get:
-                </span>
-                <p className="text-sm text-[#374151] leading-relaxed font-light">
-                  &ldquo;{item.better}&rdquo;
-                </p>
+              {/* Action Link */}
+              <div className="pt-4 border-t border-[#EDE8E1]">
+                <button
+                  type="button"
+                  onClick={() => onSelectExample(item.raw)}
+                  className="text-xs font-medium text-[#C2410C] hover:text-[#9A3412] inline-flex items-center gap-1 transition-colors cursor-pointer group"
+                >
+                  <span>Try this in editor</span>
+                  <ArrowUpRight className="w-3.5 h-3.5 stroke-[2] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                </button>
               </div>
             </div>
-
-            {/* Bottom link: Try this example */}
-            <div className="pt-4 border-t border-[#EDE8E1]">
-              <button
-                type="button"
-                onClick={() => onSelectExample(item.raw)}
-                className="text-xs sm:text-sm font-medium text-[#C2410C] hover:text-[#9A3412] inline-flex items-center space-x-1 cursor-pointer"
-              >
-                <span>Try this example</span>
-                <ArrowUpRight className="w-3.5 h-3.5" strokeWidth={1.75} />
-              </button>
-            </div>
-          </div>
         ))}
       </div>
     </section>

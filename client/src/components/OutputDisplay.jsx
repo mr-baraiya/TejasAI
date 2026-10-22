@@ -56,17 +56,17 @@ export function OutputDisplay({
   if (isLoading && !enhancedPrompt) {
     return (
       <div className="pt-6 space-y-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
-          <div className="rounded-none border border-[#F0EBE3] bg-[#FFFFFF] p-5 sm:p-6 shadow-xs space-y-3">
-            <div className="h-4 w-28 bg-[#F0EBE3] rounded-none animate-pulse"></div>
-            <div className="h-4 w-full bg-[#FAF8F5] rounded-none animate-pulse"></div>
-            <div className="h-4 w-3/4 bg-[#FAF8F5] rounded-none animate-pulse"></div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+          <div className="space-y-3">
+            <div className="h-3 w-24 bg-[#EDE8E1] animate-pulse"></div>
+            <div className="h-4 w-full bg-[#EDE8E1]/60 animate-pulse"></div>
+            <div className="h-4 w-3/4 bg-[#EDE8E1]/60 animate-pulse"></div>
           </div>
-          <div className="rounded-none border border-[#F0EBE3] bg-[#FFFFFF] p-5 sm:p-6 shadow-xs space-y-3">
-            <div className="h-4 w-32 bg-[#F0EBE3] rounded-none animate-pulse"></div>
-            <div className="h-4 w-full bg-[#FAF8F5] rounded-none animate-pulse"></div>
-            <div className="h-4 w-5/6 bg-[#FAF8F5] rounded-none animate-pulse"></div>
-            <div className="h-4 w-2/3 bg-[#FAF8F5] rounded-none animate-pulse"></div>
+          <div className="space-y-3">
+            <div className="h-3 w-28 bg-[#EDE8E1] animate-pulse"></div>
+            <div className="h-4 w-full bg-[#EDE8E1]/60 animate-pulse"></div>
+            <div className="h-4 w-5/6 bg-[#EDE8E1]/60 animate-pulse"></div>
+            <div className="h-4 w-2/3 bg-[#EDE8E1]/60 animate-pulse"></div>
           </div>
         </div>
       </div>
@@ -276,27 +276,33 @@ const AI_TOOLS = [
 
   return (
     <div className="space-y-6 pt-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
         
-        {/* Card 1: What you wrote */}
-        <div className="rounded-none border border-[#F0EBE3] bg-[#FFFFFF] p-5 sm:p-6 shadow-xs flex flex-col justify-start">
-          <div className="pb-3 mb-3 border-b border-[#F2ECE4]">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#6B7280]">
+        {/* Column 1: What you wrote (Open, unboxed) */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-xs font-semibold tracking-wider text-[#C2410C] uppercase">
+              Draft
+            </span>
+            <span className="text-xs font-mono text-[#9CA3AF]">
               What you wrote
-            </h3>
+            </span>
           </div>
-          <p className="text-sm sm:text-base text-[#374151] leading-relaxed whitespace-pre-wrap">
-            {originalPrompt}
+          <p className="text-sm sm:text-base text-[#6B7280] italic leading-relaxed whitespace-pre-wrap">
+            &ldquo;{originalPrompt}&rdquo;
           </p>
         </div>
 
-        {/* Card 2: Better version */}
-        <div className="rounded-none border border-[#F0EBE3] bg-[#FFFFFF] p-5 sm:p-6 shadow-xs flex flex-col justify-between space-y-5">
+        {/* Column 2: Better version (Open, unboxed) */}
+        <div className="space-y-5 flex flex-col justify-between">
           <div className="space-y-3">
-            <div className="pb-3 border-b border-[#F2ECE4] flex items-center justify-between">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#C2410C]">
-                Better version
-              </h3>
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-xs font-semibold tracking-wider text-[#C2410C] uppercase">
+                Enhanced
+              </span>
+              <span className="text-xs font-mono text-[#9CA3AF]">
+                Precision prompt
+              </span>
             </div>
 
             <div className="text-sm sm:text-base text-[#111827] font-normal leading-relaxed whitespace-pre-wrap selection:bg-[#C2410C] selection:text-white">
@@ -305,9 +311,9 @@ const AI_TOOLS = [
           </div>
 
           {/* Action Row */}
-          <div className="pt-3.5 border-t border-[#F2ECE4] space-y-2.5">
+          <div className="pt-3.5 border-t border-[#EDE8E1] space-y-2.5">
             <div className="flex items-center justify-between gap-1 sm:gap-2 flex-nowrap overflow-x-auto scrollbar-none">
-              {/* Primary Actions: sleek h-8 sharp buttons */}
+              {/* Primary Actions: sleek sharp buttons */}
               <div className="flex items-center gap-1 sm:gap-1.5 flex-nowrap">
                 <button
                   type="button"
@@ -335,7 +341,7 @@ const AI_TOOLS = [
                   type="button"
                   onClick={onRetry}
                   disabled={isLoading}
-                  className="h-8 px-1.5 sm:px-2.5 rounded-none text-xs font-medium text-[#4B5563] hover:text-[#111827] hover:bg-[#F3EFEA] flex items-center space-x-1 cursor-pointer transition-colors shrink-0 whitespace-nowrap"
+                  className="h-8 px-1.5 sm:px-2.5 rounded-none text-xs font-medium text-[#4B5563] hover:text-[#111827] hover:bg-[#FAF8F5] flex items-center space-x-1 cursor-pointer transition-colors shrink-0 whitespace-nowrap"
                 >
                   <RotateCcw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} strokeWidth={1.75} />
                   <span>Try<span className="hidden sm:inline"> again</span></span>
@@ -344,7 +350,7 @@ const AI_TOOLS = [
                 <button
                   type="button"
                   onClick={onEdit}
-                  className="h-8 px-1.5 sm:px-2.5 rounded-none text-xs font-medium text-[#4B5563] hover:text-[#111827] hover:bg-[#F3EFEA] flex items-center space-x-1 cursor-pointer transition-colors shrink-0 whitespace-nowrap"
+                  className="h-8 px-1.5 sm:px-2.5 rounded-none text-xs font-medium text-[#4B5563] hover:text-[#111827] hover:bg-[#FAF8F5] flex items-center space-x-1 cursor-pointer transition-colors shrink-0 whitespace-nowrap"
                 >
                   <Edit3 className="w-3.5 h-3.5" strokeWidth={1.75} />
                   <span>Edit</span>
@@ -356,7 +362,7 @@ const AI_TOOLS = [
                 <button
                   type="button"
                   onClick={handleShareClick}
-                  className="h-8 px-1.5 sm:px-2.5 rounded-none text-xs font-medium text-[#4B5563] hover:text-[#111827] hover:bg-[#F3EFEA] flex items-center space-x-1 cursor-pointer transition-colors shrink-0 whitespace-nowrap"
+                  className="h-8 px-1.5 sm:px-2.5 rounded-none text-xs font-medium text-[#4B5563] hover:text-[#111827] hover:bg-[#FAF8F5] flex items-center space-x-1 cursor-pointer transition-colors shrink-0 whitespace-nowrap"
                   aria-label="Share enhanced prompt"
                   aria-expanded={showShareMenu}
                 >
@@ -365,7 +371,7 @@ const AI_TOOLS = [
                 </button>
 
                   {showShareMenu && (
-                    <div className="absolute right-0 top-full mt-1.5 w-56 bg-[#FFFFFF] border border-[#F0EBE3] rounded-none shadow-lg py-1.5 z-30">
+                    <div className="absolute right-0 top-full mt-1.5 w-56 bg-[#FFFFFF] border border-[#EDE8E1] rounded-none shadow-lg py-1.5 z-30">
                       <button
                         type="button"
                         onClick={handleShareCopy}
@@ -433,7 +439,7 @@ const AI_TOOLS = [
               </div>
 
             {/* AI Tools Launch Bar: ChatGPT, Gemini, Perplexity, DeepSeek, Claude */}
-            <div className="pt-2.5 border-t border-[#F2ECE4] flex items-center gap-1 text-xs">
+            <div className="pt-2.5 border-t border-[#EDE8E1] flex items-center gap-1 text-xs">
               <span className="text-xs font-medium text-[#6B7280] mr-1 shrink-0">
                 Open in:
               </span>
@@ -448,7 +454,7 @@ const AI_TOOLS = [
                     onClick={() => handleOpenAi(tool)}
                     title={tool.title}
                     aria-label={tool.title}
-                    className={`w-7.5 h-7.5 rounded-none text-[#4B5563] hover:bg-[#F3EFEA] flex items-center justify-center transition-colors cursor-pointer shrink-0 ${tool.brandHover}`}
+                    className={`w-7.5 h-7.5 rounded-none text-[#4B5563] hover:bg-[#FAF8F5] flex items-center justify-center transition-colors cursor-pointer shrink-0 ${tool.brandHover}`}
                   >
                     <IconComponent className="w-4 h-4" />
                   </a>
@@ -457,13 +463,13 @@ const AI_TOOLS = [
             </div>
 
             {/* Quick Tweaks */}
-            <div className="pt-2 border-t border-[#F2ECE4] flex items-center gap-1 sm:gap-1.5 flex-nowrap overflow-x-auto scrollbar-none text-xs">
+            <div className="pt-2 border-t border-[#EDE8E1] flex items-center gap-1 sm:gap-1.5 flex-nowrap overflow-x-auto scrollbar-none text-xs">
               <span className="text-xs text-[#6B7280] mr-0.5 shrink-0">Tweak:</span>
               <button
                 type="button"
                 onClick={() => onTweak('shorter')}
                 disabled={isLoading}
-                className="h-7 px-1.5 sm:px-2 rounded-none hover:bg-[#F3EFEA] text-xs font-medium text-[#4B5563] hover:text-[#111827] flex items-center space-x-1 cursor-pointer transition-colors shrink-0 whitespace-nowrap"
+                className="h-7 px-1.5 sm:px-2 rounded-none hover:bg-[#FAF8F5] text-xs font-medium text-[#4B5563] hover:text-[#111827] flex items-center space-x-1 cursor-pointer transition-colors shrink-0 whitespace-nowrap"
               >
                 <Scissors className="w-3 h-3 text-[#6B7280]" strokeWidth={1.75} />
                 <span>Shorter</span>
@@ -472,7 +478,7 @@ const AI_TOOLS = [
                 type="button"
                 onClick={() => onTweak('simpler')}
                 disabled={isLoading}
-                className="h-7 px-1.5 sm:px-2 rounded-none hover:bg-[#F3EFEA] text-xs font-medium text-[#4B5563] hover:text-[#111827] flex items-center space-x-1 cursor-pointer transition-colors shrink-0 whitespace-nowrap"
+                className="h-7 px-1.5 sm:px-2 rounded-none hover:bg-[#FAF8F5] text-xs font-medium text-[#4B5563] hover:text-[#111827] flex items-center space-x-1 cursor-pointer transition-colors shrink-0 whitespace-nowrap"
               >
                 <Smile className="w-3 h-3 text-[#6B7280]" strokeWidth={1.75} />
                 <span>Simpler</span>
@@ -481,7 +487,7 @@ const AI_TOOLS = [
                 type="button"
                 onClick={() => onTweak('moreDetail')}
                 disabled={isLoading}
-                className="h-7 px-1.5 sm:px-2 rounded-none hover:bg-[#F3EFEA] text-xs font-medium text-[#4B5563] hover:text-[#111827] flex items-center space-x-1 cursor-pointer transition-colors shrink-0 whitespace-nowrap"
+                className="h-7 px-1.5 sm:px-2 rounded-none hover:bg-[#FAF8F5] text-xs font-medium text-[#4B5563] hover:text-[#111827] flex items-center space-x-1 cursor-pointer transition-colors shrink-0 whitespace-nowrap"
               >
                 <PlusCircle className="w-3 h-3 text-[#6B7280]" strokeWidth={1.75} />
                 <span><span className="hidden sm:inline">More </span>Detail</span>
@@ -491,27 +497,29 @@ const AI_TOOLS = [
         </div>
       </div>
 
-      {/* Accordion: Why is this better? */}
+      {/* Accordion: Why this version works better — Open, unboxed */}
       {whyBetter && whyBetter.length > 0 && (
-        <div className="rounded-none border border-[#F0EBE3] bg-[#FFFFFF] p-4 sm:p-5 shadow-xs">
+        <div className="border-t border-[#EDE8E1] pt-6 mt-8">
           <button
             type="button"
             onClick={() => setShowWhyBetter((prev) => !prev)}
-            className="w-full flex items-center justify-between text-left text-sm font-semibold text-[#111827] cursor-pointer"
+            className="w-full flex items-center justify-between text-left group cursor-pointer"
           >
-            <span>Why this version works better</span>
+            <span className="font-serif text-base sm:text-lg font-semibold text-[#111827] group-hover:text-[#C2410C] transition-colors">
+              Why this version works better
+            </span>
             {showWhyBetter ? (
-              <ChevronUp className="w-4 h-4 text-[#6B7280]" strokeWidth={1.75} />
+              <ChevronUp className="w-4 h-4 text-[#6B7280] group-hover:text-[#C2410C] transition-colors" strokeWidth={1.75} />
             ) : (
-              <ChevronDown className="w-4 h-4 text-[#6B7280]" strokeWidth={1.75} />
+              <ChevronDown className="w-4 h-4 text-[#6B7280] group-hover:text-[#C2410C] transition-colors" strokeWidth={1.75} />
             )}
           </button>
 
           {showWhyBetter && (
-            <ul className="mt-3 space-y-2 text-sm text-[#374151] border-t border-[#F2ECE4] pt-3">
+            <ul className="mt-4 space-y-2.5 text-sm sm:text-base text-[#4B5563]">
               {whyBetter.map((bullet, idx) => (
-                <li key={idx} className="flex items-start space-x-2">
-                  <span className="text-[#C2410C] font-semibold">•</span>
+                <li key={idx} className="flex items-start space-x-2.5">
+                  <span className="text-[#C2410C] font-semibold select-none">&bull;</span>
                   <span className="leading-relaxed">{bullet}</span>
                 </li>
               ))}

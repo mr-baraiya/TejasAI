@@ -37,10 +37,19 @@
   font-family: var(--font-sans);
 }
 
-/* Accessible 2px focus ring in primary #C2410C with offset */
-:focus-visible {
-  outline: 2px solid #C2410C !important;
-  outline-offset: 2px !important;
+/* Accessible focus ring for buttons and links; inputs handle focus via container */
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid #C2410C;
+  outline-offset: 2px;
+}
+
+textarea:focus,
+textarea:focus-visible,
+input:focus,
+input:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 /* Clean micro transitions: 150ms to 200ms */

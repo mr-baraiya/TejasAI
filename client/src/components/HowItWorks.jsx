@@ -1,56 +1,73 @@
 import React from 'react';
 
-/**
- * Single, clean How It Works section.
- * 3 numbered steps with plain numbers, neutral borders, and short descriptions.
- */
 export function HowItWorks() {
-  const steps = [
-    {
-      step: '01',
-      title: 'Type in your own words',
-      desc: "Write what you need help with. You don't need prompt engineering, special keywords, or technical instructions.",
-    },
-    {
-      step: '02',
-      title: 'We rewrite for clarity',
-      desc: 'TejasAI identifies your goal, audience, and preferred format, structuring the request so the AI understands it on the first attempt.',
-    },
-    {
-      step: '03',
-      title: 'Paste into any AI',
-      desc: 'Copy your enhanced prompt and paste it into ChatGPT, Gemini, or Claude to get direct, high-quality answers immediately.',
-    },
-  ];
-
   return (
     <section id="how-it-works" className="scroll-mt-24 pt-16 sm:pt-24 border-t border-[#EDE8E1]">
-      <div className="space-y-2 mb-8">
-        <h2 className="text-2xl sm:text-3xl font-semibold text-[#111827] tracking-tight">
-          How it works
+      {/* Section Header */}
+      <div className="space-y-3 mb-10 sm:mb-14 max-w-2xl">
+        <h2 className="font-serif text-2xl sm:text-3xl font-semibold text-[#111827] tracking-tight">
+          How drafts become precision prompts.
         </h2>
-        <p className="text-sm sm:text-base text-[#6B7280] max-w-[65ch] leading-relaxed">
-          Three simple steps to better AI results.
+        <p className="text-sm sm:text-base text-[#6B7280] leading-relaxed">
+          AI models don&apos;t need complex prompt-engineering tricks. They just need clear context, realistic constraints, and an explicit target format.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {steps.map((item) => (
-          <div
-            key={item.step}
-            className="rounded-none border border-[#EDE8E1] bg-[#FFFFFF] p-6 shadow-xs space-y-3"
-          >
-            <span className="text-xs font-semibold text-[#6B7280] block">
-              Step {item.step}
+      {/* Open Editorial Columns — Zero Cards, Zero Boxes, Zero Top Lines */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+        {/* Phase 01 */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-xs font-semibold tracking-wider text-[#C2410C] uppercase">
+              Phase 01
             </span>
-            <h3 className="text-base sm:text-lg font-semibold text-[#111827]">
-              {item.title}
-            </h3>
-            <p className="text-sm text-[#374151] leading-relaxed">
-              {item.desc}
-            </p>
+            <span className="text-xs font-mono text-[#9CA3AF]">
+              Rough thought
+            </span>
           </div>
-        ))}
+          <h3 className="font-serif text-lg font-semibold text-[#111827]">
+            Say it in your own words
+          </h3>
+          <p className="text-sm text-[#4B5563] leading-relaxed">
+            Write your request naturally, exactly as you would describe it to a teammate. No prompt formulas, technical jargon, or &ldquo;act as a world-class expert&rdquo; clichés needed.
+          </p>
+        </div>
+
+        {/* Phase 02 */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-xs font-semibold tracking-wider text-[#C2410C] uppercase">
+              Phase 02
+            </span>
+            <span className="text-xs font-mono text-[#9CA3AF]">
+              The engine
+            </span>
+          </div>
+          <h3 className="font-serif text-lg font-semibold text-[#111827]">
+            Framing &amp; constraints
+          </h3>
+          <p className="text-sm text-[#4B5563] leading-relaxed">
+            TejasAI establishes the persona, introduces domain-specific context, and sets strict negative constraints so the AI skips introductory pleasantries and avoids hallucinations.
+          </p>
+        </div>
+
+        {/* Phase 03 */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-xs font-semibold tracking-wider text-[#C2410C] uppercase">
+              Phase 03
+            </span>
+            <span className="text-xs font-mono text-[#9CA3AF]">
+              Any model
+            </span>
+          </div>
+          <h3 className="font-serif text-lg font-semibold text-[#111827]">
+            Universal, one-shot results
+          </h3>
+          <p className="text-sm text-[#4B5563] leading-relaxed">
+            Copy the structured prompt into ChatGPT, Claude, Gemini, or DeepSeek. You get an in-depth, production-ready answer on the first attempt without endless follow-ups.
+          </p>
+        </div>
       </div>
     </section>
   );

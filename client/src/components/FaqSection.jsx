@@ -1,30 +1,30 @@
 import React, { useState } from 'react';
-import { Plus, Minus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 const FAQS = [
   {
-    q: 'Is it free?',
-    a: 'Yes. TejasAI is completely free to use. There are no paid tiers, subscriptions, or credit card requirements.',
+    q: 'Is TejasAI free to use?',
+    a: 'Yes. TejasAI is completely free. There are no subscriptions, credit cards, or account sign-ups required.',
   },
   {
-    q: 'Which AI model powers TejasAI?',
-    a: 'TejasAI is powered by the high-performance qwen/qwen3.8-27b model hosted on Groq ultra-low latency LPUs to optimize and rewrite prompts in real time.',
+    q: 'Which AI model powers the enhancer?',
+    a: 'TejasAI runs on ultra-low latency Groq LPUs using open-weights models specifically calibrated to identify intent, set negative constraints, and output clean structure in under 300 milliseconds.',
   },
   {
-    q: 'Where does my text go?',
-    a: 'Your text is sent securely over HTTPS to our AI provider (Groq) using the qwen/qwen3.8-27b model to generate the enhanced prompt. We do not store, log, or sell your text on our servers.',
+    q: 'Is my text private and secure?',
+    a: 'Yes. Your draft is sent over encrypted HTTPS solely to generate the rewritten prompt. We do not store, log, or train on your inputs, and nothing is ever sold to third parties.',
   },
   {
-    q: 'Which AI should I paste the result into?',
-    a: 'You can paste the result into ChatGPT, Google Gemini, Claude, Microsoft Copilot, or any other LLM. The prompt is written to work reliably across all major AI tools.',
+    q: 'Which AI tools can I paste the result into?',
+    a: 'Any modern model. The generated prompts are universal and tested to produce reliable, high-depth responses in ChatGPT, Claude, Google Gemini, Perplexity, and DeepSeek.',
   },
   {
-    q: 'Can I use it for school or work?',
-    a: 'Yes. Many people use it to draft emails, summarize study notes, write product listings, and structure work requests.',
+    q: 'Do I need to know any prompt engineering?',
+    a: 'Not at all. The entire purpose of TejasAI is to let you write informal, everyday sentences while the engine handles persona framing, technical boundaries, and output formatting.',
   },
   {
-    q: 'Does it work in other languages?',
-    a: 'Currently, TejasAI is optimized specifically for clear, natural English.',
+    q: 'Does it support languages other than English?',
+    a: 'Currently, TejasAI is focused specifically on natural, idiomatic English to ensure the highest output quality across all AI models.',
   },
 ];
 
@@ -37,7 +37,7 @@ export function FaqSection() {
 
   return (
     <section id="faq" className="scroll-mt-24 pt-16 sm:pt-24 border-t border-[#EDE8E1]">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
         
         {/* Left Column: Heading, Subtext, and Contact */}
         <div className="lg:col-span-4 space-y-4">
@@ -45,7 +45,7 @@ export function FaqSection() {
             Frequently asked questions
           </h2>
           <p className="text-sm sm:text-base text-[#6B7280] leading-relaxed">
-            Short, honest answers about privacy, supported models, and how TejasAI works.
+            Straightforward details on privacy, latency, supported AI models, and how the tool operates.
           </p>
           <div className="pt-2 text-xs sm:text-sm text-[#6B7280]">
             Have a different question?{' '}
@@ -58,40 +58,39 @@ export function FaqSection() {
           </div>
         </div>
 
-        {/* Right Column: Unified Q&A Card with Hairline Dividers */}
-        <div className="lg:col-span-8">
-          <div className="rounded-none border border-[#EDE8E1] bg-[#FFFFFF] divide-y divide-[#EDE8E1] shadow-xs overflow-hidden">
-            {FAQS.map((faq, idx) => {
-              const isOpen = openIdx === idx;
-              return (
-                <div key={idx} className="transition-colors">
-                  <button
-                    type="button"
-                    onClick={() => toggleFaq(idx)}
-                    className="w-full p-4 sm:p-5 flex items-center justify-between text-left cursor-pointer hover:bg-[#FAF8F5] transition-colors"
-                    aria-expanded={isOpen}
-                  >
-                    <span className="text-sm sm:text-base font-medium text-[#111827] pr-4">
-                      {faq.q}
-                    </span>
-                    <span className="shrink-0 text-[#6B7280] flex items-center justify-center">
-                      {isOpen ? (
-                        <Minus className="w-4 h-4" strokeWidth={1.75} />
-                      ) : (
-                        <Plus className="w-4 h-4" strokeWidth={1.75} />
-                      )}
-                    </span>
-                  </button>
+        {/* Right Column: Open Minimalist Accordion (Zero Boxes, Zero Cards) */}
+        <div className="lg:col-span-8 border-t border-[#EDE8E1]">
+          {FAQS.map((faq, idx) => {
+            const isOpen = openIdx === idx;
+            return (
+              <div key={idx} className="border-b border-[#EDE8E1]">
+                <button
+                  type="button"
+                  onClick={() => toggleFaq(idx)}
+                  className="w-full py-5 flex items-center justify-between text-left cursor-pointer group transition-colors"
+                  aria-expanded={isOpen}
+                >
+                  <span className="text-base sm:text-lg font-medium text-[#111827] group-hover:text-[#C2410C] transition-colors pr-6">
+                    {faq.q}
+                  </span>
+                  <span className="shrink-0 text-[#9CA3AF] group-hover:text-[#C2410C] transition-colors">
+                    <Plus
+                      className={`w-5 h-5 transition-transform duration-200 ${
+                        isOpen ? 'rotate-45 text-[#C2410C]' : ''
+                      }`}
+                      strokeWidth={1.5}
+                    />
+                  </span>
+                </button>
 
-                  {isOpen && (
-                    <div className="px-4 pb-4 sm:px-5 sm:pb-5 text-sm text-[#4B5563] leading-relaxed border-t border-[#EDE8E1] bg-[#FAF8F5]/50 pt-3">
-                      {faq.a}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                {isOpen && (
+                  <div className="pb-6 pr-6 text-sm sm:text-base text-[#4B5563] leading-relaxed">
+                    {faq.a}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
       </div>

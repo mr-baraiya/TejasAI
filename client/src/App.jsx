@@ -174,7 +174,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#FFFBF5] text-[#374151] flex flex-col justify-between selection:bg-[#C2410C] selection:text-white">
-      
+
       {/* Skip to main content link for accessibility */}
       <a
         href="#main-content"
@@ -206,19 +206,24 @@ export default function App() {
       {/* Main Container */}
       <main id="main-content" className="w-full flex-1">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16 space-y-16 lg:space-y-24">
-          
+
           {/* Hero Section: Two columns on desktop (1024px+), above the fold */}
           <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start pt-2 sm:pt-6">
-            
+
             {/* Left column: Headline & Subtext */}
             <div className="lg:col-span-5 space-y-4 pt-1 lg:pt-4">
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 text-xs font-semibold tracking-wide uppercase bg-[#FAF8F5] border border-[#EDE8E1] text-[#C2410C]">
+                <span>Free AI Prompt Enhancer &amp; Improver</span>
+              </div>
               <h1 className="font-serif text-3xl sm:text-4xl lg:text-[46px] font-semibold text-[#111827] leading-[1.14] tracking-[-0.01em]">
-                Say it simply. Ask AI better.
+                Say it simply. <br className="hidden sm:inline" />
+                <span className="text-[#C2410C]">Ask AI better.</span>
               </h1>
-              
+
               <p className="text-base sm:text-lg text-[#374151] max-w-[65ch] leading-relaxed">
-                Type what you need in your own words. We rewrite it so ChatGPT, Gemini or Claude gives you a more useful answer.
+                Type what you need in your own words. <strong>TejasAI</strong> is the free <strong>prompt enhancer</strong> and <strong>prompt improver</strong> that transforms basic thoughts into high-precision, production-ready prompts for ChatGPT, Gemini, and Claude.
               </p>
+
 
               <p className="text-sm sm:text-base text-[#6B7280] max-w-[65ch] leading-relaxed">
                 AI models give vague answers when given vague prompts. TejasAI quietly adds the right context, tone, and format so you get the exact result you wanted on the first try.
@@ -227,7 +232,7 @@ export default function App() {
 
             {/* Right column: The Input Card */}
             <div id="prompt-tool" className="lg:col-span-7 space-y-3 scroll-mt-24">
-              
+
               {/* Error Message with Retry */}
               {error && (
                 <div className="mb-4">

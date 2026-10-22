@@ -1,0 +1,18 @@
+# robots.txt for TejasAI - AI Prompt Enhancer & Improver
+# https://tejasai-eta.vercel.app/
+
+User-agent: *
+Allow: /
+Disallow: /api/
+
+# Priority Search Engines
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://tejasai-eta.vercel.app/sitemap.xml

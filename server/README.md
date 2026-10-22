@@ -1,6 +1,10 @@
 # TejasAI Server
 
+> **Live Production API:** [`POST https://tejasai-eta.vercel.app/api/enhance`](https://tejasai-eta.vercel.app/api/enhance)  
+> **Live Health Check:** [`GET https://tejasai-eta.vercel.app/api/health`](https://tejasai-eta.vercel.app/api/health)
+
 Backend API gateway and inference controller for the TejasAI prompt enhancement platform. Built with Node.js and Express, the server securely mediates client requests to the Groq LPU inference engine without exposing API keys to the browser.
+
 
 ## Table of Contents
 

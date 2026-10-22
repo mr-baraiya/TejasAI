@@ -1,6 +1,11 @@
 # TejasAI - AI Prompt Enhancer
 
+> **Live Application:** [https://tejasai-eta.vercel.app/](https://tejasai-eta.vercel.app/)  
+> **Production API Endpoint:** [`POST https://tejasai-eta.vercel.app/api/enhance`](https://tejasai-eta.vercel.app/api/enhance)  
+> **Health Check Endpoint:** [`GET https://tejasai-eta.vercel.app/api/health`](https://tejasai-eta.vercel.app/api/health)
+
 TejasAI is a full-stack, single-page application that transforms brief, unstructured, or ambiguous prompts into high-precision, production-grade instructions. Leveraging Groq ultra-low latency LPU inference, TejasAI helps creators, engineers, researchers, and students obtain significantly higher-quality outputs from large language models.
+
 
 ## Table of Contents
 
@@ -287,9 +292,15 @@ Open `http://localhost:5173` in your browser.
 
 ## API Reference
 
+- **Production Base URL:** `https://tejasai-eta.vercel.app/api`
+- **Local Dev Base URL:** `http://localhost:5000/api`
+
 ### GET /api/health
 
+`GET https://tejasai-eta.vercel.app/api/health`
+
 Returns backend connectivity status, Groq key configuration state, and the active model identifier.
+
 
 #### Response Example (200 OK)
 
@@ -307,7 +318,10 @@ Returns backend connectivity status, Groq key configuration state, and the activ
 
 ### POST /api/enhance
 
+`POST https://tejasai-eta.vercel.app/api/enhance`
+
 Accepts an input prompt along with optional target platform and iterative refinement options.
+
 
 #### Request Headers
 
@@ -367,12 +381,16 @@ Accepts an input prompt along with optional target platform and iterative refine
 ### 1. Test Backend Health
 
 ```bash
-# Using curl:
+# Test Live Vercel Production Deployment:
+curl -s https://tejasai-eta.vercel.app/api/health
+
+# Test Local Dev Server:
 curl -s http://localhost:5000/api/health
 
-# Using PowerShell:
-Invoke-RestMethod -Uri http://localhost:5000/api/health -Method GET
+# Using PowerShell (Live):
+Invoke-RestMethod -Uri https://tejasai-eta.vercel.app/api/health -Method GET
 ```
+
 
 ### 2. Automated Test Suite
 
@@ -396,7 +414,7 @@ npm run lint
 
 ### Single-Project Vercel Deployment (Recommended)
 
-TejasAI is pre-configured to deploy frontend (Vite React) and backend (Express API as a serverless function) together as a **single project on Vercel**!
+TejasAI is live in production at **[https://tejasai-eta.vercel.app/](https://tejasai-eta.vercel.app/)** and pre-configured to deploy frontend (Vite React) and backend (Express API as a serverless function) together as a **single project on Vercel**!
 
 #### Prerequisites:
 - A GitHub repository containing this project
@@ -424,7 +442,11 @@ TejasAI is pre-configured to deploy frontend (Vite React) and backend (Express A
    - (Optional) `GROQ_MODEL`: `qwen/qwen3.8-27b`
    - (Optional) `NODE_ENV`: `production`
 5. **Click Deploy**:
-   Vercel will install dependencies, build the React frontend, and deploy the Express API function. Once finished, your full-stack app will be live at `https://<your-project>.vercel.app`!
+   Vercel will install dependencies, build the React frontend, and deploy the Express API function. Once finished, your full-stack app will be live at:
+   - **Web App:** [https://tejasai-eta.vercel.app/](https://tejasai-eta.vercel.app/)
+   - **API Endpoint:** [https://tejasai-eta.vercel.app/api/enhance](https://tejasai-eta.vercel.app/api/enhance)
+   - **Health Check:** [https://tejasai-eta.vercel.app/api/health](https://tejasai-eta.vercel.app/api/health)
+
 
 #### Option B: Deploy via Vercel CLI
 

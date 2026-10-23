@@ -1,7 +1,8 @@
 /**
  * TejasAI Site Adapter - Google Gemini (gemini.google.com)
  *
- * Supports Gemini's Quill/Angular rich-textarea contenteditable editor.
+ * Supports Gemini's Quill/Angular rich-textarea editor across all languages.
+ * Positions the TejasAI button between the microphone and the upper arrow (send) button.
  */
 
 window.TejasAIAdapters = window.TejasAIAdapters || {};
@@ -19,13 +20,19 @@ window.TejasAIAdapters['gemini'] = {
     const selectors = [
       'div.ql-editor[contenteditable="true"]',
       'rich-textarea div[contenteditable="true"]',
-      'div[contenteditable="true"][aria-label*="Enter a prompt"]',
+      'div[contenteditable="true"][aria-label*="Enter a prompt" i]',
+      'div[contenteditable="true"][aria-label*="prompt" i]',
       'div[contenteditable="true"][role="textbox"]',
+      'div[contenteditable="true"]',
     ];
 
     for (const sel of selectors) {
-      const el = document.querySelector(sel);
-      if (el && el.offsetParent !== null) return el;
+      try {
+        const el = document.querySelector(sel);
+        if (el && (el.offsetParent !== null || el.getBoundingClientRect().width > 0)) {
+          return el;
+        }
+      } catch {}
     }
     return null;
   },
@@ -52,11 +59,9 @@ window.TejasAIAdapters['gemini'] = {
         el.dispatchEvent(new Event('input', { bubbles: true }));
         return true;
       }
-    } catch {
-      // Fallback
-    }
+    } catch {}
 
-    // Quill / Paragraph structure
+    // Quill / Paragraph structure fallback
     el.innerHTML = '';
     const lines = text.split('\n');
     lines.forEach((line) => {
@@ -76,26 +81,37 @@ window.TejasAIAdapters['gemini'] = {
   },
 
   findAttachContainer(inputEl) {
-    if (!inputEl) return null;
+    const root = inputEl ? inputEl.closest('div.input-area, div[class*="input-area"], .chat-window, main, form') || document.body : document.body;
 
-    // 1. If send button exists, attach beside it
-    const sendBtn = this.findSubmitButton();
+    const micBtn = root.querySelector('button[aria-label*="mic" i], button[aria-label*="માઇક્રોફોન" i], button:has(mat-icon[data-mat-icon-name*="mic" i])');
+    const sendBtn = this.findSubmitButton(inputEl);
+
+    // If both mic and send button share a common parent toolbar, return that container
+    if (sendBtn && micBtn) {
+      let current = sendBtn.parentElement;
+      while (current && current !== document.body && current !== root) {
+        if (current.contains(micBtn)) {
+          return current;
+        }
+        current = current.parentElement;
+      }
+    }
+
     if (sendBtn && sendBtn.parentElement) {
       return sendBtn.parentElement;
     }
 
-    const root = inputEl.closest('div.input-area, div[class*="input-area"], .chat-window, main, form') || document.body;
+    if (micBtn && micBtn.parentElement) {
+      return micBtn.parentElement;
+    }
 
-    // 2. Look for bottom action toolbar / footer in Gemini
     const toolbarSelectors = [
       '.input-area-footer',
-      'div[class*="bottom-bar"]',
       'div[class*="trailing-actions"]',
+      'div[class*="bottom-bar"]',
+      'div[class*="right-actions"]',
       'div[class*="bottom-row"]',
       'div[class*="actions-container"]',
-      'div[class*="buttons-container"]',
-      'div.action-buttons',
-      'div[class*="leading-actions"]',
     ];
 
     for (const sel of toolbarSelectors) {
@@ -103,39 +119,58 @@ window.TejasAIAdapters['gemini'] = {
       if (el && el.offsetParent !== null) return el;
     }
 
-    // 3. Find parent of the microphone or Flash / tool buttons
-    const micOrToolBtn = root.querySelector('button[aria-label*="mic" i], button[aria-label*="Microphone" i], button[aria-label*="Add files" i], button[aria-label*="Tools" i], button:has(mat-icon)');
-    if (micOrToolBtn && micOrToolBtn.parentElement) {
-      return micOrToolBtn.parentElement;
-    }
-
-    // 4. Safe fallback: find sibling toolbar of rich-textarea, not inside text line
-    const host = inputEl.closest('rich-textarea') || inputEl.parentElement;
-    const parentContainer = host?.parentElement;
-    if (parentContainer) {
-      const bottomToolbar = Array.from(parentContainer.children).find(
-        (child) => child !== host && !child.contains(inputEl) && child.querySelector('button, [role="button"]')
-      );
-      if (bottomToolbar) return bottomToolbar;
-    }
-
-    return host?.parentElement || inputEl.parentElement;
+    return inputEl?.parentElement || document.body;
   },
 
-  findSubmitButton() {
+  findSubmitButton(inputEl) {
+    const root = inputEl ? inputEl.closest('div.input-area, div[class*="input-area"], .chat-window, main, form') || document.body : document.body;
+
+    // 1. Language-independent: find microphone button first, then get the button immediately following it!
+    const micBtn = root.querySelector('button[aria-label*="mic" i], button[aria-label*="માઇક્રોફોન" i], button:has(mat-icon[data-mat-icon-name*="mic" i])');
+    if (micBtn && micBtn.parentElement) {
+      const parent = micBtn.closest('div[class*="trailing"], div[class*="actions"], div.input-area-footer') || micBtn.parentElement;
+      const buttons = Array.from(parent.querySelectorAll('button:not(.tejasai-enhance-button)'));
+      const micIndex = buttons.indexOf(micBtn);
+      if (micIndex !== -1 && buttons.length > micIndex + 1) {
+        // Return the upper arrow / send button immediately following the microphone!
+        return buttons[micIndex + 1];
+      }
+    }
+
+    // 2. Class and attribute selectors across languages
     const selectors = [
+      'button.send-button',
+      'button[data-test-id*="send" i]',
+      'button:has(mat-icon[data-mat-icon-name*="send" i])',
+      'button:has(svg path[d*="M2.01 21L23 12"])',
+      'button:has(svg path[d*="2.01 21"])',
       'button[aria-label*="Send message" i]',
       'button[aria-label*="Send prompt" i]',
       'button[aria-label*="Submit" i]',
-      'button.send-button',
-      'div[role="button"][aria-label*="Send" i]',
-      'button:has(mat-icon[data-mat-icon-name="send"])',
+      'button[aria-label*="સંદેશ" i]',
+      'button[aria-label*="મોકલો" i]',
     ];
 
     for (const sel of selectors) {
-      const btn = document.querySelector(sel);
-      if (btn && btn.offsetParent !== null) return btn;
+      try {
+        const btn = root.querySelector(sel);
+        if (btn && !btn.classList.contains('tejasai-enhance-button')) {
+          const rect = btn.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) return btn;
+          if (btn.offsetParent !== null) return btn;
+        }
+      } catch {}
     }
+
+    // 3. Fallback: last button in trailing actions
+    const trailing = root.querySelector('div.trailing-actions, div[class*="trailing-actions"], div[class*="bottom-bar"]');
+    if (trailing) {
+      const buttons = Array.from(trailing.querySelectorAll('button:not(.tejasai-enhance-button)'));
+      if (buttons.length > 0) {
+        return buttons[buttons.length - 1];
+      }
+    }
+
     return null;
   },
 

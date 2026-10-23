@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Menu, X } from 'lucide-react';
-import { ExtensionModal } from './ExtensionModal';
 
 /**
  * Clean, human Header matching TejasAI's editorial aesthetic.
@@ -8,7 +7,6 @@ import { ExtensionModal } from './ExtensionModal';
  */
 export function Header({ onNewPrompt, hasActivePrompt = false }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isExtensionOpen, setIsExtensionOpen] = useState(false);
 
   const handleLogoClick = (e) => {
     e.preventDefault();
@@ -22,6 +20,7 @@ export function Header({ onNewPrompt, hasActivePrompt = false }) {
   const navLinks = [
     { label: 'Examples', href: '#examples' },
     { label: 'How it works', href: '#how-it-works' },
+    { label: 'Extension', href: '#extension' },
     { label: 'FAQ', href: '#faq' },
   ];
 
@@ -69,15 +68,6 @@ export function Header({ onNewPrompt, hasActivePrompt = false }) {
                   {link.label}
                 </a>
               ))}
-
-              {/* Natural Extension Link (Blends seamlessly with navLinks) */}
-              <button
-                type="button"
-                onClick={() => setIsExtensionOpen(true)}
-                className="text-sm font-medium text-[#6B7280] hover:text-[#111827] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2410C] rounded-none py-1 transition-colors cursor-pointer"
-              >
-                Extension
-              </button>
             </nav>
 
             {/* Mobile menu button (borderless, no box) */}
@@ -134,25 +124,8 @@ export function Header({ onNewPrompt, hasActivePrompt = false }) {
               {link.label}
             </a>
           ))}
-
-          <button
-            type="button"
-            onClick={() => {
-              setMobileMenuOpen(false);
-              setIsExtensionOpen(true);
-            }}
-            className="w-full text-left block text-sm font-medium text-[#374151] hover:text-[#C2410C] py-1 transition-colors cursor-pointer"
-          >
-            Extension
-          </button>
         </nav>
       </aside>
-
-      {/* Extension Modal */}
-      <ExtensionModal
-        isOpen={isExtensionOpen}
-        onClose={() => setIsExtensionOpen(false)}
-      />
     </>
   );
 }

@@ -58,22 +58,29 @@
   transform: none !important;
 }
 
-/* TejasAI logo inside injected button */
+/* TejasAI official logo inside injected button across all AI tools */
 .tejasai-btn-logo {
   width: 20px !important;
   height: 20px !important;
-  border-radius: 50% !important;
+  border-radius: 5px !important;
   object-fit: cover !important;
   flex-shrink: 0 !important;
   display: block !important;
-  transition: transform 0.18s ease !important;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-.tejasai-sparkle-icon {
+.tejasai-enhance-button:hover:not(:disabled) .tejasai-btn-logo {
+  transform: scale(1.08) !important;
+}
+
+.tejasai-preview-logo {
   width: 18px !important;
   height: 18px !important;
-  fill: currentColor !important;
+  border-radius: 4px !important;
+  object-fit: cover !important;
   flex-shrink: 0 !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
 }
 
 /* Light mode host adaptation (only when host page is truly light) */
@@ -317,6 +324,90 @@ html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-enhance-btn-cl
   height: 16px !important;
   border: 2px solid rgba(255, 255, 255, 0.2) !important;
   border-top-color: #1D9BF0 !important;
+  border-radius: 50% !important;
+}
+
+/* Perplexity AI (perplexity.ai) Native Styling */
+.tejasai-enhance-button.tejasai-enhance-btn-perplexity {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  max-width: 32px !important;
+  max-height: 32px !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  border: none !important;
+  color: #9CA3AF !important;
+  padding: 0 !important;
+  margin: 0 4px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  box-shadow: none !important;
+  outline: none !important;
+  transform: none !important;
+  flex-shrink: 0 !important;
+}
+
+.tejasai-enhance-button.tejasai-enhance-btn-perplexity:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  transform: scale(1.06) !important;
+}
+
+.tejasai-enhance-button.tejasai-enhance-btn-perplexity:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.16) !important;
+  transform: scale(0.95) !important;
+}
+
+.tejasai-enhance-btn-perplexity .tejasai-spinner {
+  width: 16px !important;
+  height: 16px !important;
+  border: 2px solid rgba(255, 255, 255, 0.2) !important;
+  border-top-color: #22C55E !important;
+  border-radius: 50% !important;
+}
+
+/* Google Gemini (gemini.google.com) Native Styling */
+.tejasai-enhance-button.tejasai-enhance-btn-gemini {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  max-width: 32px !important;
+  max-height: 32px !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 4px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  box-shadow: none !important;
+  outline: none !important;
+  flex-shrink: 0 !important;
+}
+
+.tejasai-enhance-button.tejasai-enhance-btn-gemini:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  transform: scale(1.06) !important;
+}
+
+.tejasai-enhance-button.tejasai-enhance-btn-gemini:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.16) !important;
+  transform: scale(0.95) !important;
+}
+
+.tejasai-enhance-btn-gemini .tejasai-spinner {
+  width: 16px !important;
+  height: 16px !important;
+  border: 2px solid rgba(255, 255, 255, 0.2) !important;
+  border-top-color: #3B82F6 !important;
   border-radius: 50% !important;
 }
 

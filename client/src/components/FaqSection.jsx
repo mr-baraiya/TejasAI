@@ -3,6 +3,18 @@ import { Plus } from 'lucide-react';
 
 const FAQS = [
   {
+    q: 'What makes TejasAI the best AI prompt enhancer and prompt improver?',
+    a: 'TejasAI functions as a high-precision AI prompt enhancer, prompt improver, and prompt generator. It analyzes your informal request, injects objective constraints, eliminates ambiguity, and formats the output so models like ChatGPT, Claude, and Gemini deliver comprehensive answers on your very first try.',
+  },
+  {
+    q: 'Can I use TejasAI to generate ChatGPT prompts?',
+    a: 'Yes. TejasAI is specifically calibrated to create structured ChatGPT prompts (for GPT-4o, o1, and ChatGPT Plus). It structures clear persona roles, contextual guardrails, and output delimiters so you get reliable, high-depth output from OpenAI models.',
+  },
+  {
+    q: 'How does an AI writing assistant boost my AI productivity?',
+    a: 'TejasAI acts as your dedicated AI writing assistant and prompt improver, eliminating the frustrating back-and-forth of rewriting prompts multiple times. By delivering production-grade prompts in under 300 milliseconds, it saves you hours of iteration every week—maximizing your day-to-day AI productivity.',
+  },
+  {
     q: 'Is TejasAI free to use?',
     a: 'Yes. TejasAI is completely free. There are no subscriptions, credit cards, or account sign-ups required.',
   },

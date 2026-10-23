@@ -3,6 +3,7 @@ import { Header } from './components/Header';
 import { PromptInput } from './components/PromptInput';
 import { OutputDisplay } from './components/OutputDisplay';
 import { HowItWorks } from './components/HowItWorks';
+import { ExtensionSection } from './components/ExtensionSection';
 import { ExamplesGallery } from './components/ExamplesGallery';
 import { FaqSection } from './components/FaqSection';
 import { RecentPrompts } from './components/RecentPrompts';
@@ -212,18 +213,21 @@ export default function App() {
 
             {/* Left column: Headline & Subtext */}
             <div className="lg:col-span-5 space-y-4 pt-1 lg:pt-4">
+              <div className="font-mono text-xs font-semibold tracking-wider text-[#C2410C] uppercase">
+                AI Prompt Enhancer &bull; Prompt Improver &bull; AI Productivity
+              </div>
+
               <h1 className="font-serif text-3xl sm:text-4xl lg:text-[46px] font-semibold text-[#111827] leading-[1.14] tracking-[-0.01em]">
                 Say it simply. <br className="hidden sm:inline" />
                 <span className="text-[#C2410C]">Ask AI better.</span>
               </h1>
 
               <p className="text-base sm:text-lg text-[#374151] max-w-[65ch] leading-relaxed">
-                Type what you need in your own words. We rewrite it so ChatGPT, Gemini or Claude gives you a more useful answer.
+                TejasAI is the free AI prompt enhancer, prompt improver, and prompt generator. An intelligent AI writing assistant that transforms your thoughts into high-impact ChatGPT prompts, Claude instructions, and Gemini queries.
               </p>
 
-
               <p className="text-sm sm:text-base text-[#6B7280] max-w-[65ch] leading-relaxed">
-                AI models give vague answers when given vague prompts. TejasAI quietly adds the right context, tone, and format so you get the exact result you wanted on the first try.
+                AI models give vague answers when given vague prompts. TejasAI quietly adds the right context, tone, and format so you get production-grade output on the first try—boosting your everyday AI productivity.
               </p>
             </div>
 
@@ -283,6 +287,9 @@ export default function App() {
 
           {/* How It Works Section: 3 numbered steps */}
           <HowItWorks />
+
+          {/* Browser Extension Section: On-page direct download & setup */}
+          <ExtensionSection />
 
           {/* FAQ Section */}
           <FaqSection />

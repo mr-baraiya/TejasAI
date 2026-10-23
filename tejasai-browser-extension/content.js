@@ -31,22 +31,18 @@
   let lastEnhancedResult = '';
   let toastTimeoutId = null;
 
-  const SPARKLE_ICON_SVG = `
-    <svg class="tejasai-sparkle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12 2L14.2 8.8L21 11L14.2 13.2L12 20L9.8 13.2L3 11L9.8 8.8L12 2Z" fill="currentColor"/>
-    </svg>
-  `;
-
-  // TejasAI logo with fallback or site-native vector icon
+  // TejasAI official brand logo across all AI tool composers
   function getLogoHtml() {
-    if (adapter && typeof adapter.getButtonIcon === 'function') {
-      return adapter.getButtonIcon();
-    }
     try {
-      const logoUrl = chrome.runtime.getURL('icons/icon32.png');
+      const logoUrl = chrome.runtime.getURL('icons/icon48.png');
       return `<img src="${logoUrl}" class="tejasai-btn-logo" alt="TejasAI" />`;
     } catch {
-      return SPARKLE_ICON_SVG;
+      try {
+        const fallbackUrl = chrome.runtime.getURL('icons/icon32.png');
+        return `<img src="${fallbackUrl}" class="tejasai-btn-logo" alt="TejasAI" />`;
+      } catch {
+        return `<span style="font-weight:700;font-size:13px;color:#C2410C;">T</span>`;
+      }
     }
   }
 
@@ -258,10 +254,17 @@
       `;
     }
 
+    let previewLogoUrl = '';
+    try {
+      previewLogoUrl = chrome.runtime.getURL('icons/icon48.png');
+    } catch {
+      previewLogoUrl = '';
+    }
+
     card.innerHTML = `
       <div class="tejasai-preview-header">
         <div class="tejasai-preview-title">
-          ${SPARKLE_ICON_SVG}
+          ${previewLogoUrl ? `<img src="${previewLogoUrl}" class="tejasai-preview-logo" alt="TejasAI" />` : ''}
           <span>Enhanced with TejasAI</span>
         </div>
         <button type="button" class="tejasai-preview-close" aria-label="Dismiss preview">✕</button>
@@ -420,8 +423,8 @@
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = `tejasai-enhance-button tejasai-enhance-btn-${adapter.id}`;
-      btn.title = `Enhance prompt with TejasAI (${adapter.name})`;
-      btn.setAttribute('aria-label', 'Enhance prompt with TejasAI');
+      btn.title = 'TejasAI';
+      btn.setAttribute('aria-label', 'TejasAI');
       btn.innerHTML = getLogoHtml();
 
       btn.addEventListener('click', (e) => {

@@ -5,8 +5,8 @@
         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
   <url>
     <loc>https://tejasai-eta.vercel.app/</loc>
-    <lastmod>2026-10-22</lastmod>
-    <changefreq>weekly</changefreq>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 </urlset>

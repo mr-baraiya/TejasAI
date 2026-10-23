@@ -1,8 +1,8 @@
 /**
- * TejasAI Site Adapter - Perplexity AI (perplexity.ai)
+ * TejasAI Site Adapter - Perplexity AI (perplexity.ai & www.perplexity.ai)
  *
- * Supports Perplexity's React textarea search, follow-up inputs,
- * and scoped composer bottom toolbars.
+ * Supports Perplexity's React search composers, follow-up inputs,
+ * voice/mic action clusters, and standard/contenteditable textareas.
  */
 
 window.TejasAIAdapters = window.TejasAIAdapters || {};
@@ -18,29 +18,43 @@ window.TejasAIAdapters['perplexity'] = {
 
   findInput() {
     const selectors = [
-      'main textarea',
-      'main div[contenteditable="true"]',
       'textarea[placeholder*="connectors" i]',
       'textarea[placeholder*="Type @" i]',
       'textarea[placeholder*="Ask" i]',
       'textarea[placeholder*="Search" i]',
+      'textarea[placeholder*="anything" i]',
       'textarea[placeholder*="question" i]',
       'textarea[placeholder*="follow-up" i]',
       'div[data-testid="search-input"] textarea',
+      'textarea[data-testid*="search" i]',
+      'textarea[data-testid*="input" i]',
       '[data-testid="search-input"]',
+      'main textarea',
       'form textarea',
       'textarea.overflow-auto',
-      'div[contenteditable="true"]',
       'textarea',
+      'div[contenteditable="true"][role="textbox"]',
+      'div[contenteditable="true"]',
     ];
 
     for (const sel of selectors) {
-      const candidates = document.querySelectorAll(sel);
-      for (const el of candidates) {
-        // Exclude inputs in top navigation, header, or sidebar
-        if (el && el.offsetParent !== null && !el.closest('header, nav, aside, [role="navigation"]')) {
-          return el;
+      try {
+        const candidates = document.querySelectorAll(sel);
+        for (const el of candidates) {
+          if (!el) continue;
+          if (el.closest('header, nav, aside, [role="navigation"]')) continue;
+
+          // Check visibility
+          const rect = el.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) {
+            return el;
+          }
+          if (el.offsetParent !== null) {
+            return el;
+          }
         }
+      } catch {
+        // Continue
       }
     }
     return null;
@@ -48,104 +62,72 @@ window.TejasAIAdapters['perplexity'] = {
 
   getText(el) {
     if (!el) return '';
-    return el.value ? el.value.trim() : (el.innerText ? el.innerText.trim() : (el.textContent ? el.textContent.trim() : ''));
+    if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
+      return (el.value || '').trim();
+    }
+    return (el.innerText || el.textContent || '').trim();
   },
 
   setText(el, text) {
     if (!el) return false;
     el.focus();
 
-    // Standard React synthetic input setter
-    const descriptor = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value');
-    if (descriptor && descriptor.set) {
-      descriptor.set.call(el, text);
-    } else {
-      el.value = text;
+    if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
+      const descriptor = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value');
+      if (descriptor && descriptor.set) {
+        descriptor.set.call(el, text);
+      } else {
+        el.value = text;
+      }
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      return true;
     }
 
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
-    return true;
+    // Contenteditable fallback
+    try {
+      el.innerText = text;
+      el.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: text }));
+      return true;
+    } catch {
+      el.textContent = text;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      return true;
+    }
   },
 
   getComposerBox(inputEl) {
     if (!inputEl) return null;
 
-    // 1. Direct form wrapper
-    const form = inputEl.closest('form');
+    // 1. Direct form or search wrapper
+    const form = inputEl.closest('form, [role="search"], [data-testid*="search" i]');
     if (form) return form;
 
-    // 2. Ascend parents until we reach the composer card (card container with buttons)
-    let parent = inputEl.parentElement;
-    while (parent && parent !== document.body && parent.tagName !== 'MAIN') {
-      const hasActionButtons = parent.querySelector('button');
-      const isCardContainer =
-        parent.tagName === 'DIV' &&
-        (parent.className.includes('rounded') ||
-          parent.className.includes('border') ||
-          parent.className.includes('bg-') ||
-          parent.className.includes('shadow') ||
-          parent.getAttribute('data-testid')?.includes('search'));
+    // 2. Ascend parents looking for the card container holding buttons
+    let current = inputEl.parentElement;
+    let best = null;
+    while (current && current !== document.body && current !== document.documentElement) {
+      const buttons = current.querySelectorAll('button:not(.tejasai-enhance-button), [role="button"]:not(.tejasai-enhance-button)');
+      if (buttons.length >= 2) {
+        const className = typeof current.className === 'string' ? current.className : '';
+        const hasCardTraits =
+          className.includes('rounded') ||
+          className.includes('border') ||
+          className.includes('bg-') ||
+          className.includes('shadow') ||
+          className.includes('relative') ||
+          className.includes('flex-col') ||
+          current.getAttribute('data-testid')?.includes('search');
 
-      if (hasActionButtons && isCardContainer) {
-        return parent;
-      }
-      parent = parent.parentElement;
-    }
-
-    return inputEl.closest('main') || inputEl.parentElement;
-  },
-
-  getRightCluster(inputEl) {
-    const box = this.getComposerBox(inputEl);
-    if (!box) return null;
-
-    const toolbarSelectors = [
-      'div.flex.items-center.justify-between',
-      'div.flex.justify-between',
-      'div[class*="toolbar"]',
-      'div[class*="bottom"]',
-      'div.flex.items-center:last-child',
-    ];
-
-    for (const sel of toolbarSelectors) {
-      const bar = box.querySelector(sel);
-      if (bar && bar !== inputEl && bar.offsetParent !== null) {
-        if (bar.children.length >= 2) {
-          const lastChild = bar.lastElementChild;
-          if (lastChild && lastChild.offsetParent !== null) return lastChild;
+        if (hasCardTraits) {
+          return current;
         }
-        const rightCluster =
-          bar.querySelector('div.flex.items-center:has(button), div.flex:has(button)') ||
-          bar.lastElementChild;
-        if (rightCluster && rightCluster.offsetParent !== null) {
-          return rightCluster;
-        }
-        return bar;
+        if (!best) best = current;
       }
-    }
-    return null;
-  },
-
-  findAttachContainer(inputEl) {
-    if (!inputEl) return null;
-
-    // 1. Right cluster inside composer box
-    const rightCluster = this.getRightCluster(inputEl);
-    if (rightCluster) {
-      return rightCluster;
+      current = current.parentElement;
     }
 
-    const box = this.getComposerBox(inputEl);
-    if (!box) return inputEl.parentElement;
-
-    // 2. Next to submit button if found inside box
-    const submitBtn = this.findSubmitButton(inputEl);
-    if (submitBtn && submitBtn.parentElement && box.contains(submitBtn)) {
-      return submitBtn.parentElement;
-    }
-
-    return box || inputEl.parentElement;
+    return best || inputEl.closest('main') || inputEl.parentElement;
   },
 
   findSubmitButton(inputEl) {
@@ -153,44 +135,130 @@ window.TejasAIAdapters['perplexity'] = {
     const box = el ? this.getComposerBox(el) : null;
     const scope = box || document.querySelector('main') || document;
 
-    const selectors = [
+    // 1. When user has entered text, submit/send button is present
+    const submitSelectors = [
       'button[aria-label*="Submit" i]',
-      'button[aria-label*="Submit query" i]',
       'button[aria-label*="Send" i]',
+      'button[aria-label*="Search" i]',
       'button[aria-label*="Ask" i]',
-      'button[data-testid="submit-button"]',
-      'button[data-testid="search-button"]',
-      'button[data-testid="send-button"]',
-      'button.bg-super',
+      'button[data-testid*="submit" i]',
+      'button[data-testid*="send" i]',
+      'button[data-testid*="search" i]',
       'button[type="submit"]',
+      'button.bg-super',
     ];
 
-    for (const sel of selectors) {
-      const btn = scope.querySelector(sel);
-      if (btn && btn.offsetParent !== null && !btn.closest('header, nav, aside')) {
-        return btn;
+    for (const sel of submitSelectors) {
+      try {
+        const btn = scope.querySelector(sel);
+        if (btn && !btn.closest('header, nav, aside') && !btn.classList.contains('tejasai-enhance-button')) {
+          return btn;
+        }
+      } catch {
+        // Continue
       }
     }
 
-    // If submit button morphs or is the circular voice/submit icon at the end of the composer
-    if (box) {
-      const toolbar =
-        box.querySelector('div.flex.items-center.justify-between, div.flex.justify-between') ||
-        box.querySelector('div[class*="toolbar"]');
-      if (toolbar) {
-        const rightCluster =
-          toolbar.querySelector('div.flex.items-center:has(button), div.flex:has(button)') ||
-          toolbar.lastElementChild;
-        if (rightCluster) {
-          const buttons = rightCluster.querySelectorAll('button');
-          if (buttons.length > 0) {
-            return buttons[buttons.length - 1];
-          }
+    // 2. Empty-state circular voice/speech/waveform button on the far right
+    const voiceSelectors = [
+      'button[aria-label*="Voice" i]',
+      'button[aria-label*="Audio" i]',
+      'button[aria-label*="Dictat" i]',
+      'button[aria-label*="Speech" i]',
+      'button[data-testid*="voice" i]',
+      'button[data-testid*="audio" i]',
+    ];
+
+    for (const sel of voiceSelectors) {
+      try {
+        const btn = scope.querySelector(sel);
+        if (btn && !btn.closest('header, nav, aside') && !btn.classList.contains('tejasai-enhance-button')) {
+          return btn;
         }
+      } catch {
+        // Continue
+      }
+    }
+
+    // 3. Fallback: the last interactive button inside composer box
+    if (box) {
+      try {
+        const allButtons = Array.from(
+          box.querySelectorAll('button:not(.tejasai-enhance-button), [role="button"]:not(.tejasai-enhance-button)')
+        ).filter((b) => {
+          if (b.closest('header, nav, aside')) return false;
+          if (b.contains(el)) return false;
+          const rect = b.getBoundingClientRect();
+          return rect.width > 0 && rect.height > 0;
+        });
+
+        if (allButtons.length >= 1) {
+          return allButtons[allButtons.length - 1];
+        }
+      } catch {
+        // Continue
       }
     }
 
     return null;
+  },
+
+  findAttachContainer(inputEl) {
+    if (!inputEl) return null;
+    const box = this.getComposerBox(inputEl);
+    const submitBtn = this.findSubmitButton(inputEl);
+
+    if (submitBtn && box) {
+      // Ascend from submitBtn to find the horizontal row holding the action buttons (Model, Mic, Voice/Send)
+      let current = submitBtn.parentElement;
+      while (current && current !== box && current !== document.body) {
+        const style = window.getComputedStyle(current);
+        const isColumn = style.flexDirection.includes('column');
+        if (isColumn) {
+          current = current.parentElement;
+          continue;
+        }
+
+        const rect = current.getBoundingClientRect();
+        // If horizontal and wide enough for buttons
+        if (rect.width > 45) {
+          const btns = current.querySelectorAll('button:not(.tejasai-enhance-button), [role="button"]:not(.tejasai-enhance-button)');
+          if (btns.length >= 1) {
+            return current;
+          }
+        }
+        current = current.parentElement;
+      }
+
+      if (submitBtn.parentElement) {
+        return submitBtn.parentElement;
+      }
+    }
+
+    // Fallback: search for bottom toolbar inside composer box
+    if (box) {
+      try {
+        const flexRows = Array.from(box.querySelectorAll('div.flex:has(button)')).filter((d) => {
+          const style = window.getComputedStyle(d);
+          return !style.flexDirection.includes('column');
+        });
+
+        if (flexRows.length > 0) {
+          const toolbar = flexRows[flexRows.length - 1];
+          if (toolbar.children.length >= 2) {
+            const rightCluster = toolbar.lastElementChild;
+            if (rightCluster && rightCluster.querySelector('button')) {
+              return rightCluster;
+            }
+          }
+          return toolbar;
+        }
+      } catch {
+        // Continue
+      }
+    }
+
+    return box || inputEl.parentElement;
   },
 
   canAutoEnhance() {

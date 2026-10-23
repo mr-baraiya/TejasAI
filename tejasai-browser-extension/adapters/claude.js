@@ -186,14 +186,6 @@ window.TejasAIAdapters['claude'] = {
     return null;
   },
 
-  getButtonIcon() {
-    return `
-      <svg class="tejasai-claude-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2.5C12 2.5 12.3 8.2 14.5 10.5C16.8 12.7 22.5 13 22.5 13C22.5 13 16.8 13.3 14.5 15.5C12.3 17.8 12 23.5 12 23.5C12 23.5 11.7 17.8 9.5 15.5C7.2 13.3 1.5 13 1.5 13C1.5 13 7.2 12.7 9.5 10.5C11.7 8.2 12 2.5 12 2.5Z" fill="currentColor"/>
-        <path d="M19 3.5C19 3.5 19.2 5.8 20.1 6.7C21 7.6 23.3 7.7 23.3 7.7C23.3 7.7 21 7.9 20.1 8.8C19.2 9.7 19 12 19 12C19 12 18.8 9.7 17.9 8.8C17 7.9 14.7 7.7 14.7 7.7C14.7 7.7 17 7.6 17.9 6.7C18.8 5.8 19 3.5 19 3.5Z" fill="currentColor" opacity="0.8"/>
-      </svg>
-    `;
-  },
 
   findAttachContainer(inputEl) {
     if (!inputEl) return null;

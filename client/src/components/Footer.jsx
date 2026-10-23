@@ -99,8 +99,16 @@ export function Footer() {
 
           </div>
 
+          {/* Editorial Semantic Keyword Index */}
+          <div className="pt-4 border-t border-[#EDE8E1] text-xs text-[#6B7280] leading-relaxed flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p>
+              <strong>TejasAI</strong> — Free AI prompt enhancer, prompt improver, and AI writing assistant. Generate structured ChatGPT prompts and accelerate your AI productivity.
+            </p>
+            <span className="font-mono text-[11px] text-[#9CA3AF] shrink-0">100% Free &bull; Zero Login</span>
+          </div>
+
           {/* Independent Disclaimer Banner */}
-          <div className="pt-4 border-t border-[#EDE8E1]/80 text-[11px] text-[#9CA3AF] leading-relaxed text-center sm:text-left">
+          <div className="pt-3 border-t border-[#EDE8E1]/80 text-[11px] text-[#9CA3AF] leading-relaxed text-center sm:text-left">
             <p>
               <strong>Disclaimer:</strong> TejasAI is an independent prompt optimization tool. It is not affiliated with, sponsored by, or endorsed by OpenAI, Google, Anthropic, Perplexity AI, DeepSeek, xAI, or any of their respective affiliates. All product names, logos, and brands (ChatGPT, Gemini, Claude, Perplexity, DeepSeek, Grok) are property of their respective trademark holders.
             </p>

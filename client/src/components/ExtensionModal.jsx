@@ -51,7 +51,7 @@ export function ExtensionModal({ isOpen, onClose }) {
           Bring TejasAI to your browser.
         </h3>
         <p className="text-xs sm:text-sm text-[#4B5563] leading-relaxed mb-6">
-          An in-composer enhance button that works natively inside ChatGPT, Claude, Gemini, Perplexity, and DeepSeek.
+          An in-composer enhance button that works natively inside ChatGPT, Claude, Gemini, Perplexity, DeepSeek, and Grok.
         </p>
 
         {/* Direct Download Release Card */}
@@ -110,16 +110,21 @@ export function ExtensionModal({ isOpen, onClose }) {
           </ol>
         </div>
 
-        {/* Minimal Footer */}
-        <div className="mt-6 pt-4 border-t border-[#EDE8E1] flex items-center justify-between text-[11px] text-[#9CA3AF]">
-          <span>Free • Zero data retention</span>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-[#6B7280] hover:text-[#111827] font-medium transition-colors cursor-pointer"
-          >
-            Done
-          </button>
+        {/* Minimal Footer & Disclaimer */}
+        <div className="mt-6 pt-4 border-t border-[#EDE8E1] space-y-2">
+          <div className="flex items-center justify-between text-[11px] text-[#9CA3AF]">
+            <span>Free • Zero prompt retention</span>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-[#6B7280] hover:text-[#111827] font-medium transition-colors cursor-pointer"
+            >
+              Done
+            </button>
+          </div>
+          <p className="text-[10.5px] text-[#9CA3AF] leading-tight">
+            Independent extension. Not affiliated with or endorsed by OpenAI, Google, Anthropic, Perplexity, DeepSeek, or xAI.
+          </p>
         </div>
       </div>
     </div>

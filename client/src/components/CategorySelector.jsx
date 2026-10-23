@@ -35,6 +35,7 @@ const AI_OPTIONS = [
   { id: 'perplexity', label: 'Perplexity' },
   { id: 'deepseek', label: 'DeepSeek' },
   { id: 'claude', label: 'Claude' },
+  { id: 'grok', label: 'Grok' },
 ];
 
 export function CategorySelector({
@@ -89,7 +90,7 @@ export function CategorySelector({
             <span className="text-xs font-medium text-[#111827] block">
               Which AI will you use?
             </span>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
               {AI_OPTIONS.map((choice) => {
                 const isSelected = targetAI === choice.id;
                 return (

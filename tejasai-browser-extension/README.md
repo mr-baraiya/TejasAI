@@ -13,38 +13,43 @@ Production-grade Chrome Extension (Manifest V3) that brings the power of **Tejas
 | **Anthropic Claude** | `claude.ai`, `*.claude.ai` | ProseMirror ContentEditable |
 | **Perplexity AI** | `perplexity.ai`, `www.perplexity.ai` | React Search & Textarea |
 | **DeepSeek** | `chat.deepseek.com` | Modern Chat Textarea |
+| **Grok (xAI)** | `grok.com`, `x.com/i/grok` | Textarea & ContentEditable |
 
 ---
 
 ## Key Features
 
 1. **Seamless In-Composer Enhance Button**:
-   - Injects a compact, branded **"Enhance"** button with clean sparkles directly next to the AI tool's input box.
+   - Injects a compact, branded **"Enhance"** button directly next to the AI tool's input box.
    - Shows live loading spinner during inference (`qwen/qwen3.8-27b` via Groq LPUs).
 
-2. **Floating Review & Restore Panel**:
+2. **Explicit Review & Preview Panel**:
    - After enhancement, a clean floating preview panel appears with:
      - **Why This Is Better**: Bulleted list of concrete engineering upgrades made to your prompt.
-     - **Full Preview**: Scrollable view of the enhanced prompt text.
-     - **Restore Original**: One-click undo if you prefer your original draft.
+     - **Full Preview**: Scrollable view of the precision prompt text.
+     - **Replace Input**: One-click explicit replacement of composer text.
      - **Copy**: Quick clipboard copy with confirmation.
+     - **Keep Original**: Keep your original draft untouched.
      - **Keyboard Accessible**: Press `Escape` to close the review panel at any time.
 
-3. **Optional Auto-Enhance on Submit**:
-   - Disabled by default for user safety.
-   - When enabled in extension settings, intercepts prompt submissions (Enter / Send button), optimizes the prompt via TejasAI, and seamlessly resumes submission without infinite loops.
+3. **Explicit User Actions (Zero Auto-Submission)**:
+   - All prompt enhancements and replacements require explicit user action.
+   - Prompts are never automatically submitted to AI providers.
 
 4. **Polished Settings Popup**:
    - Live backend health indicator (`Connected` / `Offline`).
    - Master on/off toggle.
-   - Auto-enhance toggle.
-   - Individual toggles for each of the 5 supported AI platforms.
+   - Individual toggles for each of the 6 supported AI platforms.
    - Direct link to open the TejasAI Web Application.
 
-5. **100% Secure & Private**:
+5. **100% Secure & Privacy-Conscious**:
    - Zero credentials stored in the extension.
    - Never logs prompts to disk or database.
-   - No typing monitoring — prompts are only transmitted upon explicit user action.
+   - No keystroke recording or typing monitoring — prompts are only transmitted upon explicit click of "Enhance".
+
+6. **Context-Aware Content Moderation**:
+   - Distinguishes legitimate educational, medical, and defensive inquiries from harmful requests based on context rather than isolated keywords.
+   - Respectfully refuses disallowed requests with clear explanations and zero sensitive prompt logging.
 
 ---
 
@@ -65,7 +70,8 @@ tejasai-browser-extension/
 │   ├── gemini.js       # Google Gemini Quill editor integration
 │   ├── perplexity.js   # Perplexity search input integration
 │   ├── deepseek.js     # DeepSeek textarea integration
-│   └── claude.js       # Claude ProseMirror integration
+│   ├── claude.js       # Claude ProseMirror integration
+│   └── grok.js         # Grok (grok.com & x.com) integration
 ├── icons/              # Official TejasAI extension icons
 │   ├── icon16.png
 │   ├── icon32.png
@@ -143,4 +149,11 @@ The extension communicates directly with your deployed production endpoint:
 - **API URL:** `https://tejasai-eta.vercel.app/api/enhance`
 - **Health Check:** `https://tejasai-eta.vercel.app/api/health`
 
-No API keys are stored in the extension. The backend securely uses your Groq API key in production.
+No API keys or inference secrets are stored in the extension. The backend securely manages Groq inference server-side.
+
+---
+
+## Independent Product Disclaimer
+
+TejasAI is an independent tool and is not affiliated with, sponsored by, or endorsed by OpenAI, Google, Anthropic, Perplexity AI, DeepSeek, or xAI. All product names, logos, and brands (ChatGPT, Gemini, Claude, Perplexity, DeepSeek, Grok) are property of their respective trademark holders.
+

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "TejasAI – AI Prompt Enhancer",
   "version": "1.0.0",
-  "description": "Instantly enhance and optimize your prompts directly inside ChatGPT, Claude, Gemini, Perplexity, and DeepSeek.",
+  "description": "Instantly enhance and optimize your prompts directly inside ChatGPT, Claude, Gemini, Perplexity, DeepSeek, and Grok.",
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",
@@ -37,10 +37,17 @@
         "*://*.chatgpt.com/*",
         "*://gemini.google.com/*",
         "*://perplexity.ai/*",
-        "*://*.perplexity.ai/*",
+        "*://deepseek.com/*",
+        "*://*.deepseek.com/*",
         "*://chat.deepseek.com/*",
         "*://claude.ai/*",
-        "*://*.claude.ai/*"
+        "*://*.claude.ai/*",
+        "*://grok.com/*",
+        "*://*.grok.com/*",
+        "*://x.com/*",
+        "*://*.x.com/*",
+        "*://twitter.com/*",
+        "*://*.twitter.com/*"
       ],
       "js": [
         "adapters/chatgpt.js",
@@ -48,6 +55,7 @@
         "adapters/perplexity.js",
         "adapters/deepseek.js",
         "adapters/claude.js",
+        "adapters/grok.js",
         "content.js"
       ],
       "css": [
@@ -67,10 +75,17 @@
         "*://*.chatgpt.com/*",
         "*://gemini.google.com/*",
         "*://perplexity.ai/*",
-        "*://*.perplexity.ai/*",
+        "*://deepseek.com/*",
+        "*://*.deepseek.com/*",
         "*://chat.deepseek.com/*",
         "*://claude.ai/*",
-        "*://*.claude.ai/*"
+        "*://*.claude.ai/*",
+        "*://grok.com/*",
+        "*://*.grok.com/*",
+        "*://x.com/*",
+        "*://*.x.com/*",
+        "*://twitter.com/*",
+        "*://*.twitter.com/*"
       ]
     }
   ]

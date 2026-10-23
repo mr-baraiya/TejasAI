@@ -43,6 +43,9 @@ export async function enhancePromptApi(
       const errorMessage = data?.error || `Server responded with status ${response.status} (${response.statusText})`;
       const error = new Error(errorMessage);
       error.status = response.status;
+      error.code = data?.code || null;
+      error.category = data?.category || null;
+      error.isPolicyViolation = response.status === 422;
       error.isConfigError = response.status === 503;
       throw error;
     }

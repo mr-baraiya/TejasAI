@@ -11,13 +11,13 @@ import { enhancePromptApi, checkServerHealth, DEFAULT_API_BASE_URL } from './api
 
 export const DEFAULT_SETTINGS = {
   enabled: true,
-  autoEnhance: false, // Disabled by default per requirements
   sites: {
     chatgpt: true,
     gemini: true,
     perplexity: true,
     deepseek: true,
     claude: true,
+    grok: true,
   },
   apiBaseUrl: DEFAULT_API_BASE_URL,
 };
@@ -40,11 +40,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message.action === 'ENHANCE_PROMPT') {
     handleEnhanceRequest(message.payload)
-      .then(sendResponse)
+      .then((res) => {
+        if (typeof console !== 'undefined' && console.debug && !res?.success) {
+          console.debug('[TejasAI Worker] Request failed:', res?.error);
+        }
+        sendResponse(res);
+      })
       .catch((err) => {
+        if (typeof console !== 'undefined' && console.debug) {
+          console.debug('[TejasAI Worker] Uncaught error:', err.message);
+        }
         sendResponse({
           success: false,
-          error: err.message || 'Internal background worker error.',
+          error: err.message || 'Internal background service worker error.',
+          recoverable: true,
         });
       });
     return true; // Keep message port open for async response

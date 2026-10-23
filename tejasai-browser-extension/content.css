@@ -8,45 +8,48 @@
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 6px !important;
+  width: 28px !important;
   height: 28px !important;
-  padding: 0 11px 0 7px !important;
-  margin: 0 4px !important;
+  min-width: 28px !important;
+  min-height: 28px !important;
+  padding: 0 !important;
+  margin: 0 3px !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
-  font-size: 12.5px !important;
-  font-weight: 500 !important;
   line-height: 1 !important;
   color: #ECECF1 !important;
-  background: rgba(255, 255, 255, 0.09) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
-  border-radius: 9999px !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 50% !important;
   cursor: pointer !important;
   outline: none !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
+  box-shadow: none !important;
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
   user-select: none !important;
   z-index: 100 !important;
   vertical-align: middle !important;
   box-sizing: border-box !important;
+  flex-shrink: 0 !important;
+  align-self: center !important;
+  pointer-events: auto !important;
+  position: relative !important;
 }
 
 .tejasai-enhance-button:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.16) !important;
-  border-color: rgba(249, 115, 22, 0.5) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  border: none !important;
   color: #FFFFFF !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25), 0 0 10px rgba(249, 115, 22, 0.2) !important;
+  transform: scale(1.08) !important;
+  box-shadow: none !important;
 }
 
 .tejasai-enhance-button:active:not(:disabled) {
-  transform: translateY(0) !important;
-  background: rgba(255, 255, 255, 0.1) !important;
+  transform: scale(0.95) !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  border: none !important;
 }
 
 .tejasai-enhance-button:focus-visible {
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2), 0 0 0 4px #C2410C !important;
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.6) !important;
 }
 
 .tejasai-enhance-button:disabled {
@@ -57,17 +60,18 @@
 
 /* TejasAI logo inside injected button */
 .tejasai-btn-logo {
-  width: 16px !important;
-  height: 16px !important;
+  width: 20px !important;
+  height: 20px !important;
   border-radius: 50% !important;
   object-fit: cover !important;
   flex-shrink: 0 !important;
   display: block !important;
+  transition: transform 0.18s ease !important;
 }
 
 .tejasai-sparkle-icon {
-  width: 14px !important;
-  height: 14px !important;
+  width: 18px !important;
+  height: 18px !important;
   fill: currentColor !important;
   flex-shrink: 0 !important;
 }
@@ -76,37 +80,40 @@
 @media (prefers-color-scheme: light) {
   html:not(.dark):not([data-theme="dark"]):not([class*="dark"]) body:not([class*="dark"]) .tejasai-enhance-button {
     color: #374151 !important;
-    background: #FFFFFF !important;
-    border: 1px solid rgba(0, 0, 0, 0.14) !important;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
   }
+
   html:not(.dark):not([data-theme="dark"]):not([class*="dark"]) body:not([class*="dark"]) .tejasai-enhance-button:hover:not(:disabled) {
-    background: #F9FAFB !important;
-    border-color: rgba(194, 65, 12, 0.45) !important;
+    background: rgba(0, 0, 0, 0.08) !important;
+    border: none !important;
     color: #111827 !important;
-    box-shadow: 0 2px 6px rgba(194, 65, 12, 0.15) !important;
+    box-shadow: none !important;
   }
 }
 
 /* Explicit dark theme protection across AI sites */
 :is(.dark, [data-theme="dark"], [class*="dark-theme"], [data-mode="dark"], body.dark) .tejasai-enhance-button {
   color: #ECECF1 !important;
-  background: rgba(255, 255, 255, 0.09) !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 :is(.dark, [data-theme="dark"], [class*="dark-theme"], [data-mode="dark"], body.dark) .tejasai-enhance-button:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.16) !important;
-  border-color: rgba(249, 115, 22, 0.5) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  border: none !important;
   color: #FFFFFF !important;
+  box-shadow: none !important;
 }
 
 /* Spinner for loading state */
 .tejasai-spinner {
-  width: 13px !important;
-  height: 13px !important;
+  width: 16px !important;
+  height: 16px !important;
   border: 2px solid rgba(255, 255, 255, 0.3) !important;
-  border-top-color: #FFFFFF !important;
+  border-top-color: #F97316 !important;
   border-radius: 50% !important;
   animation: tejasai-spin 0.75s linear infinite !important;
   flex-shrink: 0 !important;
@@ -118,22 +125,219 @@
   }
 }
 
-/* Floating Enhancement Preview Panel */
+/* ==========================================================================
+   Anthropic Claude (claude.ai) - 100% Native Interface Matching
+   Seamlessly integrates with Claude's toolbar, colors, and typography.
+   ========================================================================== */
+
+/* Claude native button: exactly 32px x 32px matching Claude's utility buttons and send button */
+.tejasai-enhance-button.tejasai-enhance-btn-claude {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  max-width: 32px !important;
+  max-height: 32px !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  border: none !important;
+  color: #B4B4B4 !important;
+  padding: 0 !important;
+  margin: 0 2px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: background-color 0.15s ease, color 0.15s ease !important;
+  box-shadow: none !important;
+  outline: none !important;
+  transform: none !important;
+  flex-shrink: 0 !important;
+  align-self: center !important;
+  position: relative !important;
+}
+
+/* Claude Dark Mode Hover: subtle rounded background with Claude signature terracotta glow */
+.tejasai-enhance-button.tejasai-enhance-btn-claude:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #D97757 !important; /* Claude terracotta brand accent */
+  transform: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Claude Active / Pressed state */
+.tejasai-enhance-button.tejasai-enhance-btn-claude:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14) !important;
+  transform: scale(0.96) !important;
+}
+
+.tejasai-enhance-button.tejasai-enhance-btn-claude:focus-visible {
+  box-shadow: 0 0 0 2px rgba(217, 119, 87, 0.45) !important;
+}
+
+/* Claude Light Theme */
+html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-enhance-button.tejasai-enhance-btn-claude {
+  color: #6B6B66 !important;
+  background: transparent !important;
+}
+
+html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-enhance-button.tejasai-enhance-btn-claude:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.06) !important;
+  color: #C15F3C !important;
+}
+
+html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-enhance-button.tejasai-enhance-btn-claude:active:not(:disabled) {
+  background: rgba(0, 0, 0, 0.1) !important;
+  color: #C15F3C !important;
+}
+
+/* Claude native SVG icon */
+.tejasai-claude-icon {
+  width: 18px !important;
+  height: 18px !important;
+  display: block !important;
+  flex-shrink: 0 !important;
+  fill: currentColor !important;
+  transition: fill 0.15s ease, color 0.15s ease !important;
+}
+
+/* Loading spinner in Claude terracotta */
+.tejasai-enhance-btn-claude .tejasai-spinner {
+  width: 16px !important;
+  height: 16px !important;
+  border: 2px solid rgba(255, 255, 255, 0.2) !important;
+  border-top-color: #D97757 !important;
+  border-radius: 50% !important;
+}
+
+html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-enhance-btn-claude .tejasai-spinner {
+  border: 2px solid rgba(0, 0, 0, 0.15) !important;
+  border-top-color: #C15F3C !important;
+}
+
+/* DeepSeek (chat.deepseek.com) Native Styling */
+.tejasai-enhance-button.tejasai-enhance-btn-deepseek {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  max-width: 32px !important;
+  max-height: 32px !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  border: none !important;
+  color: #9CA3AF !important;
+  padding: 0 !important;
+  margin: 0 4px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  box-shadow: none !important;
+  outline: none !important;
+  transform: none !important;
+}
+
+.tejasai-enhance-button.tejasai-enhance-btn-deepseek:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #4D6BFE !important; /* DeepSeek Blue */
+  transform: none !important;
+}
+
+.tejasai-enhance-button.tejasai-enhance-btn-deepseek:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14) !important;
+  transform: scale(0.95) !important;
+}
+
+.tejasai-deepseek-icon {
+  width: 18px !important;
+  height: 18px !important;
+  display: block !important;
+  flex-shrink: 0 !important;
+  fill: currentColor !important;
+  transition: fill 0.15s ease, color 0.15s ease !important;
+}
+
+.tejasai-enhance-btn-deepseek .tejasai-spinner {
+  width: 16px !important;
+  height: 16px !important;
+  border: 2px solid rgba(255, 255, 255, 0.2) !important;
+  border-top-color: #4D6BFE !important;
+  border-radius: 50% !important;
+}
+
+/* Grok (grok.com & x.com) Native Styling */
+.tejasai-enhance-button.tejasai-enhance-btn-grok {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  max-width: 32px !important;
+  max-height: 32px !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  border: none !important;
+  color: #8B98A5 !important;
+  padding: 0 !important;
+  margin: 0 4px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  box-shadow: none !important;
+  outline: none !important;
+  transform: none !important;
+}
+
+.tejasai-enhance-button.tejasai-enhance-btn-grok:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #1D9BF0 !important; /* Grok Blue */
+  transform: none !important;
+}
+
+.tejasai-enhance-button.tejasai-enhance-btn-grok:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18) !important;
+  transform: scale(0.95) !important;
+}
+
+.tejasai-grok-icon {
+  width: 18px !important;
+  height: 18px !important;
+  display: block !important;
+  flex-shrink: 0 !important;
+  fill: currentColor !important;
+  transition: fill 0.15s ease, color 0.15s ease !important;
+}
+
+.tejasai-enhance-btn-grok .tejasai-spinner {
+  width: 16px !important;
+  height: 16px !important;
+  border: 2px solid rgba(255, 255, 255, 0.2) !important;
+  border-top-color: #1D9BF0 !important;
+  border-radius: 50% !important;
+}
+
+/* Floating Enhancement Preview Panel (Portaled to document.body, immune to overflow:hidden) */
 .tejasai-preview-card {
-  position: absolute !important;
-  bottom: calc(100% + 12px) !important;
-  right: 0 !important;
+  position: fixed !important;
   width: min(440px, 92vw) !important;
+  max-height: calc(100vh - 30px) !important;
+  display: flex !important;
+  flex-direction: column !important;
   background: #FFFFFF !important;
   color: #1F2937 !important;
   border: 1px solid #E5E7EB !important;
-  border-radius: 10px !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.3), 0 10px 15px -5px rgba(0, 0, 0, 0.2) !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
-  z-index: 99999 !important;
+  z-index: 99999999 !important;
   overflow: hidden !important;
   animation: tejasai-fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
   text-align: left !important;
+  pointer-events: auto !important;
 }
 
 /* Dark mode host support */
@@ -146,14 +350,44 @@
   }
 }
 
-/* Also support dark mode if parent site has dark class */
-html.dark .tejasai-preview-card,
-body.dark .tejasai-preview-card,
-[data-theme="dark"] .tejasai-preview-card {
-  background: #18181B !important;
-  color: #F4F4F5 !important;
-  border-color: #27272A !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+/* Dark mode support matching Claude dark composer */
+:is(html.dark, body.dark, [data-theme="dark"], [data-mode="dark"], [class*="dark"]) .tejasai-preview-card {
+  background: #262624 !important;
+  color: #ECECEC !important;
+  border-color: #383836 !important;
+  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* DeepSeek Preview Theme */
+.tejasai-preview-card.tejasai-preview-deepseek {
+  background: #18191E !important;
+  border-color: #2B2C33 !important;
+  color: #ECECEC !important;
+}
+
+.tejasai-preview-card.tejasai-preview-deepseek .tejasai-btn-primary {
+  background-color: #4D6BFE !important;
+  border-color: #3855FE !important;
+}
+
+.tejasai-preview-card.tejasai-preview-deepseek .tejasai-btn-primary:hover {
+  background-color: #3855FE !important;
+}
+
+/* Grok Preview Theme */
+.tejasai-preview-card.tejasai-preview-grok {
+  background: #000000 !important;
+  border-color: #2F3336 !important;
+  color: #E7E9EA !important;
+}
+
+.tejasai-preview-card.tejasai-preview-grok .tejasai-btn-primary {
+  background-color: #1D9BF0 !important;
+  border-color: #1A8CD8 !important;
+}
+
+.tejasai-preview-card.tejasai-preview-grok .tejasai-btn-primary:hover {
+  background-color: #1A8CD8 !important;
 }
 
 @keyframes tejasai-fade-in {
@@ -161,6 +395,7 @@ body.dark .tejasai-preview-card,
     opacity: 0;
     transform: translateY(6px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -253,17 +488,16 @@ body.dark .tejasai-preview-text {
   gap: 8px !important;
 }
 
-html.dark .tejasai-preview-footer,
-body.dark .tejasai-preview-footer {
-  border-color: #27272A !important;
-  background-color: #121215 !important;
+:is(html.dark, body.dark, [data-theme="dark"], [data-mode="dark"], [class*="dark"]) .tejasai-preview-footer {
+  border-color: #383836 !important;
+  background-color: #1F1F1E !important;
 }
 
 .tejasai-action-btn {
   font-size: 12px !important;
   font-weight: 500 !important;
   padding: 5px 10px !important;
-  border-radius: 5px !important;
+  border-radius: 6px !important;
   cursor: pointer !important;
   border: 1px solid transparent !important;
   transition: all 0.15s ease !important;
@@ -271,13 +505,13 @@ body.dark .tejasai-preview-footer {
 }
 
 .tejasai-btn-primary {
-  background-color: #C2410C !important;
+  background-color: #D97757 !important;
   color: #FFFFFF !important;
-  border-color: #9A3412 !important;
+  border-color: #C15F3C !important;
 }
 
 .tejasai-btn-primary:hover {
-  background-color: #9A3412 !important;
+  background-color: #C15F3C !important;
 }
 
 .tejasai-btn-secondary {
@@ -323,8 +557,54 @@ body.dark .tejasai-btn-secondary {
   background: #450A0A !important;
 }
 
+.tejasai-toast-warning {
+  border-color: #D97706 !important;
+  color: #FEF3C7 !important;
+  background: #451A03 !important;
+}
+
 .tejasai-toast-success {
   border-color: #16A34A !important;
   color: #DCFCE7 !important;
   background: #052E16 !important;
+}
+
+.tejasai-toast-message {
+  flex: 1 !important;
+  line-height: 1.4 !important;
+}
+
+.tejasai-toast-btn {
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 4px !important;
+  padding: 3px 9px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  margin-left: 8px !important;
+  white-space: nowrap !important;
+  transition: all 0.15s ease !important;
+}
+
+.tejasai-toast-btn:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+.tejasai-toast-dismiss {
+  background: transparent !important;
+  border: none !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 15px !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  padding: 2px 4px !important;
+  margin-left: 6px !important;
+  border-radius: 4px !important;
+  transition: color 0.15s ease !important;
+}
+
+.tejasai-toast-dismiss:hover {
+  color: #FFFFFF !important;
 }

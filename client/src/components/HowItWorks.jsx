@@ -65,7 +65,7 @@ export function HowItWorks() {
             Universal, one-shot results
           </h3>
           <p className="text-sm text-[#4B5563] leading-relaxed">
-            Copy the structured prompt into ChatGPT, Claude, Gemini, or DeepSeek. You get an in-depth, production-ready answer on the first attempt without endless follow-ups.
+            Copy the structured prompt into ChatGPT, Claude, Gemini, DeepSeek, or Grok. You get an in-depth, production-ready answer on the first attempt without endless follow-ups.
           </p>
         </div>
       </div>

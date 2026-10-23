@@ -13,7 +13,7 @@ export const DEFAULT_API_BASE_URL = 'https://tejasai-eta.vercel.app/api';
  *
  * @param {Object} options
  * @param {string} options.prompt - Prompt text to enhance (min 3, max 1500 chars)
- * @param {string} [options.targetAI='any'] - Target engine (chatgpt|gemini|claude|perplexity|deepseek|any)
+ * @param {string} [options.targetAI='any'] - Target engine (chatgpt|gemini|claude|perplexity|deepseek|grok|any)
  * @param {string} [options.tweak=''] - Optional quick tweak (shorter|simpler|moreDetail)
  * @param {string} [options.previousResult=''] - Previous enhancement if tweaking
  * @param {string} [options.apiBaseUrl] - Optional custom API base URL
@@ -29,28 +29,25 @@ export async function enhancePromptApi({
   if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
     return {
       success: false,
-      error: 'Prompt cannot be empty.',
+      error: 'Please enter a prompt first.',
+      statusCode: 400,
+      recoverable: false,
     };
   }
 
   const cleanedPrompt = prompt.trim();
 
-  if (cleanedPrompt.length < 3) {
-    return {
-      success: false,
-      error: 'Please enter a prompt with at least 3 characters.',
-    };
-  }
-
   if (cleanedPrompt.length > 1500) {
     return {
       success: false,
       error: 'Prompt exceeds maximum allowed length of 1,500 characters.',
+      statusCode: 400,
+      recoverable: false,
     };
   }
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 45000);
+  const timeoutId = setTimeout(() => controller.abort(), 25000);
 
   const cleanBaseUrl = (apiBaseUrl || DEFAULT_API_BASE_URL).replace(/\/+$/, '');
 
@@ -74,12 +71,8 @@ export async function enhancePromptApi({
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
-      if (response.status === 429) {
-        return {
-          success: false,
-          error: data?.error || 'Rate limit reached. Please wait a moment before trying again.',
-          statusCode: 429,
-        };
+      if (typeof console !== 'undefined' && console.debug) {
+        console.debug('[TejasAI API] HTTP Error:', response.status);
       }
 
       if (response.status === 400) {
@@ -87,14 +80,58 @@ export async function enhancePromptApi({
           success: false,
           error: data?.error || 'Invalid prompt request.',
           statusCode: 400,
+          recoverable: false,
         };
       }
 
-      if (response.status === 503) {
+      if (response.status === 401 || response.status === 403) {
         return {
           success: false,
-          error: data?.error || 'AI service temporarily unavailable. Please retry shortly.',
-          statusCode: 503,
+          error: data?.error || 'Authentication error connecting to TejasAI service.',
+          statusCode: response.status,
+          recoverable: false,
+        };
+      }
+
+      if (response.status === 422) {
+        return {
+          success: false,
+          error: data?.error || "This request cannot be enhanced as it conflicts with TejasAI's content policy.",
+          statusCode: 422,
+          code: data?.code || 'CONTENT_POLICY_VIOLATION',
+          category: data?.category || 'content_policy',
+          isPolicyViolation: true,
+          recoverable: false,
+        };
+      }
+
+      if (response.status === 429) {
+        return {
+          success: false,
+          error: data?.error || 'Too many requests. Please wait a moment before trying again.',
+          statusCode: 429,
+          isRateLimit: true,
+          recoverable: true,
+        };
+      }
+
+      if (response.status === 500) {
+        return {
+          success: false,
+          error: data?.error || 'TejasAI server error. Please try again.',
+          statusCode: 500,
+          isServerError: true,
+          recoverable: true,
+        };
+      }
+
+      if (response.status === 502 || response.status === 503 || response.status === 504) {
+        return {
+          success: false,
+          error: data?.error || 'AI inference engine is temporarily unavailable. Please retry shortly.',
+          statusCode: response.status,
+          isServerError: true,
+          recoverable: true,
         };
       }
 
@@ -102,13 +139,15 @@ export async function enhancePromptApi({
         success: false,
         error: data?.error || `Server returned error (${response.status}: ${response.statusText}).`,
         statusCode: response.status,
+        recoverable: response.status >= 500,
       };
     }
 
     if (!data || !data.success || !data.enhancedPrompt) {
       return {
         success: false,
-        error: data?.error || 'Invalid response received from TejasAI server.',
+        error: data?.error || 'Malformed or empty response received from TejasAI.',
+        recoverable: true,
       };
     }
 
@@ -124,14 +163,20 @@ export async function enhancePromptApi({
     if (err.name === 'AbortError') {
       return {
         success: false,
-        error: 'Enhancement request timed out (45s). Please try again.',
+        error: 'Enhancement request timed out (25s). Please retry.',
+        isTimeout: true,
+        recoverable: true,
       };
     }
 
+    const isOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
     return {
       success: false,
-      error: 'Could not connect to TejasAI server. Please check your internet connection.',
+      error: isOffline
+        ? 'You are currently offline. Please check your internet connection.'
+        : 'Network request to TejasAI failed. Please verify connectivity.',
       isNetworkError: true,
+      recoverable: true,
     };
   }
 }

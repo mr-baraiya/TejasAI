@@ -2,6 +2,8 @@
  * TejasAI Site Adapter - Anthropic Claude (claude.ai)
  *
  * Supports Claude's ProseMirror contenteditable editor.
+ * Positions Enhance button in the bottom-right action cluster next to the submit/waveform button,
+ * keeping the left-side controls (+, Chat, Cowork) untouched.
  */
 
 window.TejasAIAdapters = window.TejasAIAdapters || {};
@@ -21,11 +23,22 @@ window.TejasAIAdapters['claude'] = {
       'div[contenteditable="true"][data-placeholder]',
       'fieldset div[contenteditable="true"]',
       'div[role="textbox"][contenteditable="true"]',
+      'div[contenteditable="true"]',
     ];
 
     for (const sel of selectors) {
+      const candidates = document.querySelectorAll(sel);
+      for (const el of candidates) {
+        if (el && el.offsetParent !== null && !el.closest('header, nav, aside')) {
+          return el;
+        }
+      }
+    }
+
+    // Fallback if offsetParent is null (e.g. in some flex containers)
+    for (const sel of selectors) {
       const el = document.querySelector(sel);
-      if (el && el.offsetParent !== null) return el;
+      if (el && !el.closest('header, nav, aside')) return el;
     }
     return null;
   },
@@ -73,38 +86,185 @@ window.TejasAIAdapters['claude'] = {
     return true;
   },
 
-  findAttachContainer(inputEl) {
+  getComposerBox(inputEl) {
     if (!inputEl) return null;
 
-    const submitBtn = this.findSubmitButton();
-    if (submitBtn && submitBtn.parentElement) {
-      return submitBtn.parentElement;
+    // Check lowest ancestor of inputEl that contains at least 2 buttons (the composer card)
+    let parent = inputEl.parentElement;
+    while (parent && parent !== document.body && parent.tagName !== 'MAIN') {
+      if (
+        parent.id === '__next' ||
+        parent.id === 'root' ||
+        parent.tagName === 'BODY' ||
+        parent.tagName === 'HTML'
+      ) {
+        break;
+      }
+
+      if (parent.querySelectorAll('button, [role="button"]').length >= 2) {
+        return parent;
+      }
+      parent = parent.parentElement;
     }
 
-    const fieldset = inputEl.closest('fieldset') || inputEl.parentElement;
-    const actions = fieldset?.querySelector('.flex.items-center.justify-between, .flex.items-center.gap-2');
-    if (actions) return actions;
+    const fieldset = inputEl.closest('fieldset');
+    if (fieldset) return fieldset;
+    const form = inputEl.closest('form');
+    if (form) return form;
 
-    return inputEl.parentElement;
+    return inputEl.closest('main') || inputEl.parentElement;
   },
 
-  findSubmitButton() {
-    const selectors = [
+  findSubmitButton(inputEl) {
+    const el = inputEl || this.findInput();
+    const box = el ? this.getComposerBox(el) : null;
+    const scope = box || document;
+
+    // 1. Explicit send button attributes (active when text is present)
+    const sendSelectors = [
       'button[aria-label="Send Message"]',
       'button[aria-label="Send prompt"]',
-      'button[aria-label="Send"]',
-      'fieldset button[type="button"]:last-child',
+      'button[aria-label*="Send" i]',
+      'button[aria-label*="Submit" i]',
+      'button[data-testid*="send" i]',
     ];
 
-    for (const sel of selectors) {
-      const btn = document.querySelector(sel);
-      if (btn && btn.offsetParent !== null) return btn;
+    for (const sel of sendSelectors) {
+      const candidates = scope.querySelectorAll(sel);
+      for (const btn of candidates) {
+        if (
+          btn &&
+          btn.offsetParent !== null &&
+          !btn.closest('header, nav, aside') &&
+          !btn.classList.contains('tejasai-enhance-button')
+        ) {
+          return btn;
+        }
+      }
     }
+
+    // 2. Claude's voice / call / waveform action button (idle state when input is empty)
+    const idleActionSelectors = [
+      'button[aria-label*="voice" i]',
+      'button[aria-label*="audio" i]',
+      'button[aria-label*="call" i]',
+      'button[aria-label*="waveform" i]',
+      'button[aria-label*="record" i]',
+      'button[aria-label*="dictat" i]',
+      'button[data-testid*="voice" i]',
+      'button[data-testid*="call" i]',
+    ];
+
+    for (const sel of idleActionSelectors) {
+      const candidates = scope.querySelectorAll(sel);
+      for (const btn of candidates) {
+        if (
+          btn &&
+          btn.offsetParent !== null &&
+          !btn.closest('header, nav, aside') &&
+          !btn.classList.contains('tejasai-enhance-button')
+        ) {
+          return btn;
+        }
+      }
+    }
+
+    // 3. Fallback: The primary action button is the last button in the composer card
+    if (box) {
+      const allButtons = Array.from(box.querySelectorAll('button, [role="button"]')).filter(
+        (b) =>
+          b.offsetParent !== null &&
+          !b.closest('header, nav, aside') &&
+          !b.classList.contains('tejasai-enhance-button')
+      );
+
+      if (allButtons.length >= 1) {
+        return allButtons[allButtons.length - 1];
+      }
+    }
+
     return null;
   },
 
+  getButtonIcon() {
+    return `
+      <svg class="tejasai-claude-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2.5C12 2.5 12.3 8.2 14.5 10.5C16.8 12.7 22.5 13 22.5 13C22.5 13 16.8 13.3 14.5 15.5C12.3 17.8 12 23.5 12 23.5C12 23.5 11.7 17.8 9.5 15.5C7.2 13.3 1.5 13 1.5 13C1.5 13 7.2 12.7 9.5 10.5C11.7 8.2 12 2.5 12 2.5Z" fill="currentColor"/>
+        <path d="M19 3.5C19 3.5 19.2 5.8 20.1 6.7C21 7.6 23.3 7.7 23.3 7.7C23.3 7.7 21 7.9 20.1 8.8C19.2 9.7 19 12 19 12C19 12 18.8 9.7 17.9 8.8C17 7.9 14.7 7.7 14.7 7.7C14.7 7.7 17 7.6 17.9 6.7C18.8 5.8 19 3.5 19 3.5Z" fill="currentColor" opacity="0.8"/>
+      </svg>
+    `;
+  },
+
+  findAttachContainer(inputEl) {
+    if (!inputEl) return null;
+    const box = this.getComposerBox(inputEl);
+    const submitBtn = this.findSubmitButton(inputEl);
+
+    if (submitBtn && box) {
+      // Ascend from submitBtn to find the horizontal right-side actions row (holding mic, model, and send button).
+      // Crucial requirements for Claude web:
+      // 1. Must NEVER return submitBtn's private single-button wrapper (which is a 32px box that causes vertical stacking).
+      // 2. Must be a horizontal flex row with width > 60px.
+      // 3. Must hold multiple interactive controls (mic, model selector, send).
+      let current = submitBtn.parentElement;
+      while (current && current !== box && current !== document.body) {
+        const buttons = Array.from(current.querySelectorAll('button, [role="button"]')).filter(
+          (b) => !b.classList.contains('tejasai-enhance-button')
+        );
+
+        const style = window.getComputedStyle(current);
+        const isColumn = style.flexDirection.includes('column') || style.flexDirection.includes('column-reverse');
+        const rect = current.getBoundingClientRect ? current.getBoundingClientRect() : null;
+        const isWideEnough = rect ? rect.width > 60 : true;
+
+        // Skip any private container that only has 1 button (the submitBtn itself) or is a column or narrow
+        if (buttons.length <= 1 || isColumn || !isWideEnough) {
+          current = current.parentElement;
+          continue;
+        }
+
+        const allCardButtons = box.querySelectorAll('button, [role="button"]').length;
+
+        // Ideal: this container holds the right-side cluster only (mic, model, and send)
+        if (buttons.length >= 2 && buttons.length < allCardButtons) {
+          return current;
+        }
+
+        // If we reached the main bottom toolbar that holds both left (+, Chat, Cowork) and right groups:
+        // Find the specific direct child of the toolbar that contains submitBtn (the right cluster)!
+        if (buttons.length >= 2) {
+          for (const child of current.children) {
+            if (child.contains(submitBtn)) {
+              const childButtons = Array.from(child.querySelectorAll('button, [role="button"]')).filter(
+                (b) => !b.classList.contains('tejasai-enhance-button')
+              );
+              const childStyle = window.getComputedStyle(child);
+              const childIsCol = childStyle.flexDirection.includes('column');
+              const childRect = child.getBoundingClientRect ? child.getBoundingClientRect() : null;
+              const childIsWide = childRect ? childRect.width > 60 : true;
+
+              if (!childIsCol && childIsWide && (childButtons.length >= 1 || child.children.length >= 2)) {
+                return child;
+              }
+            }
+          }
+          return current;
+        }
+
+        current = current.parentElement;
+      }
+
+      // Fallback: If no intermediate cluster, ascend to submitBtn's parent's parent
+      if (submitBtn.parentElement?.parentElement && box?.contains(submitBtn.parentElement.parentElement)) {
+        return submitBtn.parentElement.parentElement;
+      }
+    }
+
+    return box || inputEl.parentElement;
+  },
+
   canAutoEnhance() {
-    return true;
+    return false;
   },
 
   submitPrompt(inputEl, submitBtn) {

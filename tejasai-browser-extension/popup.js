@@ -6,20 +6,19 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
   const masterToggle = document.getElementById('master-toggle');
-  const autoEnhanceToggle = document.getElementById('auto-enhance-toggle');
   const siteToggles = document.querySelectorAll('.site-toggle');
   const statusBar = document.getElementById('status-bar');
   const statusText = document.getElementById('status-text');
 
   let currentSettings = {
     enabled: true,
-    autoEnhance: false,
     sites: {
       chatgpt: true,
       gemini: true,
       perplexity: true,
       deepseek: true,
       claude: true,
+      grok: true,
     },
   };
 
@@ -29,7 +28,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       currentSettings = settings;
 
       masterToggle.checked = Boolean(settings.enabled);
-      autoEnhanceToggle.checked = Boolean(settings.autoEnhance);
 
       siteToggles.forEach((checkbox) => {
         const siteKey = checkbox.getAttribute('data-site');
@@ -63,11 +61,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 3. Event Listeners
   masterToggle.addEventListener('change', (e) => {
     currentSettings.enabled = e.target.checked;
-    persistSettings();
-  });
-
-  autoEnhanceToggle.addEventListener('change', (e) => {
-    currentSettings.autoEnhance = e.target.checked;
     persistSettings();
   });
 

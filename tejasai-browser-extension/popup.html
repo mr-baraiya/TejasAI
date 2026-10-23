@@ -44,18 +44,6 @@
         </label>
       </div>
 
-      <!-- Auto-Enhance Switch -->
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Auto-Enhance on Submit</div>
-          <div class="setting-desc">Automatically rewrite prompt when pressing Enter / Send</div>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="auto-enhance-toggle">
-          <span class="slider"></span>
-        </label>
-      </div>
-
       <!-- Supported Sites Section -->
       <div class="section-divider"></div>
       <div class="section-title">Supported AI Platforms</div>
@@ -122,6 +110,18 @@
           </label>
         </div>
 
+        <!-- Grok -->
+        <div class="site-row">
+          <div class="site-info">
+            <span class="site-name">Grok</span>
+            <span class="site-domain">grok.com / x.com</span>
+          </div>
+          <label class="switch switch-sm">
+            <input type="checkbox" class="site-toggle" data-site="grok" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
       </div>
 
       <!-- Action Button -->
@@ -133,11 +133,16 @@
 
     </main>
 
-    <!-- Footer -->
+    <!-- Footer & Disclaimer -->
     <footer class="footer">
-      <a href="PRIVACY.md" target="_blank" id="privacy-link" class="footer-link">Privacy Notice</a>
-      <span class="footer-sep">•</span>
-      <span class="footer-text">Zero data retention</span>
+      <div class="footer-links">
+        <a href="PRIVACY.md" target="_blank" id="privacy-link" class="footer-link">Privacy Notice</a>
+        <span class="footer-sep">•</span>
+        <span class="footer-text">Zero prompt retention</span>
+      </div>
+      <div class="disclaimer-text">
+        Independent tool. Not affiliated with or endorsed by OpenAI, Google, Anthropic, Perplexity, DeepSeek, or xAI.
+      </div>
     </footer>
 
   </div>

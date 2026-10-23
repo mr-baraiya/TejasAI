@@ -123,7 +123,7 @@ export function Header({ onNewPrompt, hasActivePrompt = false }) {
           </button>
         </div>
 
-        <nav className="flex-1 px-5 py-6 space-y-4 overflow-y-auto">
+        <nav className="flex-1 px-5 py-6 space-y-4 overflow-y-auto scrollbar-none">
           {navLinks.map((link) => (
             <a
               key={link.href}

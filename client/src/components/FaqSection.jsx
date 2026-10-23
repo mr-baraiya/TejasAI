@@ -16,7 +16,11 @@ const FAQS = [
   },
   {
     q: 'Which AI tools can I paste the result into?',
-    a: 'Any modern model. The generated prompts are universal and tested to produce reliable, high-depth responses in ChatGPT, Claude, Google Gemini, Perplexity, and DeepSeek.',
+    a: 'Any modern model. The generated prompts are universal and tested to produce reliable, high-depth responses in ChatGPT, Claude, Google Gemini, Perplexity, DeepSeek, and Grok.',
+  },
+  {
+    q: 'Is TejasAI affiliated with ChatGPT, Google, Claude, or other AI providers?',
+    a: 'No. TejasAI is an independent prompt optimization tool. We are not affiliated with, endorsed by, or sponsored by OpenAI, Google, Anthropic, Perplexity AI, DeepSeek, or xAI. All platform names and trademarks belong to their respective owners.',
   },
   {
     q: 'Do I need to know any prompt engineering?',

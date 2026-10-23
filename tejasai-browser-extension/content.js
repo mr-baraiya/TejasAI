@@ -2,7 +2,8 @@
  * TejasAI Browser Extension - Content Script Coordinator
  *
  * Coordinates site adapters, injects the TejasAI Enhance button,
- * manages the floating preview panel, and handles auto-enhancement safely.
+ * manages the floating preview panel with explicit Replace/Copy actions,
+ * and handles error states, timeouts, and recoverable retries.
  */
 
 (function () {
@@ -19,7 +20,6 @@
   // State
   let settings = {
     enabled: true,
-    autoEnhance: false,
     sites: {},
   };
 
@@ -29,25 +29,35 @@
   let isEnhancing = false;
   let originalPromptCache = '';
   let lastEnhancedResult = '';
-  let isAutoSubmitting = false;
+  let toastTimeoutId = null;
 
-  // TejasAI logo with fallback
+  const SPARKLE_ICON_SVG = `
+    <svg class="tejasai-sparkle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2L14.2 8.8L21 11L14.2 13.2L12 20L9.8 13.2L3 11L9.8 8.8L12 2Z" fill="currentColor"/>
+    </svg>
+  `;
+
+  // TejasAI logo with fallback or site-native vector icon
   function getLogoHtml() {
+    if (adapter && typeof adapter.getButtonIcon === 'function') {
+      return adapter.getButtonIcon();
+    }
     try {
       const logoUrl = chrome.runtime.getURL('icons/icon32.png');
       return `<img src="${logoUrl}" class="tejasai-btn-logo" alt="TejasAI" />`;
     } catch {
-      return `
-        <svg class="tejasai-sparkle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2L14.2 8.8L21 11L14.2 13.2L12 20L9.8 13.2L3 11L9.8 8.8L12 2Z" fill="currentColor"/>
-        </svg>
-      `;
+      return SPARKLE_ICON_SVG;
     }
   }
 
   // Fetch initial settings from background service worker
   function loadSettings() {
     chrome.runtime.sendMessage({ action: 'GET_SETTINGS' }, (res) => {
+      if (chrome.runtime.lastError) {
+        // Fallback default
+        checkAndInject();
+        return;
+      }
       if (res) {
         settings = res;
         checkAndInject();
@@ -69,37 +79,78 @@
     return true;
   }
 
-  // Toast notification helper
-  function showToast(message, type = 'normal') {
+  // Toast notification helper with dismissibility, non-stacking, and retry action
+  function showToast(message, type = 'normal', onRetry = null) {
+    if (toastTimeoutId) {
+      clearTimeout(toastTimeoutId);
+      toastTimeoutId = null;
+    }
+
     const existing = document.querySelector('.tejasai-toast');
     if (existing) existing.remove();
 
     const toast = document.createElement('div');
-    toast.className = `tejasai-toast ${type === 'error' ? 'tejasai-toast-error' : type === 'success' ? 'tejasai-toast-success' : ''}`;
+    toast.className = `tejasai-toast ${
+      type === 'error'
+        ? 'tejasai-toast-error'
+        : type === 'warning'
+        ? 'tejasai-toast-warning'
+        : type === 'success'
+        ? 'tejasai-toast-success'
+        : ''
+    }`;
     toast.setAttribute('role', 'alert');
-    toast.textContent = message;
+
+    const msgSpan = document.createElement('span');
+    msgSpan.className = 'tejasai-toast-message';
+    msgSpan.textContent = message;
+    toast.appendChild(msgSpan);
+
+    if (typeof onRetry === 'function') {
+      const retryBtn = document.createElement('button');
+      retryBtn.type = 'button';
+      retryBtn.className = 'tejasai-toast-btn';
+      retryBtn.textContent = 'Retry';
+      retryBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toast.remove();
+        onRetry();
+      });
+      toast.appendChild(retryBtn);
+    }
+
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'tejasai-toast-dismiss';
+    closeBtn.setAttribute('aria-label', 'Dismiss');
+    closeBtn.textContent = '✕';
+    closeBtn.addEventListener('click', () => {
+      toast.remove();
+    });
+    toast.appendChild(closeBtn);
 
     document.body.appendChild(toast);
-    setTimeout(() => {
+
+    const autoDismissMs = type === 'error' ? 7000 : 4000;
+    toastTimeoutId = setTimeout(() => {
       if (toast.parentElement) toast.remove();
-    }, 4000);
+    }, autoDismissMs);
   }
 
   // Main prompt enhancement trigger
-  async function performEnhance({ isAuto = false } = {}) {
+  async function performEnhance() {
     if (isEnhancing) return;
 
     const inputEl = adapter.findInput();
     if (!inputEl) {
-      showToast('Could not find active prompt input.', 'error');
+      showToast('Could not find active prompt input in composer.', 'error');
       return;
     }
 
     const promptText = adapter.getText(inputEl);
-    if (!promptText || promptText.length < 3) {
-      if (!isAuto) {
-        showToast('Please enter a prompt with at least 3 characters first.', 'error');
-      }
+    if (!promptText || promptText.trim().length === 0) {
+      showToast('Please enter a prompt first.', 'normal');
       return;
     }
 
@@ -108,52 +159,60 @@
       return;
     }
 
-    // Cache original prompt for undo/restore
+    // Cache original prompt
     originalPromptCache = promptText;
     setButtonLoading(true);
 
     try {
       const response = await new Promise((resolve) => {
-        chrome.runtime.sendMessage(
-          {
-            action: 'ENHANCE_PROMPT',
-            payload: {
-              prompt: promptText,
-              targetAI: adapter.targetAI || 'any',
+        try {
+          chrome.runtime.sendMessage(
+            {
+              action: 'ENHANCE_PROMPT',
+              payload: {
+                prompt: promptText.trim(),
+                targetAI: adapter.targetAI || 'any',
+              },
             },
-          },
-          (res) => resolve(res)
-        );
+            (res) => {
+              if (chrome.runtime.lastError) {
+                resolve({
+                  success: false,
+                  error: chrome.runtime.lastError.message || 'Could not reach extension service worker. Please refresh the page.',
+                  recoverable: true,
+                });
+              } else {
+                resolve(res);
+              }
+            }
+          );
+        } catch (dispatchErr) {
+          resolve({
+            success: false,
+            error: dispatchErr.message || 'Failed to dispatch enhancement request.',
+            recoverable: true,
+          });
+        }
       });
 
       if (!response || !response.success || !response.enhancedPrompt) {
         const errorMsg = response?.error || 'Enhancement failed. Please try again.';
-        showToast(errorMsg, 'error');
-        setButtonLoading(false);
+        const retryHandler = response?.recoverable ? () => performEnhance() : null;
+        const toastType = response?.isPolicyViolation ? 'warning' : 'error';
+        showToast(errorMsg, toastType, retryHandler);
         return;
       }
 
-      // Success: Apply enhanced prompt to input
       lastEnhancedResult = response.enhancedPrompt;
-      adapter.setText(inputEl, response.enhancedPrompt);
 
-      if (isAuto) {
-        // Auto-enhance submission flow
-        showToast('Prompt enhanced by TejasAI!', 'success');
-        isAutoSubmitting = true;
-        setTimeout(() => {
-          const submitBtn = adapter.findSubmitButton();
-          adapter.submitPrompt(inputEl, submitBtn);
-          setTimeout(() => {
-            isAutoSubmitting = false;
-          }, 600);
-        }, 150);
-      } else {
-        // Manual enhancement: open review card
-        showPreviewPanel(response);
-      }
+      // Explicit user flow: DO NOT overwrite input automatically.
+      // Present floating preview card with explicit Replace & Copy actions.
+      showPreviewPanel(response, inputEl);
     } catch (err) {
-      showToast('Connection to TejasAI failed. Check your network.', 'error');
+      if (typeof console !== 'undefined' && console.debug) {
+        console.debug('[TejasAI] Enhancement error caught:', err);
+      }
+      showToast(err.message || 'An unexpected error occurred during enhancement.', 'error', () => performEnhance());
     } finally {
       setButtonLoading(false);
     }
@@ -165,34 +224,26 @@
 
     if (loading) {
       enhanceBtn.disabled = true;
+      enhanceBtn.classList.add('tejasai-btn-loading');
       enhanceBtn.innerHTML = `
         <span class="tejasai-spinner"></span>
-        <span>Enhancing...</span>
       `;
     } else {
       enhanceBtn.disabled = false;
-      enhanceBtn.innerHTML = `
-        ${getLogoHtml()}
-        <span>Enhance</span>
-      `;
+      enhanceBtn.classList.remove('tejasai-btn-loading');
+      enhanceBtn.innerHTML = getLogoHtml();
     }
   }
 
-  // Floating preview and restore panel
-  function showPreviewPanel(result) {
+  // Floating preview and replace panel (appended to document.body to avoid host site overflow:hidden clipping)
+  function showPreviewPanel(result, targetInputEl) {
     dismissPreview();
 
-    const container = adapter.findAttachContainer(currentInputEl) || currentInputEl.parentElement;
-    if (!container) return;
-
-    // Ensure relative positioning context
-    const computedPos = window.getComputedStyle(container).position;
-    if (computedPos === 'static') {
-      container.style.position = 'relative';
-    }
+    const inputElement = targetInputEl || currentInputEl;
+    if (!inputElement) return;
 
     const card = document.createElement('div');
-    card.className = 'tejasai-preview-card';
+    card.className = `tejasai-preview-card tejasai-preview-${adapter.id}`;
     card.setAttribute('role', 'dialog');
     card.setAttribute('aria-label', 'TejasAI Prompt Enhancement Preview');
 
@@ -210,7 +261,7 @@
     card.innerHTML = `
       <div class="tejasai-preview-header">
         <div class="tejasai-preview-title">
-          ${SPARKLE_SVG}
+          ${SPARKLE_ICON_SVG}
           <span>Enhanced with TejasAI</span>
         </div>
         <button type="button" class="tejasai-preview-close" aria-label="Dismiss preview">✕</button>
@@ -220,15 +271,15 @@
         <div class="tejasai-preview-text">${escapeHtml(result.enhancedPrompt)}</div>
       </div>
       <div class="tejasai-preview-footer">
-        <button type="button" class="tejasai-action-btn tejasai-btn-secondary tejasai-btn-restore" title="Revert to your original typed prompt">
-          Restore Original
+        <button type="button" class="tejasai-action-btn tejasai-btn-secondary tejasai-btn-dismiss" title="Keep original draft untouched">
+          Keep Original
         </button>
         <div style="display: flex; gap: 6px;">
-          <button type="button" class="tejasai-action-btn tejasai-btn-secondary tejasai-btn-copy" title="Copy to clipboard">
+          <button type="button" class="tejasai-action-btn tejasai-btn-secondary tejasai-btn-copy" title="Copy enhanced prompt to clipboard">
             Copy
           </button>
-          <button type="button" class="tejasai-action-btn tejasai-btn-primary tejasai-btn-keep">
-            Keep &amp; Use
+          <button type="button" class="tejasai-action-btn tejasai-btn-primary tejasai-btn-replace" title="Replace composer text with enhanced prompt">
+            Replace Input
           </button>
         </div>
       </div>
@@ -236,12 +287,13 @@
 
     // Event listeners inside preview
     card.querySelector('.tejasai-preview-close').addEventListener('click', dismissPreview);
-    card.querySelector('.tejasai-btn-keep').addEventListener('click', dismissPreview);
+    card.querySelector('.tejasai-btn-dismiss').addEventListener('click', dismissPreview);
 
-    card.querySelector('.tejasai-btn-restore').addEventListener('click', () => {
-      if (originalPromptCache && currentInputEl) {
-        adapter.setText(currentInputEl, originalPromptCache);
-        showToast('Restored original prompt.', 'normal');
+    const replaceBtn = card.querySelector('.tejasai-btn-replace');
+    replaceBtn.addEventListener('click', () => {
+      if (inputElement && result.enhancedPrompt) {
+        adapter.setText(inputElement, result.enhancedPrompt);
+        showToast('Prompt updated in composer!', 'success');
       }
       dismissPreview();
     });
@@ -259,11 +311,53 @@
       }
     });
 
-    container.appendChild(card);
+    document.body.appendChild(card);
     previewPanel = card;
+
+    updatePreviewPosition();
+
+    window.addEventListener('scroll', updatePreviewPosition, { passive: true });
+    window.addEventListener('resize', updatePreviewPosition, { passive: true });
+  }
+
+  function updatePreviewPosition() {
+    if (!previewPanel) return;
+
+    const anchor = (enhanceBtn && document.contains(enhanceBtn))
+      ? enhanceBtn
+      : (currentInputEl ? (adapter.getComposerBox(currentInputEl) || currentInputEl) : null);
+    if (!anchor) return;
+
+    const rect = anchor.getBoundingClientRect();
+    const cardWidth = Math.min(460, window.innerWidth - 24);
+
+    let rightOffset = window.innerWidth - rect.right;
+    if (rightOffset < 14) rightOffset = 14;
+    if (rightOffset + cardWidth > window.innerWidth - 14) {
+      rightOffset = Math.max(14, window.innerWidth - cardWidth - 14);
+    }
+
+    previewPanel.style.position = 'fixed';
+    previewPanel.style.width = `${cardWidth}px`;
+    previewPanel.style.right = `${rightOffset}px`;
+    previewPanel.style.left = 'auto';
+    previewPanel.style.zIndex = '99999999';
+
+    const spaceAbove = rect.top;
+    const spaceBelow = window.innerHeight - rect.bottom;
+
+    if (spaceAbove >= 240 || spaceAbove > spaceBelow) {
+      previewPanel.style.bottom = `${Math.max(12, window.innerHeight - rect.top + 10)}px`;
+      previewPanel.style.top = 'auto';
+    } else {
+      previewPanel.style.top = `${Math.min(window.innerHeight - 100, rect.bottom + 10)}px`;
+      previewPanel.style.bottom = 'auto';
+    }
   }
 
   function dismissPreview() {
+    window.removeEventListener('scroll', updatePreviewPosition);
+    window.removeEventListener('resize', updatePreviewPosition);
     if (previewPanel && previewPanel.parentElement) {
       previewPanel.remove();
     }
@@ -275,6 +369,14 @@
     if (e.key === 'Escape' && previewPanel) {
       dismissPreview();
     }
+  });
+
+  // Click outside to dismiss preview
+  document.addEventListener('pointerdown', (e) => {
+    if (!previewPanel) return;
+    if (previewPanel.contains(e.target)) return;
+    if (enhanceBtn && enhanceBtn.contains(e.target)) return;
+    dismissPreview();
   });
 
   // Attach button and listeners to DOM
@@ -290,20 +392,37 @@
 
     currentInputEl = inputEl;
 
-    // Check if enhance button already attached to DOM
-    if (!document.contains(enhanceBtn)) {
-      const container = adapter.findAttachContainer(inputEl);
-      if (!container) return;
+    const container = adapter.findAttachContainer(inputEl);
+    if (!container) return;
+
+    const submitBtn = typeof adapter.findSubmitButton === 'function' ? adapter.findSubmitButton(inputEl) : null;
+
+    // Helper to calculate target sibling before which the button should sit
+    function getInsertBeforeTarget() {
+      if (!submitBtn) return null;
+      if (submitBtn.parentElement === container) return submitBtn;
+      if (container.contains(submitBtn)) {
+        let child = submitBtn;
+        while (child.parentElement && child.parentElement !== container) {
+          child = child.parentElement;
+        }
+        return child;
+      }
+      return null;
+    }
+
+    // Check if enhance button already attached to the valid container
+    if (!enhanceBtn || !document.contains(enhanceBtn) || !container.contains(enhanceBtn)) {
+      if (enhanceBtn && enhanceBtn.parentElement) {
+        enhanceBtn.remove();
+      }
 
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = `tejasai-enhance-button tejasai-enhance-btn-${adapter.id}`;
       btn.title = `Enhance prompt with TejasAI (${adapter.name})`;
       btn.setAttribute('aria-label', 'Enhance prompt with TejasAI');
-      btn.innerHTML = `
-        ${getLogoHtml()}
-        <span>Enhance</span>
-      `;
+      btn.innerHTML = getLogoHtml();
 
       btn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -311,69 +430,20 @@
         performEnhance({ isAuto: false });
       });
 
-      // Insert adjacent to submit button if submit button is inside the same container
-      const submitBtn = typeof adapter.findSubmitButton === 'function' ? adapter.findSubmitButton() : null;
-      if (submitBtn && submitBtn.parentElement === container) {
-        container.insertBefore(btn, submitBtn);
+      const target = getInsertBeforeTarget();
+      if (target) {
+        container.insertBefore(btn, target);
       } else {
         container.appendChild(btn);
       }
+
       enhanceBtn = btn;
-    }
-
-    // Setup auto-enhancement submission listener if enabled
-    setupAutoEnhancementListeners(inputEl);
-  }
-
-  // Automatic submission interception (when explicitly enabled)
-  function setupAutoEnhancementListeners(inputEl) {
-    if (inputEl._tejasai_auto_attached) return;
-    inputEl._tejasai_auto_attached = true;
-
-    // 1. Enter key listener on input
-    inputEl.addEventListener(
-      'keydown',
-      (e) => {
-        if (!settings.enabled || !settings.autoEnhance || !settings.sites?.[adapter.id]) return;
-        if (isAutoSubmitting || isEnhancing) return;
-
-        // Enter without shift triggers submission on modern AI sites
-        if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
-          const currentText = adapter.getText(inputEl);
-          // If already enhanced or too short, let natural submission proceed
-          if (!currentText || currentText === lastEnhancedResult || currentText.length < 3) {
-            return;
-          }
-
-          e.preventDefault();
-          e.stopPropagation();
-          performEnhance({ isAuto: true });
-        }
-      },
-      true // Capture phase to intercept before site handler
-    );
-
-    // 2. Submit button click listener
-    const submitBtn = adapter.findSubmitButton();
-    if (submitBtn && !submitBtn._tejasai_auto_attached) {
-      submitBtn._tejasai_auto_attached = true;
-      submitBtn.addEventListener(
-        'click',
-        (e) => {
-          if (!settings.enabled || !settings.autoEnhance || !settings.sites?.[adapter.id]) return;
-          if (isAutoSubmitting || isEnhancing) return;
-
-          const currentText = adapter.getText(inputEl);
-          if (!currentText || currentText === lastEnhancedResult || currentText.length < 3) {
-            return;
-          }
-
-          e.preventDefault();
-          e.stopPropagation();
-          performEnhance({ isAuto: true });
-        },
-        true
-      );
+    } else {
+      // If already in container, ensure correct order relative to submit button
+      const target = getInsertBeforeTarget();
+      if (target && enhanceBtn.nextElementSibling !== target && target !== enhanceBtn) {
+        container.insertBefore(enhanceBtn, target);
+      }
     }
   }
 

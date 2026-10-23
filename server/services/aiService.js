@@ -5,10 +5,12 @@ import { SYSTEM_INSTRUCTION } from './systemInstruction.js';
  * Custom error for refused requests (HTTP 422)
  */
 export class RefusalError extends Error {
-  constructor(message = "Sorry, we can't help with that request.") {
+  constructor(message = "Sorry, we can't help with that request.", code = 'CONTENT_POLICY_VIOLATION', category = 'content_policy') {
     super(message);
     this.name = 'RefusalError';
     this.statusCode = 422;
+    this.code = code;
+    this.category = category;
     this.isRefused = true;
   }
 }
@@ -83,7 +85,7 @@ Original request goal:
   if (isRetry) {
     messages.push({
       role: 'user',
-      content: 'STRICT REMINDER: Your previous response failed validation. Return ONLY a valid JSON object matching {"enhancedPrompt": "...", "whyBetter": [...]}. Follow all rules strictly: Preserve the exact deliverable type (image requests MUST remain direct image generation requests, NEVER "write a prompt for an image"). Preserve all numeric limits, budgets, negative constraints, and verbatim source content. No bracket labels like [ROLE], no headings, no code fences. whyBetter must have exactly 2 or 3 items, each under 140 characters.',
+      content: 'STRICT REMINDER: Your previous response failed validation. Return ONLY a valid JSON object matching {"enhancedPrompt": "...", "whyBetter": [...]}. Follow all rules strictly: Preserve the exact deliverable type (image requests MUST remain direct image generation requests, NEVER "write a prompt for an image"). Preserve all numeric limits, budgets, negative constraints, and verbatim source content. No bracket labels like [ROLE], no headings, no code fences, no conversational filler or typo lectures. For short or ambiguous input, produce a conservative improvement or at most a single concise clarification question without multi-sentence lectures. Keep output concise and proportional to the input. whyBetter must have exactly 2 or 3 items, each under 140 characters.',
     });
   }
 
@@ -127,7 +129,11 @@ export function validateOutput(rawText, originalInput) {
 
   // Check refused flag
   if (parsed.refused === true || parsed.refused === 'true') {
-    return { isValid: true, isRefused: true };
+    const refusalReason =
+      (typeof parsed.refusalReason === 'string' && parsed.refusalReason.trim()) ||
+      (typeof parsed.reason === 'string' && parsed.reason.trim()) ||
+      "Sorry, we can't help with that request.";
+    return { isValid: true, isRefused: true, refusalReason };
   }
 
   const enhancedPrompt = parsed.enhancedPrompt;
@@ -166,6 +172,11 @@ export function validateOutput(rawText, originalInput) {
   const inputStartsWithFluff = /^(Here('?s| is| are)|Sure|Certainly|Of course|Gladly|Okay|Alright)\b/i.test(originalInput);
   if (startsWithFluff && !inputStartsWithFluff) {
     return { isValid: false, reason: 'Contains conversational intro' };
+  }
+
+  // Reject lecturing phrases on short inputs like "The input '...' appears to be a typo or abbreviation"
+  if (/^The input\s+['"].*['"]\s+appears to be a typo/i.test(trimmedPrompt)) {
+    return { isValid: false, reason: 'Contains conversational typo lecture' };
   }
 
   // Reject word count over 220 words
@@ -252,12 +263,74 @@ async function callGroqChat(groq, primaryModel, messages, timeoutMs) {
       const isNotFound = err.status === 404 || (err.message && err.message.includes('model'));
       const isServerDown = err.status === 503 || err.status === 502;
 
+      const isJsonValidateFailed =
+        err.status === 400 &&
+        (err.message?.includes('json_validate_failed') ||
+          err.error?.error?.code === 'json_validate_failed' ||
+          err.message?.includes('Failed to validate JSON'));
+
+      if (isJsonValidateFailed) {
+        console.warn(`[Groq JSON Mode Fix] Model '${currentModel}' failed constrained JSON decoding. Retrying without response_format...`);
+        try {
+          const unconstrainedController = new AbortController();
+          const unconstrainedTimeoutId = setTimeout(() => unconstrainedController.abort(), timeoutMs);
+          const unconstrainedCompletion = await groq.chat.completions.create(
+            {
+              model: currentModel,
+              messages,
+              temperature: 0.3,
+              max_tokens: 600,
+            },
+            { signal: unconstrainedController.signal }
+          );
+          clearTimeout(unconstrainedTimeoutId);
+          return unconstrainedCompletion.choices?.[0]?.message?.content || '';
+        } catch (unconstrainedErr) {
+          lastError = unconstrainedErr;
+        }
+      }
+
+      if (isRateLimit) {
+        const raw = err.error?.error?.message || err.message || '';
+        const shortRetry = raw.match(/try again in (\d+(?:\.\d+)?)(ms|s)/i);
+        if (shortRetry) {
+          const val = parseFloat(shortRetry[1]);
+          const unit = shortRetry[2].toLowerCase();
+          const waitMs = unit === 's' ? val * 1000 : val;
+          if (waitMs <= 2500) {
+            console.warn(`[Groq Rate Limit] Short burst wait (${waitMs}ms). Pausing ${waitMs + 150}ms before retrying '${currentModel}'...`);
+            await new Promise((r) => setTimeout(r, waitMs + 150));
+            try {
+              const retryController = new AbortController();
+              const retryTimeoutId = setTimeout(() => retryController.abort(), timeoutMs);
+              const retryCompletion = await groq.chat.completions.create(
+                {
+                  model: currentModel,
+                  messages,
+                  response_format: { type: 'json_object' },
+                  temperature: 0.3,
+                  max_tokens: 600,
+                },
+                { signal: retryController.signal }
+              );
+              clearTimeout(retryTimeoutId);
+              return retryCompletion.choices?.[0]?.message?.content || '';
+            } catch (retryErr) {
+              lastError = retryErr;
+            }
+          }
+        }
+      }
+
       if ((isRateLimit || isNotFound || isServerDown) && nextModel) {
         console.warn(
           `[Groq Resilient Failover] Model '${currentModel}' returned ${err.status} (${
-            err.message?.includes('TPD') ? 'Daily token limit' : 'Service busy'
+            err.message?.includes('TPD') ? 'Daily token limit' : 'Rate limit / Service busy'
           }). Seamlessly failing over to '${nextModel}'...`
         );
+        if (isRateLimit) {
+          await new Promise((r) => setTimeout(r, 400));
+        }
         continue;
       }
       throw err;
@@ -346,7 +419,7 @@ export async function enhancePrompt({
   const validation1 = validateOutput(rawContent1, comparisonInput);
 
   if (validation1.isRefused) {
-    throw new RefusalError("Sorry, we can't help with that request.");
+    throw new RefusalError(validation1.refusalReason || "Sorry, we can't help with that request.");
   }
 
   if (validation1.isValid) {
@@ -383,7 +456,7 @@ export async function enhancePrompt({
   const validation2 = validateOutput(rawContent2, comparisonInput);
 
   if (validation2.isRefused) {
-    throw new RefusalError("Sorry, we can't help with that request.");
+    throw new RefusalError(validation2.refusalReason || "Sorry, we can't help with that request.");
   }
 
   if (validation2.isValid) {

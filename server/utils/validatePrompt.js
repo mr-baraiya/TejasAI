@@ -6,7 +6,7 @@
  * Ignores category and tone.
  */
 
-const ALLOWED_TARGET_AIS = ['any', 'chatgpt', 'gemini', 'claude', 'perplexity', 'deepseek'];
+const ALLOWED_TARGET_AIS = ['any', 'chatgpt', 'gemini', 'claude', 'perplexity', 'deepseek', 'grok'];
 const ALLOWED_TWEAKS = ['shorter', 'simpler', 'moreDetail', 'more_detail'];
 
 export function validatePrompt(body) {
@@ -43,11 +43,11 @@ export function validatePrompt(body) {
 
   const trimmedPrompt = prompt.trim();
 
-  if (trimmedPrompt.length < 3) {
+  if (trimmedPrompt.length === 0) {
     return {
       isValid: false,
       statusCode: 400,
-      error: 'Please enter a prompt with at least 3 characters.',
+      error: 'Please enter a non-empty prompt.',
     };
   }
 

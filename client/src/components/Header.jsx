@@ -5,7 +5,7 @@ import { Menu, X } from 'lucide-react';
  * Clean, human Header matching TejasAI's editorial aesthetic.
  * All navigation links share consistent typography with no artificial borders or icons.
  */
-export function Header({ onNewPrompt, hasActivePrompt = false }) {
+export function Header({ onNewPrompt, hasActivePrompt = false, onOpenFavorites, favoritesCount = 0 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogoClick = (e) => {
@@ -17,11 +17,13 @@ export function Header({ onNewPrompt, hasActivePrompt = false }) {
     }
   };
 
-  const navLinks = [
-    { label: 'Examples', href: '#examples' },
-    { label: 'How it works', href: '#how-it-works' },
-    { label: 'Extension', href: '#extension' },
-    { label: 'FAQ', href: '#faq' },
+  const navItems = [
+    { type: 'link', label: 'Prompt Builder', href: '#prompt-builder' },
+    { type: 'link', label: 'Examples', href: '#examples' },
+    { type: 'link', label: 'How it works', href: '#how-it-works' },
+    { type: 'favorites', label: 'Favorites' },
+    { type: 'link', label: 'Extension', href: '#extension' },
+    { type: 'link', label: 'FAQ', href: '#faq' },
   ];
 
   const handleNavClick = (e, href) => {
@@ -56,18 +58,39 @@ export function Header({ onNewPrompt, hasActivePrompt = false }) {
               </span>
             </a>
 
-            {/* Desktop Navigation Links */}
+            {/* Desktop Navigation in exact ordered sequence */}
             <nav className="hidden md:flex items-center space-x-6">
-              {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={(e) => handleNavClick(e, link.href)}
-                  className="text-sm font-medium text-[#6B7280] hover:text-[#111827] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2410C] rounded-none py-1 transition-colors"
-                >
-                  {link.label}
-                </a>
-              ))}
+              {navItems.map((item) => {
+                if (item.type === 'favorites') {
+                  return (
+                    <button
+                      key="favorites"
+                      type="button"
+                      onClick={onOpenFavorites}
+                      className="flex items-center gap-1.5 text-sm font-medium text-[#6B7280] hover:text-[#111827] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2410C] rounded-none py-1 transition-colors cursor-pointer"
+                      title="View your saved favorite prompts"
+                    >
+                      <span>Favorites</span>
+                      {favoritesCount > 0 && (
+                        <span className="font-mono text-[10px] bg-[#111827] text-white px-1.5 py-0.5 leading-none">
+                          {favoritesCount}
+                        </span>
+                      )}
+                    </button>
+                  );
+                }
+
+                return (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    onClick={(e) => handleNavClick(e, item.href)}
+                    className="text-sm font-medium text-[#6B7280] hover:text-[#111827] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2410C] rounded-none py-1 transition-colors"
+                  >
+                    {item.label}
+                  </a>
+                );
+              })}
             </nav>
 
             {/* Mobile menu button (borderless, no box) */}
@@ -97,7 +120,7 @@ export function Header({ onNewPrompt, hasActivePrompt = false }) {
 
       {/* Mobile drawer from right side up to 50% of screen */}
       <aside
-        className={`fixed top-0 right-0 bottom-0 z-50 w-1/2 bg-[#FFFBF5] border-l border-[#EDE8E1] shadow-2xl flex flex-col md:hidden transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 bottom-0 z-50 w-2/3 sm:w-1/2 max-w-xs bg-[#FFFBF5] border-l border-[#EDE8E1] shadow-2xl flex flex-col md:hidden transform transition-transform duration-300 ease-in-out ${
           mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
         aria-label="Mobile navigation"
@@ -114,16 +137,39 @@ export function Header({ onNewPrompt, hasActivePrompt = false }) {
         </div>
 
         <nav className="flex-1 px-5 py-6 space-y-4 overflow-y-auto scrollbar-none">
-          {navLinks.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              onClick={(e) => handleNavClick(e, link.href)}
-              className="block text-sm font-medium text-[#374151] hover:text-[#C2410C] py-1 transition-colors"
-            >
-              {link.label}
-            </a>
-          ))}
+          {navItems.map((item) => {
+            if (item.type === 'favorites') {
+              return (
+                <button
+                  key="favorites"
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    if (onOpenFavorites) onOpenFavorites();
+                  }}
+                  className="w-full flex items-center justify-between text-sm font-medium text-[#374151] hover:text-[#C2410C] py-1 transition-colors cursor-pointer text-left"
+                >
+                  <span>Favorites</span>
+                  {favoritesCount > 0 && (
+                    <span className="font-mono text-xs bg-[#111827] text-white px-2 py-0.5">
+                      {favoritesCount}
+                    </span>
+                  )}
+                </button>
+              );
+            }
+
+            return (
+              <a
+                key={item.href}
+                href={item.href}
+                onClick={(e) => handleNavClick(e, item.href)}
+                className="block text-sm font-medium text-[#374151] hover:text-[#C2410C] py-1 transition-colors"
+              >
+                {item.label}
+              </a>
+            );
+          })}
         </nav>
       </aside>
     </>

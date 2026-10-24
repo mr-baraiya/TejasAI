@@ -56,16 +56,24 @@
         return;
       }
       if (res) {
-        settings = res;
+        settings = { ...settings, ...res };
         checkAndInject();
       }
     });
   }
 
-  // React to storage updates from popup
-  chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === 'sync' && changes.tejasai_settings) {
-      settings = changes.tejasai_settings.newValue || {};
+  // React to storage updates from popup (both sync and local)
+  chrome.storage.onChanged.addListener((changes) => {
+    if (changes && changes.tejasai_settings && changes.tejasai_settings.newValue) {
+      settings = { ...settings, ...changes.tejasai_settings.newValue };
+      checkAndInject();
+    }
+  });
+
+  // Listen for broadcast message from background when popup saves settings
+  chrome.runtime.onMessage.addListener((message) => {
+    if (message && message.action === 'SETTINGS_UPDATED' && message.payload) {
+      settings = { ...settings, ...message.payload };
       checkAndInject();
     }
   });
@@ -202,17 +210,39 @@
 
       lastEnhancedResult = response.enhancedPrompt;
 
-      // Auto-Replace mode: If user enabled "Auto-Replace Input", directly replace text without asking permission
-      if (settings.autoReplace) {
-        adapter.setText(inputEl, response.enhancedPrompt);
-        showToast('Prompt enhanced & replaced!', 'success', () => {
-          adapter.setText(inputEl, originalPromptCache);
-          showToast('Restored original prompt.', 'normal');
-        }, 'Undo');
-      } else {
-        // Permission mode: Present floating preview card with explicit Replace & Copy actions
-        showPreviewPanel(response, inputEl);
+      // Ensure we have fresh settings from background in case toggle changed in popup
+      try {
+        const fresh = await new Promise((resolve) => {
+          chrome.runtime.sendMessage({ action: 'GET_SETTINGS' }, (res) => {
+            if (chrome.runtime.lastError || !res) resolve(null);
+            else resolve(res);
+          });
+        });
+        if (fresh) {
+          settings = { ...settings, ...fresh };
+        }
+      } catch {
+        // fallback to current in-memory settings
       }
+
+      const isAutoReplace = settings.autoReplace === true || settings.autoReplace === 'true';
+
+      // Auto-Replace mode: If user enabled "Auto-Replace Input", directly replace text without asking permission
+      if (isAutoReplace) {
+        const elToUpdate = (inputEl && inputEl.isConnected) ? inputEl : (adapter.findInput() || inputEl);
+        if (elToUpdate) {
+          adapter.setText(elToUpdate, response.enhancedPrompt);
+          showToast('Prompt enhanced & replaced!', 'success', () => {
+            const undoEl = (elToUpdate && elToUpdate.isConnected) ? elToUpdate : (adapter.findInput() || elToUpdate);
+            if (undoEl) adapter.setText(undoEl, originalPromptCache);
+            showToast('Restored original prompt.', 'normal');
+          }, 'Undo');
+          return;
+        }
+      }
+
+      // Permission mode: Present floating preview card with explicit Replace & Copy actions
+      showPreviewPanel(response, inputEl);
     } catch (err) {
       if (typeof console !== 'undefined' && console.debug) {
         console.debug('[TejasAI] Enhancement error caught:', err);
@@ -276,7 +306,10 @@
           ${previewLogoUrl ? `<img src="${previewLogoUrl}" class="tejasai-preview-logo" alt="TejasAI" />` : ''}
           <span>Enhanced with TejasAI</span>
         </div>
-        <button type="button" class="tejasai-preview-close" aria-label="Dismiss preview">✕</button>
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <button type="button" class="tejasai-preview-star" title="Save to TejasAI favorites">★</button>
+          <button type="button" class="tejasai-preview-close" aria-label="Dismiss preview">✕</button>
+        </div>
       </div>
       <div class="tejasai-preview-body">
         ${whyBetterHtml}
@@ -305,6 +338,44 @@
     card.querySelector('.tejasai-preview-close').addEventListener('click', dismissPreview);
     card.querySelector('.tejasai-btn-dismiss').addEventListener('click', dismissPreview);
 
+    const starBtn = card.querySelector('.tejasai-preview-star');
+    if (starBtn) {
+      chrome.storage.local.get(['tejasai_favorites'], (data) => {
+        const list = Array.isArray(data?.tejasai_favorites) ? data.tejasai_favorites : [];
+        if (list.some((f) => f.prompt.trim() === result.enhancedPrompt.trim())) {
+          starBtn.style.opacity = '1';
+        } else {
+          starBtn.style.opacity = '0.55';
+        }
+      });
+
+      starBtn.addEventListener('click', () => {
+        chrome.storage.local.get(['tejasai_favorites'], (data) => {
+          const list = Array.isArray(data?.tejasai_favorites) ? data.tejasai_favorites : [];
+          const idx = list.findIndex((f) => f.prompt.trim() === result.enhancedPrompt.trim());
+          if (idx >= 0) {
+            list.splice(idx, 1);
+            chrome.storage.local.set({ tejasai_favorites: list });
+            starBtn.style.opacity = '0.55';
+            showToast('Removed from extension favorites.', 'normal');
+          } else {
+            list.unshift({
+              id: `fav_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+              title: originalPromptCache.slice(0, 35) || 'Enhanced Prompt',
+              prompt: result.enhancedPrompt,
+              category: adapter.targetAI || 'general',
+              whyBetter: result.whyBetter || [],
+              source: 'enhancer',
+              createdAt: new Date().toISOString(),
+            });
+            chrome.storage.local.set({ tejasai_favorites: list });
+            starBtn.style.opacity = '1';
+            showToast('Saved to extension favorites', 'success');
+          }
+        });
+      });
+    }
+
     const replaceBtn = card.querySelector('.tejasai-btn-replace');
     replaceBtn.addEventListener('click', () => {
       const autoReplaceCb = card.querySelector('.tejasai-autoreplace-cb');
@@ -315,9 +386,16 @@
           payload: { ...settings, autoReplace: true },
         });
       }
-      if (inputElement && result.enhancedPrompt) {
-        adapter.setText(inputElement, result.enhancedPrompt);
+      // Resolve live DOM input in case element was re-mounted or detached during preview
+      const elToUpdate = (inputElement && inputElement.isConnected)
+        ? inputElement
+        : (adapter.findInput() || inputElement);
+
+      if (elToUpdate && result.enhancedPrompt) {
+        adapter.setText(elToUpdate, result.enhancedPrompt);
         showToast('Prompt updated in composer!', 'success');
+      } else {
+        showToast('Could not find active composer.', 'error');
       }
       dismissPreview();
     });
@@ -493,6 +571,22 @@
   observer.observe(document.body, {
     childList: true,
     subtree: true,
+  });
+
+  // Message listener from extension popup (e.g. "Insert into Chat" action)
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message && message.action === 'INSERT_PROMPT') {
+      const inputEl = adapter.findInput();
+      if (inputEl && message.payload?.prompt) {
+        adapter.setText(inputEl, message.payload.prompt);
+        showToast('Prompt inserted from TejasAI!', 'success');
+        sendResponse({ success: true });
+      } else {
+        showToast('Could not find active input box.', 'error');
+        sendResponse({ success: false, error: 'Input element not found' });
+      }
+      return true;
+    }
   });
 
   // Initial load

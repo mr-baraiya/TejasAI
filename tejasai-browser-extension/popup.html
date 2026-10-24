@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TejasAI Settings</title>
+  <title>TejasAI – Prompt Enhancer & Builder</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
@@ -15,13 +15,27 @@
         <img src="icons/icon32.png" alt="TejasAI Logo" class="brand-logo" />
         <div>
           <div class="brand-title">TejasAI</div>
-          <div class="brand-subtitle">AI Prompt Enhancer</div>
+          <div class="brand-subtitle">AI Prompt Enhancer & Builder</div>
         </div>
       </div>
       <div class="header-right">
-        <span class="version-badge">v1.0.0</span>
+        <span class="version-badge">v1.1.0</span>
       </div>
     </header>
+
+    <!-- Top Navigation Tabs -->
+    <nav class="popup-tabs">
+      <button type="button" class="tab-btn active" data-tab="tab-settings" id="nav-btn-settings">
+        <span>Enhance</span>
+      </button>
+      <button type="button" class="tab-btn" data-tab="tab-builder" id="nav-btn-builder">
+        <span>Builder</span>
+      </button>
+      <button type="button" class="tab-btn" data-tab="tab-favorites" id="nav-btn-favorites">
+        <span>Favorites</span>
+        <span id="fav-count-badge" class="tab-badge" style="display:none;">0</span>
+      </button>
+    </nav>
 
     <!-- API Health Status Banner -->
     <div id="status-bar" class="status-bar status-checking">
@@ -29,120 +43,212 @@
       <span id="status-text">Checking TejasAI API...</span>
     </div>
 
-    <!-- Main Controls -->
-    <main class="content">
+    <!-- TAB 1: Enhance & Settings Content -->
+    <div id="tab-settings" class="tab-pane active">
+      <main class="content">
 
-      <!-- Master Switch -->
-      <div class="setting-row primary-switch">
-        <div>
-          <div class="setting-label">Enable TejasAI</div>
-          <div class="setting-desc">Show Enhance button on supported AI tools</div>
+        <!-- Master Switch -->
+        <div class="setting-row primary-switch">
+          <div>
+            <div class="setting-label">Enable TejasAI</div>
+            <div class="setting-desc">Show Enhance button on supported AI tools</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="master-toggle" checked>
+            <span class="slider"></span>
+          </label>
         </div>
-        <label class="switch">
-          <input type="checkbox" id="master-toggle" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
 
-      <!-- Auto-Replace Switch -->
-      <div class="setting-row primary-switch">
-        <div>
-          <div class="setting-label">Auto-Replace Input</div>
-          <div class="setting-desc">Skip confirmation and replace input automatically</div>
+        <!-- Auto-Replace Switch -->
+        <div class="setting-row primary-switch">
+          <div>
+            <div class="setting-label">Auto-Replace Input</div>
+            <div class="setting-desc">Skip confirmation and replace input automatically</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="auto-replace-toggle">
+            <span class="slider"></span>
+          </label>
         </div>
-        <label class="switch">
-          <input type="checkbox" id="auto-replace-toggle">
-          <span class="slider"></span>
-        </label>
-      </div>
 
-      <!-- Supported Sites Section -->
-      <div class="section-title">Supported AI Platforms</div>
-      
-      <div class="sites-list">
+        <!-- Supported Sites Section -->
+        <div class="section-title">Supported AI Platforms</div>
         
-        <!-- ChatGPT -->
-        <div class="site-row">
-          <div class="site-info">
-            <span class="site-name">ChatGPT</span>
-            <span class="site-domain">chatgpt.com</span>
+        <div class="sites-list">
+          
+          <!-- ChatGPT -->
+          <div class="site-row">
+            <div class="site-info">
+              <span class="site-name">ChatGPT</span>
+              <span class="site-domain">chatgpt.com</span>
+            </div>
+            <label class="switch switch-sm">
+              <input type="checkbox" class="site-toggle" data-site="chatgpt" checked>
+              <span class="slider"></span>
+            </label>
           </div>
-          <label class="switch switch-sm">
-            <input type="checkbox" class="site-toggle" data-site="chatgpt" checked>
-            <span class="slider"></span>
-          </label>
+
+          <!-- Google Gemini -->
+          <div class="site-row">
+            <div class="site-info">
+              <span class="site-name">Google Gemini</span>
+              <span class="site-domain">gemini.google.com</span>
+            </div>
+            <label class="switch switch-sm">
+              <input type="checkbox" class="site-toggle" data-site="gemini" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Claude -->
+          <div class="site-row">
+            <div class="site-info">
+              <span class="site-name">Claude</span>
+              <span class="site-domain">claude.ai</span>
+            </div>
+            <label class="switch switch-sm">
+              <input type="checkbox" class="site-toggle" data-site="claude" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Perplexity -->
+          <div class="site-row">
+            <div class="site-info">
+              <span class="site-name">Perplexity</span>
+              <span class="site-domain">perplexity.ai</span>
+            </div>
+            <label class="switch switch-sm">
+              <input type="checkbox" class="site-toggle" data-site="perplexity" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- DeepSeek -->
+          <div class="site-row">
+            <div class="site-info">
+              <span class="site-name">DeepSeek</span>
+              <span class="site-domain">chat.deepseek.com</span>
+            </div>
+            <label class="switch switch-sm">
+              <input type="checkbox" class="site-toggle" data-site="deepseek" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Grok -->
+          <div class="site-row">
+            <div class="site-info">
+              <span class="site-name">Grok</span>
+              <span class="site-domain">grok.com / x.com</span>
+            </div>
+            <label class="switch switch-sm">
+              <input type="checkbox" class="site-toggle" data-site="grok" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
         </div>
 
-        <!-- Google Gemini -->
-        <div class="site-row">
-          <div class="site-info">
-            <span class="site-name">Google Gemini</span>
-            <span class="site-domain">gemini.google.com</span>
-          </div>
-          <label class="switch switch-sm">
-            <input type="checkbox" class="site-toggle" data-site="gemini" checked>
-            <span class="slider"></span>
-          </label>
+        <!-- Action Button -->
+        <div class="actions">
+          <a href="https://tejasai-eta.vercel.app/" target="_blank" class="btn btn-primary" id="open-web-app">
+            Open TejasAI Web App ↗
+          </a>
         </div>
 
-        <!-- Claude -->
-        <div class="site-row">
-          <div class="site-info">
-            <span class="site-name">Claude</span>
-            <span class="site-domain">claude.ai</span>
+      </main>
+    </div>
+
+    <!-- TAB 2: Compact Prompt Builder -->
+    <div id="tab-builder" class="tab-pane">
+      <div class="builder-content">
+        
+        <!-- Category & Preset Row -->
+        <div class="builder-header-row">
+          <div class="form-group flex-1">
+            <label class="field-label" for="builder-category">Template Framework</label>
+            <select id="builder-category" class="compact-select">
+              <option value="coding">Coding</option>
+              <option value="education">Education</option>
+              <option value="writing">Writing</option>
+              <option value="marketing">Marketing</option>
+              <option value="research">Research</option>
+              <option value="image">Image Generation</option>
+            </select>
           </div>
-          <label class="switch switch-sm">
-            <input type="checkbox" class="site-toggle" data-site="claude" checked>
-            <span class="slider"></span>
-          </label>
+          <button type="button" id="builder-load-preset" class="btn-preset" title="Load sample inputs">
+            Load Sample
+          </button>
         </div>
 
-        <!-- Perplexity -->
-        <div class="site-row">
-          <div class="site-info">
-            <span class="site-name">Perplexity</span>
-            <span class="site-domain">perplexity.ai</span>
-          </div>
-          <label class="switch switch-sm">
-            <input type="checkbox" class="site-toggle" data-site="perplexity" checked>
-            <span class="slider"></span>
-          </label>
+        <!-- Dynamic Form Fields Area -->
+        <div id="builder-fields-container" class="builder-fields">
+          <!-- Populated dynamically via JS -->
         </div>
 
-        <!-- DeepSeek -->
-        <div class="site-row">
-          <div class="site-info">
-            <span class="site-name">DeepSeek</span>
-            <span class="site-domain">chat.deepseek.com</span>
+        <!-- Live Preview / Output Area -->
+        <div class="builder-output-section">
+          <div class="output-header">
+            <span class="output-label" id="builder-output-title">Generated Prompt</span>
+            <span class="char-count" id="builder-stats">0 words</span>
           </div>
-          <label class="switch switch-sm">
-            <input type="checkbox" class="site-toggle" data-site="deepseek" checked>
-            <span class="slider"></span>
-          </label>
-        </div>
+          <textarea id="builder-output-prompt" class="builder-output-textarea" rows="4" placeholder="Your structured prompt will generate here..."></textarea>
+          
+          <!-- Why Better Container (revealed when enhanced) -->
+          <div id="builder-why-better" class="builder-why-better" style="display:none;"></div>
 
-        <!-- Grok -->
-        <div class="site-row">
-          <div class="site-info">
-            <span class="site-name">Grok</span>
-            <span class="site-domain">grok.com / x.com</span>
+          <!-- Action Buttons Bar -->
+          <div class="builder-actions-grid">
+            <button type="button" id="builder-enhance-btn" class="btn btn-accent">
+              <span>Enhance</span>
+            </button>
+            <button type="button" id="builder-insert-btn" class="btn btn-dark" title="Paste directly into active ChatGPT/Gemini/Claude tab">
+              <span>Insert</span>
+            </button>
+            <button type="button" id="builder-copy-btn" class="btn btn-secondary" title="Copy to clipboard">
+              <span>Copy</span>
+            </button>
+            <button type="button" id="builder-fav-btn" class="btn btn-secondary" title="Save to extension favorites">
+              <span>Save</span>
+            </button>
           </div>
-          <label class="switch switch-sm">
-            <input type="checkbox" class="site-toggle" data-site="grok" checked>
-            <span class="slider"></span>
-          </label>
         </div>
 
       </div>
+    </div>
 
-      <!-- Action Button -->
-      <div class="actions">
-        <a href="https://tejasai-eta.vercel.app/" target="_blank" class="btn btn-primary" id="open-web-app">
-          Open TejasAI Web App ↗
-        </a>
+    <!-- TAB 3: Favorites Manager -->
+    <div id="tab-favorites" class="tab-pane">
+      <div class="favorites-content">
+        
+        <!-- Search and Filter Bar -->
+        <div class="fav-search-bar">
+          <input type="text" id="fav-search-input" class="fav-search-input" placeholder="Search saved prompts..." />
+          <button type="button" id="fav-clear-search" class="fav-clear-btn" style="display:none;">✕</button>
+        </div>
+
+        <!-- Category Filter Pills -->
+        <div class="fav-category-chips" id="fav-category-chips">
+          <button type="button" class="chip active" data-cat="all">All</button>
+          <button type="button" class="chip" data-cat="coding">Coding</button>
+          <button type="button" class="chip" data-cat="education">Education</button>
+          <button type="button" class="chip" data-cat="writing">Writing</button>
+          <button type="button" class="chip" data-cat="marketing">Marketing</button>
+          <button type="button" class="chip" data-cat="research">Research</button>
+          <button type="button" class="chip" data-cat="image">Image</button>
+        </div>
+
+        <!-- Favorites Cards List -->
+        <div id="fav-list-container" class="fav-list-container">
+          <!-- Populated dynamically via JS -->
+        </div>
+
       </div>
+    </div>
 
-    </main>
+    <!-- Global Popup Toast Notification -->
+    <div id="popup-toast" class="popup-toast" style="display:none;"></div>
 
     <!-- Footer & Disclaimer -->
     <footer class="footer">
@@ -158,6 +264,6 @@
 
   </div>
 
-  <script src="popup.js"></script>
+  <script type="module" src="popup.js"></script>
 </body>
 </html>

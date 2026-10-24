@@ -105,7 +105,12 @@ export function ExtensionModal({ isOpen, onClose }) {
             </li>
             <li className="flex items-start gap-2.5">
               <span className="font-mono text-[11px] text-[#C2410C] font-bold shrink-0 mt-0.5">03</span>
-              <span>Click <strong>Load unpacked</strong> and select the unzipped folder.</span>
+              <div>
+                <span>Click <strong>Load unpacked</strong> and select the unzipped <code className="font-mono text-[11px] text-[#111827]">tejasai-browser-extension</code> folder.</span>
+                <p className="text-[11px] text-[#6B7280] mt-1 leading-normal">
+                  <strong className="text-[#B91C1C] font-semibold">Note:</strong> Do not delete or move this folder after installation, or the extension will stop working.
+                </p>
+              </div>
             </li>
           </ol>
         </div>

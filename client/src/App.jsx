@@ -9,7 +9,10 @@ import { FaqSection } from './components/FaqSection';
 import { RecentPrompts } from './components/RecentPrompts';
 import { Footer } from './components/Footer';
 import { ErrorAlert } from './components/ErrorAlert';
+import { PromptBuilder } from './components/PromptBuilder';
+import { FavoritesDrawer } from './components/FavoritesDrawer';
 import { enhancePromptApi } from './services/api';
+import { getFavorites, FAVORITES_UPDATED_EVENT } from './services/favoritesService';
 import { Check, ChevronUp } from 'lucide-react';
 
 export default function App() {
@@ -66,6 +69,22 @@ export default function App() {
       setShowToast(false);
     }, 3000);
   };
+
+  // Favorites Drawer state & count synchronization
+  const [favoritesOpen, setFavoritesOpen] = useState(false);
+  const [favoritesCount, setFavoritesCount] = useState(() => getFavorites().length);
+
+  useEffect(() => {
+    const handleFavsUpdate = () => {
+      setFavoritesCount(getFavorites().length);
+    };
+    window.addEventListener(FAVORITES_UPDATED_EVENT, handleFavsUpdate);
+    window.addEventListener('storage', handleFavsUpdate);
+    return () => {
+      window.removeEventListener(FAVORITES_UPDATED_EVENT, handleFavsUpdate);
+      window.removeEventListener('storage', handleFavsUpdate);
+    };
+  }, []);
 
   // Scroll to top button visibility
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -202,6 +221,8 @@ export default function App() {
       <Header
         onNewPrompt={handleNewPrompt}
         hasActivePrompt={Boolean(prompt.trim() || enhancedPrompt.trim())}
+        onOpenFavorites={() => setFavoritesOpen(true)}
+        favoritesCount={favoritesCount}
       />
 
       {/* Main Container */}
@@ -213,10 +234,6 @@ export default function App() {
 
             {/* Left column: Headline & Subtext */}
             <div className="lg:col-span-5 space-y-4 pt-1 lg:pt-4">
-              <div className="font-mono text-xs font-semibold tracking-wider text-[#C2410C] uppercase">
-                AI Prompt Enhancer &bull; Prompt Improver &bull; AI Productivity
-              </div>
-
               <h1 className="font-serif text-3xl sm:text-4xl lg:text-[46px] font-semibold text-[#111827] leading-[1.14] tracking-[-0.01em]">
                 Say it simply. <br className="hidden sm:inline" />
                 <span className="text-[#C2410C]">Ask AI better.</span>
@@ -252,6 +269,7 @@ export default function App() {
                 onEnhance={() => handleEnhance()}
                 isLoading={isLoading}
                 textareaRef={textareaRef}
+                onOpenFavorites={() => setFavoritesOpen(true)}
               />
 
               {/* Recent prompts small text link */}
@@ -282,6 +300,21 @@ export default function App() {
             />
           </div>
 
+          {/* Interactive Dynamic Prompt Builder */}
+          <PromptBuilder
+            onSendToMain={(builderPromptText) => {
+              setPrompt(builderPromptText);
+              setError(null);
+              const toolEl = document.getElementById('prompt-tool');
+              if (toolEl) toolEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              setTimeout(() => {
+                if (textareaRef.current) textareaRef.current.focus();
+              }, 200);
+              triggerToast('Loaded into main prompt enhancer!');
+            }}
+            onShowToast={triggerToast}
+          />
+
           {/* Examples Section: 3 before/after cards */}
           <ExamplesGallery onSelectExample={handleSelectSample} />
 
@@ -299,6 +332,22 @@ export default function App() {
 
       {/* Footer */}
       <Footer />
+
+      {/* Slide-over Favorites Drawer */}
+      <FavoritesDrawer
+        isOpen={favoritesOpen}
+        onClose={() => setFavoritesOpen(false)}
+        onSelectPrompt={(selectedText) => {
+          setPrompt(selectedText);
+          setError(null);
+          const toolEl = document.getElementById('prompt-tool');
+          if (toolEl) toolEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          setTimeout(() => {
+            if (textareaRef.current) textareaRef.current.focus();
+          }, 200);
+        }}
+        onShowToast={triggerToast}
+      />
 
       {/* Floating Scroll to Top Button */}
       {showScrollTop && (

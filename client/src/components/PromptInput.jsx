@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Loader2, X, ArrowRight } from 'lucide-react';
+import { Mic, MicOff, Loader2, X, ArrowRight, Star } from 'lucide-react';
 
 export function PromptInput({
   prompt,
@@ -7,6 +7,7 @@ export function PromptInput({
   onEnhance,
   isLoading,
   textareaRef,
+  onOpenFavorites,
 }) {
   const [isListening, setIsListening] = useState(false);
   const [hasSpeechSupport, setHasSpeechSupport] = useState(false);
@@ -160,6 +161,19 @@ export function PromptInput({
               >
                 <X className="w-3.5 h-3.5" strokeWidth={1.75} />
                 <span>Clear</span>
+              </button>
+            )}
+
+            {onOpenFavorites && (
+              <button
+                type="button"
+                onClick={onOpenFavorites}
+                disabled={isLoading}
+                title="Open saved favorite prompts"
+                className="flex items-center space-x-1 text-[11px] text-[#6B7280] hover:text-[#D97706] transition-colors cursor-pointer"
+              >
+                <Star className="w-3.5 h-3.5" strokeWidth={1.75} />
+                <span className="hidden sm:inline">Favorites</span>
               </button>
             )}
 

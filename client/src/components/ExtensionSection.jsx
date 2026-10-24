@@ -24,9 +24,6 @@ export function ExtensionSection() {
     <section id="extension" className="scroll-mt-24 pt-16 sm:pt-24 border-t border-[#EDE8E1]">
       {/* Section Header */}
       <div className="space-y-3 mb-10 sm:mb-14 max-w-2xl">
-        <div className="font-mono text-xs font-semibold tracking-wider text-[#C2410C] uppercase">
-          Browser Extension
-        </div>
         <h2 className="font-serif text-2xl sm:text-3xl font-semibold text-[#111827] tracking-tight">
           Enhance prompts directly inside your AI tools.
         </h2>
@@ -144,18 +141,16 @@ export function ExtensionSection() {
             </div>
           </div>
 
-          <div className="pt-4 border-t border-[#EDE8E1] text-xs text-[#6B7280] leading-relaxed">
-            Tip: Pin the TejasAI icon to your browser bar for quick access to individual AI site toggles.
+          <div className="pt-4 border-t border-[#EDE8E1] space-y-2 text-xs leading-relaxed">
+            <p className="text-[#374151]">
+              <strong className="text-[#B91C1C] font-semibold">Important Note:</strong> Do not delete or move the extracted <code className="font-mono text-xs text-[#111827]">tejasai-browser-extension</code> folder after installation. Chrome runs the extension directly from this directory—if it is deleted or moved, the extension will stop working.
+            </p>
+            <p className="text-[#6B7280]">
+              Tip: Pin the TejasAI icon to your browser bar for quick access to individual AI site toggles.
+            </p>
           </div>
         </div>
 
-      </div>
-
-      {/* Independent Disclaimer */}
-      <div className="mt-12 pt-6 border-t border-[#EDE8E1] text-xs text-[#9CA3AF] leading-relaxed">
-        <p>
-          TejasAI is an independent prompt optimization tool. It is not affiliated with, sponsored by, or endorsed by OpenAI, Google, Anthropic, Perplexity AI, DeepSeek, or xAI.
-        </p>
       </div>
     </section>
   );

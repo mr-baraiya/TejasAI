@@ -75,9 +75,31 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.action === 'SAVE_SETTINGS') {
-    chrome.storage.sync
-      .set({ tejasai_settings: message.payload })
-      .then(() => sendResponse({ success: true }))
+    const payload = message.payload || {};
+    Promise.allSettled([
+      chrome.storage.sync.set({ tejasai_settings: payload }),
+      chrome.storage.local.set({ tejasai_settings: payload }),
+    ])
+      .then(() => {
+        // Broadcast to all active tabs so open pages update their settings immediately without reloading
+        try {
+          chrome.tabs.query({}, (tabs) => {
+            if (Array.isArray(tabs)) {
+              tabs.forEach((tab) => {
+                if (tab && tab.id) {
+                  chrome.tabs.sendMessage(tab.id, {
+                    action: 'SETTINGS_UPDATED',
+                    payload,
+                  }).catch(() => {});
+                }
+              });
+            }
+          });
+        } catch {
+          // ignore
+        }
+        sendResponse({ success: true });
+      })
       .catch((err) => sendResponse({ success: false, error: err.message }));
     return true;
   }
@@ -87,15 +109,29 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 async function getMergedSettings() {
   try {
-    const stored = await chrome.storage.sync.get('tejasai_settings');
+    let stored = null;
+    try {
+      stored = await chrome.storage.sync.get('tejasai_settings');
+    } catch {
+      stored = null;
+    }
+    if (!stored || !stored.tejasai_settings) {
+      try {
+        stored = await chrome.storage.local.get('tejasai_settings');
+      } catch {
+        stored = null;
+      }
+    }
     if (!stored || !stored.tejasai_settings) return { ...DEFAULT_SETTINGS };
+    const raw = stored.tejasai_settings;
     return {
       ...DEFAULT_SETTINGS,
-      ...stored.tejasai_settings,
-      autoReplace: Boolean(stored.tejasai_settings.autoReplace),
+      ...raw,
+      enabled: raw.enabled !== false,
+      autoReplace: raw.autoReplace === true || raw.autoReplace === 'true',
       sites: {
         ...DEFAULT_SETTINGS.sites,
-        ...(stored.tejasai_settings.sites || {}),
+        ...(raw.sites || {}),
       },
     };
   } catch {

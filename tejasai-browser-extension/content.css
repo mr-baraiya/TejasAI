@@ -543,6 +543,23 @@ html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-enhance-btn-cl
   color: #111827 !important;
 }
 
+.tejasai-preview-star {
+  background: transparent !important;
+  border: none !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  padding: 3px 5px !important;
+  border-radius: 4px !important;
+  transition: transform 0.15s ease, opacity 0.15s ease !important;
+  opacity: 0.55;
+}
+
+.tejasai-preview-star:hover {
+  transform: scale(1.18) !important;
+  opacity: 1 !important;
+}
+
 .tejasai-preview-body {
   padding: 12px 14px !important;
   max-height: 240px !important;

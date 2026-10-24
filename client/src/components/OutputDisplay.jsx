@@ -11,8 +11,9 @@ import {
   Smile,
   PlusCircle,
   MessageCircle,
-  Send,
+  Star,
 } from 'lucide-react';
+import { isFavorite, toggleFavorite } from '../services/favoritesService';
 
 const AI_TOOLS = [
   {
@@ -68,6 +69,25 @@ export function OutputDisplay({
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
   const shareContainerRef = useRef(null);
+
+  const isStarred = isFavorite(enhancedPrompt);
+
+  const handleToggleFavorite = () => {
+    if (!enhancedPrompt) return;
+    try {
+      const res = toggleFavorite({
+        prompt: enhancedPrompt,
+        title: originalPrompt ? originalPrompt.slice(0, 45) : 'Enhanced Prompt',
+        whyBetter,
+        source: 'enhancer',
+      });
+      if (onShowToast) {
+        onShowToast(res.isStarred ? 'Saved to Favorites!' : 'Removed from Favorites.');
+      }
+    } catch (err) {
+      if (onShowToast) onShowToast(err.message || 'Could not save favorite.');
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -312,6 +332,20 @@ export function OutputDisplay({
                 >
                   <Edit3 className="w-3.5 h-3.5" strokeWidth={1.75} />
                   <span>Edit</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleToggleFavorite}
+                  className={`h-8 px-1.5 sm:px-2.5 rounded-none text-xs font-medium flex items-center space-x-1 cursor-pointer transition-colors shrink-0 whitespace-nowrap ${
+                    isStarred
+                      ? 'text-[#D97706] hover:bg-[#FEF3C7]'
+                      : 'text-[#4B5563] hover:text-[#111827] hover:bg-[#FAF8F5]'
+                  }`}
+                  title={isStarred ? 'Remove from favorites' : 'Save to favorites'}
+                >
+                  <Star className={`w-3.5 h-3.5 ${isStarred ? 'fill-current text-[#D97706]' : ''}`} strokeWidth={1.75} />
+                  <span>{isStarred ? 'Saved' : 'Favorite'}</span>
                 </button>
               </div>
 

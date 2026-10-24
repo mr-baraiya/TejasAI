@@ -206,7 +206,8 @@ window.TejasAIAdapters['grok'] = {
         (b) =>
           b.offsetParent !== null &&
           !b.closest('header, nav, aside') &&
-          !b.classList.contains('tejasai-enhance-button')
+          !b.classList.contains('tejasai-enhance-button') &&
+          !b.classList.contains('tejasai-save-button')
       );
 
       if (allButtons.length >= 1) {
@@ -228,7 +229,7 @@ window.TejasAIAdapters['grok'] = {
       let current = submitBtn.parentElement;
       while (current && current !== box && current !== document.body) {
         const buttons = Array.from(current.querySelectorAll('button, [role="button"]')).filter(
-          (b) => !b.classList.contains('tejasai-enhance-button')
+          (b) => !b.classList.contains('tejasai-enhance-button') && !b.classList.contains('tejasai-save-button')
         );
         const cardButtons = box ? box.querySelectorAll('button, [role="button"]').length : 99;
 
@@ -255,7 +256,7 @@ window.TejasAIAdapters['grok'] = {
       let wrapper = submitBtn;
       while (wrapper.parentElement && wrapper.parentElement !== box && wrapper.parentElement !== document.body) {
         const parentButtons = Array.from(wrapper.parentElement.querySelectorAll('button, [role="button"]')).filter(
-          (b) => !b.classList.contains('tejasai-enhance-button')
+          (b) => !b.classList.contains('tejasai-enhance-button') && !b.classList.contains('tejasai-save-button')
         );
         const isParentCol = window.getComputedStyle(wrapper.parentElement).flexDirection.includes('column');
         if ((parentButtons.length > 1 || wrapper.parentElement.children.length > 1) && !isParentCol) {

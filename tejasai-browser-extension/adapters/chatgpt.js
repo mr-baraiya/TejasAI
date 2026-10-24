@@ -103,17 +103,29 @@ window.TejasAIAdapters['chatgpt'] = {
 
   findAttachContainer(inputEl) {
     if (!inputEl) return null;
-    const form = inputEl.closest('form');
+    const form = inputEl.closest('form') || inputEl.closest('[data-testid*="composer"]') || document.querySelector('form');
 
     // 1. Target the button row beside the send button
     const sendBtn = this.findSubmitButton();
     if (sendBtn && sendBtn.parentElement) {
+      let cur = sendBtn.parentElement;
+      while (cur && cur !== form && cur !== document.body) {
+        const style = window.getComputedStyle(cur);
+        const isRow = (style.display === 'flex' || style.display === 'inline-flex') && !style.flexDirection.includes('column');
+        const rect = cur.getBoundingClientRect ? cur.getBoundingClientRect() : null;
+        if (isRow && rect && rect.width > 50) {
+          return cur;
+        }
+        cur = cur.parentElement;
+      }
       return sendBtn.parentElement;
     }
 
     // 2. Trailing toolbar in the form
     if (form) {
-      const toolbars = form.querySelectorAll('.flex.items-center.gap-1, .flex.items-center.gap-2, [class*="trailing"]');
+      const toolbars = form.querySelectorAll(
+        '.flex.items-center.gap-1, .flex.items-center.gap-2, [class*="trailing"], [class*="bottom"], [data-testid*="composer"]'
+      );
       if (toolbars.length > 0) {
         return toolbars[toolbars.length - 1];
       }
@@ -129,12 +141,32 @@ window.TejasAIAdapters['chatgpt'] = {
       'button[data-testid="fruitjuice-send-button"]',
       'button[aria-label="Send prompt"]',
       'button[aria-label="Send message"]',
+      'button[aria-label="Send"]',
+      'button[data-testid="composer-speech-button"]',
+      'button[data-testid*="speech" i]',
+      'button[data-testid*="voice" i]',
+      'button[aria-label*="voice" i]',
+      'button[aria-label*="dictat" i]',
       'form button[type="submit"]',
     ];
 
     for (const sel of selectors) {
-      const btn = document.querySelector(sel);
-      if (btn && btn.offsetParent !== null) return btn;
+      try {
+        const candidates = document.querySelectorAll(sel);
+        for (const btn of candidates) {
+          if (
+            btn &&
+            btn.offsetParent !== null &&
+            !btn.closest('header, nav, aside') &&
+            !btn.classList.contains('tejasai-enhance-button') &&
+            !btn.classList.contains('tejasai-save-button')
+          ) {
+            return btn;
+          }
+        }
+      } catch {
+        // Continue
+      }
     }
     return null;
   },

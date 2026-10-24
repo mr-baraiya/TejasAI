@@ -242,7 +242,7 @@ window.TejasAIAdapters['perplexity'] = {
     let current = inputEl.parentElement;
     let best = null;
     while (current && current !== document.body && current !== document.documentElement) {
-      const buttons = current.querySelectorAll('button:not(.tejasai-enhance-button), [role="button"]:not(.tejasai-enhance-button)');
+      const buttons = current.querySelectorAll('button:not(.tejasai-enhance-button):not(.tejasai-save-button), [role="button"]:not(.tejasai-enhance-button):not(.tejasai-save-button)');
       if (buttons.length >= 2) {
         const className = typeof current.className === 'string' ? current.className : '';
         const hasCardTraits =
@@ -286,7 +286,7 @@ window.TejasAIAdapters['perplexity'] = {
     for (const sel of submitSelectors) {
       try {
         const btn = scope.querySelector(sel);
-        if (btn && !btn.closest('header, nav, aside') && !btn.classList.contains('tejasai-enhance-button')) {
+        if (btn && !btn.closest('header, nav, aside') && !btn.classList.contains('tejasai-enhance-button') && !btn.classList.contains('tejasai-save-button')) {
           return btn;
         }
       } catch {
@@ -307,7 +307,7 @@ window.TejasAIAdapters['perplexity'] = {
     for (const sel of voiceSelectors) {
       try {
         const btn = scope.querySelector(sel);
-        if (btn && !btn.closest('header, nav, aside') && !btn.classList.contains('tejasai-enhance-button')) {
+        if (btn && !btn.closest('header, nav, aside') && !btn.classList.contains('tejasai-enhance-button') && !btn.classList.contains('tejasai-save-button')) {
           return btn;
         }
       } catch {
@@ -319,7 +319,7 @@ window.TejasAIAdapters['perplexity'] = {
     if (box) {
       try {
         const allButtons = Array.from(
-          box.querySelectorAll('button:not(.tejasai-enhance-button), [role="button"]:not(.tejasai-enhance-button)')
+          box.querySelectorAll('button:not(.tejasai-enhance-button):not(.tejasai-save-button), [role="button"]:not(.tejasai-enhance-button):not(.tejasai-save-button)')
         ).filter((b) => {
           if (b.closest('header, nav, aside')) return false;
           if (b.contains(el)) return false;
@@ -357,7 +357,7 @@ window.TejasAIAdapters['perplexity'] = {
         const rect = current.getBoundingClientRect();
         // If horizontal and wide enough for buttons
         if (rect.width > 45) {
-          const btns = current.querySelectorAll('button:not(.tejasai-enhance-button), [role="button"]:not(.tejasai-enhance-button)');
+          const btns = current.querySelectorAll('button:not(.tejasai-enhance-button):not(.tejasai-save-button), [role="button"]:not(.tejasai-enhance-button):not(.tejasai-save-button)');
           if (btns.length >= 1) {
             return current;
           }

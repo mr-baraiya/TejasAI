@@ -131,7 +131,8 @@ window.TejasAIAdapters['deepseek'] = {
         if (
           btn &&
           !btn.closest('header, nav, aside') &&
-          !btn.classList.contains('tejasai-enhance-button')
+          !btn.classList.contains('tejasai-enhance-button') &&
+          !btn.classList.contains('tejasai-save-button')
         ) {
           return btn;
         }
@@ -146,6 +147,7 @@ window.TejasAIAdapters['deepseek'] = {
         (b) =>
           !b.closest('header, nav, aside') &&
           !b.classList.contains('tejasai-enhance-button') &&
+          !b.classList.contains('tejasai-save-button') &&
           !b.contains(inputEl)
       );
 
@@ -178,7 +180,7 @@ window.TejasAIAdapters['deepseek'] = {
 
         const clickables = Array.from(
           current.querySelectorAll('button, [role="button"], div:has(svg), svg')
-        ).filter((b) => !b.classList.contains('tejasai-enhance-button'));
+        ).filter((b) => !b.classList.contains('tejasai-enhance-button') && !b.classList.contains('tejasai-save-button'));
 
         const totalBoxClickables = box.querySelectorAll('button, [role="button"], div:has(svg)').length;
 

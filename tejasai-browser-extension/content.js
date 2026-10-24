@@ -26,6 +26,7 @@
 
   let currentInputEl = null;
   let enhanceBtn = null;
+  let saveBtn = null;
   let previewPanel = null;
   let isEnhancing = false;
   let originalPromptCache = '';
@@ -44,6 +45,113 @@
       } catch {
         return `<span style="font-weight:700;font-size:13px;color:#C2410C;">T</span>`;
       }
+    }
+  }
+
+  // SVG Star icon for the Save button (both outlined and filled states)
+  function getStarSvg(isSaved = false) {
+    if (isSaved) {
+      return `<svg class="tejasai-save-icon is-saved" viewBox="0 0 24 24" width="15" height="15" fill="#F97316" stroke="#EA580C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+      </svg>`;
+    }
+    return `<svg class="tejasai-save-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+    </svg>`;
+  }
+
+  function updateSaveButtonVisual(isSaved) {
+    if (!saveBtn) return;
+    if (isSaved) {
+      saveBtn.classList.add('is-saved');
+      saveBtn.title = 'Saved in TejasAI favorites (click to remove)';
+      saveBtn.setAttribute('aria-label', 'Saved in TejasAI favorites');
+      saveBtn.innerHTML = getStarSvg(true);
+    } else {
+      saveBtn.classList.remove('is-saved');
+      saveBtn.title = 'Save prompt to TejasAI favorites';
+      saveBtn.setAttribute('aria-label', 'Save prompt to TejasAI favorites');
+      saveBtn.innerHTML = getStarSvg(false);
+    }
+  }
+
+  function syncSaveButtonState() {
+    if (!saveBtn) return;
+    const inputEl = (currentInputEl && currentInputEl.isConnected) ? currentInputEl : adapter.findInput();
+    const text = inputEl ? adapter.getText(inputEl) : '';
+    const targetText = (text && text.trim()) || (lastEnhancedResult && lastEnhancedResult.trim()) || '';
+    if (!targetText) {
+      updateSaveButtonVisual(false);
+      return;
+    }
+
+    try {
+      chrome.storage.local.get(['tejasai_favorites'], (data) => {
+        if (chrome.runtime.lastError) return;
+        const list = Array.isArray(data?.tejasai_favorites) ? data.tejasai_favorites : [];
+        const isFound = list.some((f) => (f.prompt || '').trim().toLowerCase() === targetText.toLowerCase());
+        updateSaveButtonVisual(isFound);
+      });
+    } catch {
+      // storage unavailable
+    }
+  }
+
+  function handleSavePrompt() {
+    const inputEl = (currentInputEl && currentInputEl.isConnected) ? currentInputEl : adapter.findInput();
+    const composerText = inputEl ? adapter.getText(inputEl) : '';
+    const promptToSave = (composerText && composerText.trim()) || (lastEnhancedResult && lastEnhancedResult.trim()) || '';
+
+    if (!promptToSave) {
+      showToast('Please enter or enhance a prompt first.', 'normal');
+      return;
+    }
+
+    // Trigger visual pop animation
+    if (saveBtn) {
+      saveBtn.classList.remove('tejasai-pop');
+      void saveBtn.offsetWidth; // trigger reflow
+      saveBtn.classList.add('tejasai-pop');
+    }
+
+    try {
+      chrome.storage.local.get(['tejasai_favorites'], (data) => {
+        const list = Array.isArray(data?.tejasai_favorites) ? data.tejasai_favorites : [];
+        const normalized = promptToSave.toLowerCase();
+        const existingIdx = list.findIndex((f) => (f.prompt || '').trim().toLowerCase() === normalized);
+
+        if (existingIdx >= 0) {
+          list.splice(existingIdx, 1);
+          chrome.storage.local.set({ tejasai_favorites: list }, () => {
+            updateSaveButtonVisual(false);
+            showToast('Removed from TejasAI favorites.', 'normal');
+          });
+        } else {
+          let title = '';
+          if (originalPromptCache && originalPromptCache.trim() && originalPromptCache.trim() !== promptToSave) {
+            title = originalPromptCache.split('\n')[0].slice(0, 45);
+          } else {
+            title = promptToSave.split('\n')[0].slice(0, 45);
+          }
+
+          const newItem = {
+            id: `fav_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+            title: title || 'Saved Prompt',
+            prompt: promptToSave,
+            category: adapter.targetAI || 'general',
+            source: 'composer',
+            createdAt: new Date().toISOString(),
+          };
+
+          list.unshift(newItem);
+          chrome.storage.local.set({ tejasai_favorites: list }, () => {
+            updateSaveButtonVisual(true);
+            showToast('Saved to TejasAI favorites!', 'success');
+          });
+        }
+      });
+    } catch (err) {
+      showToast('Failed to access extension storage.', 'error');
     }
   }
 
@@ -67,6 +175,9 @@
     if (changes && changes.tejasai_settings && changes.tejasai_settings.newValue) {
       settings = { ...settings, ...changes.tejasai_settings.newValue };
       checkAndInject();
+    }
+    if (changes && changes.tejasai_favorites) {
+      syncSaveButtonState();
     }
   });
 
@@ -232,9 +343,13 @@
         const elToUpdate = (inputEl && inputEl.isConnected) ? inputEl : (adapter.findInput() || inputEl);
         if (elToUpdate) {
           adapter.setText(elToUpdate, response.enhancedPrompt);
+          syncSaveButtonState();
           showToast('Prompt enhanced & replaced!', 'success', () => {
             const undoEl = (elToUpdate && elToUpdate.isConnected) ? elToUpdate : (adapter.findInput() || elToUpdate);
-            if (undoEl) adapter.setText(undoEl, originalPromptCache);
+            if (undoEl) {
+              adapter.setText(undoEl, originalPromptCache);
+              syncSaveButtonState();
+            }
             showToast('Restored original prompt.', 'normal');
           }, 'Undo');
           return;
@@ -393,6 +508,7 @@
 
       if (elToUpdate && result.enhancedPrompt) {
         adapter.setText(elToUpdate, result.enhancedPrompt);
+        syncSaveButtonState();
         showToast('Prompt updated in composer!', 'success');
       } else {
         showToast('Could not find active composer.', 'error');
@@ -478,6 +594,7 @@
     if (!previewPanel) return;
     if (previewPanel.contains(e.target)) return;
     if (enhanceBtn && enhanceBtn.contains(e.target)) return;
+    if (saveBtn && saveBtn.contains(e.target)) return;
     dismissPreview();
   });
 
@@ -485,6 +602,7 @@
   function checkAndInject() {
     if (!isSiteEnabled()) {
       if (enhanceBtn && enhanceBtn.parentElement) enhanceBtn.remove();
+      if (saveBtn && saveBtn.parentElement) saveBtn.remove();
       dismissPreview();
       return;
     }
@@ -493,6 +611,15 @@
     if (!inputEl) return;
 
     currentInputEl = inputEl;
+
+    // Attach input change watcher to update save star in real time
+    if (!inputEl.dataset.tejasaiWatched) {
+      inputEl.dataset.tejasaiWatched = 'true';
+      const onInput = () => syncSaveButtonState();
+      inputEl.addEventListener('input', onInput);
+      inputEl.addEventListener('change', onInput);
+      inputEl.addEventListener('keyup', onInput);
+    }
 
     const container = adapter.findAttachContainer(inputEl);
     if (!container) return;
@@ -513,7 +640,7 @@
       return null;
     }
 
-    // Check if enhance button already attached to the valid container
+    // 1. Check if enhance button already attached to the valid container
     if (!enhanceBtn || !document.contains(enhanceBtn) || !container.contains(enhanceBtn)) {
       if (enhanceBtn && enhanceBtn.parentElement) {
         enhanceBtn.remove();
@@ -545,6 +672,34 @@
       const target = getInsertBeforeTarget();
       if (target && enhanceBtn.nextElementSibling !== target && target !== enhanceBtn) {
         container.insertBefore(enhanceBtn, target);
+      }
+    }
+
+    // 2. Check and attach save button directly to the left of enhanceBtn
+    if (enhanceBtn && document.contains(enhanceBtn) && container.contains(enhanceBtn)) {
+      if (!saveBtn || !document.contains(saveBtn) || !container.contains(saveBtn)) {
+        if (saveBtn && saveBtn.parentElement) {
+          saveBtn.remove();
+        }
+
+        const sBtn = document.createElement('button');
+        sBtn.type = 'button';
+        sBtn.className = `tejasai-save-button tejasai-save-btn-${adapter.id}`;
+        sBtn.title = 'Save prompt to TejasAI favorites';
+        sBtn.setAttribute('aria-label', 'Save prompt to TejasAI favorites');
+        sBtn.innerHTML = getStarSvg(false);
+
+        sBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleSavePrompt();
+        });
+
+        container.insertBefore(sBtn, enhanceBtn);
+        saveBtn = sBtn;
+        syncSaveButtonState();
+      } else if (saveBtn.nextElementSibling !== enhanceBtn) {
+        container.insertBefore(saveBtn, enhanceBtn);
       }
     }
   }

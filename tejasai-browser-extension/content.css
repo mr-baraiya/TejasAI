@@ -3,8 +3,9 @@
  * Scoped strictly to avoid interfering with host site styles.
  */
 
-/* Main button injected near AI composers */
-.tejasai-enhance-button {
+/* Main buttons injected near AI composers */
+.tejasai-enhance-button,
+.tejasai-save-button {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -34,7 +35,8 @@
   position: relative !important;
 }
 
-.tejasai-enhance-button:hover:not(:disabled) {
+.tejasai-enhance-button:hover:not(:disabled),
+.tejasai-save-button:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.12) !important;
   border: none !important;
   color: #FFFFFF !important;
@@ -42,20 +44,65 @@
   box-shadow: none !important;
 }
 
-.tejasai-enhance-button:active:not(:disabled) {
+.tejasai-enhance-button:active:not(:disabled),
+.tejasai-save-button:active:not(:disabled) {
   transform: scale(0.95) !important;
   background: rgba(255, 255, 255, 0.18) !important;
   border: none !important;
 }
 
-.tejasai-enhance-button:focus-visible {
+.tejasai-enhance-button:focus-visible,
+.tejasai-save-button:focus-visible {
   box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.6) !important;
 }
 
-.tejasai-enhance-button:disabled {
+.tejasai-enhance-button:disabled,
+.tejasai-save-button:disabled {
   opacity: 0.65 !important;
   cursor: not-allowed !important;
   transform: none !important;
+}
+
+/* Save prompt star icon */
+.tejasai-save-icon {
+  width: 15px !important;
+  height: 15px !important;
+  display: block !important;
+  flex-shrink: 0 !important;
+  pointer-events: none !important;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), fill 0.18s ease, stroke 0.18s ease !important;
+}
+
+.tejasai-save-button:hover:not(:disabled) .tejasai-save-icon {
+  transform: scale(1.08) !important;
+}
+
+/* Starred / Saved prompt state */
+.tejasai-save-button.is-saved {
+  color: #F97316 !important;
+}
+
+.tejasai-save-button.is-saved .tejasai-save-icon {
+  fill: #F97316 !important;
+  stroke: #EA580C !important;
+  filter: drop-shadow(0 0 3px rgba(249, 115, 22, 0.4)) !important;
+}
+
+.tejasai-save-button.is-saved:hover:not(:disabled) {
+  background: rgba(249, 115, 22, 0.14) !important;
+  color: #FB923C !important;
+}
+
+/* Click spring pop animation */
+@keyframes tejasai-star-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.24); }
+  75% { transform: scale(0.94); }
+  100% { transform: scale(1); }
+}
+
+.tejasai-save-button.tejasai-pop {
+  animation: tejasai-star-pop 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
 }
 
 /* TejasAI official logo inside injected button across all AI tools */
@@ -85,30 +132,43 @@
 
 /* Light mode host adaptation (only when host page is truly light) */
 @media (prefers-color-scheme: light) {
-  html:not(.dark):not([data-theme="dark"]):not([class*="dark"]) body:not([class*="dark"]) .tejasai-enhance-button {
-    color: #374151 !important;
+  html:not(.dark):not([data-theme="dark"]):not([class*="dark"]) body:not([class*="dark"]) .tejasai-enhance-button,
+  html:not(.dark):not([data-theme="dark"]):not([class*="dark"]) body:not([class*="dark"]) .tejasai-save-button {
+    color: #4B5563 !important;
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
   }
 
-  html:not(.dark):not([data-theme="dark"]):not([class*="dark"]) body:not([class*="dark"]) .tejasai-enhance-button:hover:not(:disabled) {
+  html:not(.dark):not([data-theme="dark"]):not([class*="dark"]) body:not([class*="dark"]) .tejasai-enhance-button:hover:not(:disabled),
+  html:not(.dark):not([data-theme="dark"]):not([class*="dark"]) body:not([class*="dark"]) .tejasai-save-button:hover:not(:disabled) {
     background: rgba(0, 0, 0, 0.08) !important;
     border: none !important;
     color: #111827 !important;
     box-shadow: none !important;
   }
+
+  html:not(.dark):not([data-theme="dark"]):not([class*="dark"]) body:not([class*="dark"]) .tejasai-save-button.is-saved {
+    color: #C2410C !important;
+  }
+
+  html:not(.dark):not([data-theme="dark"]):not([class*="dark"]) body:not([class*="dark"]) .tejasai-save-button.is-saved .tejasai-save-icon {
+    fill: #EA580C !important;
+    stroke: #C2410C !important;
+  }
 }
 
 /* Explicit dark theme protection across AI sites */
-:is(.dark, [data-theme="dark"], [class*="dark-theme"], [data-mode="dark"], body.dark) .tejasai-enhance-button {
+:is(.dark, [data-theme="dark"], [class*="dark-theme"], [data-mode="dark"], body.dark) .tejasai-enhance-button,
+:is(.dark, [data-theme="dark"], [class*="dark-theme"], [data-mode="dark"], body.dark) .tejasai-save-button {
   color: #ECECF1 !important;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
 }
 
-:is(.dark, [data-theme="dark"], [class*="dark-theme"], [data-mode="dark"], body.dark) .tejasai-enhance-button:hover:not(:disabled) {
+:is(.dark, [data-theme="dark"], [class*="dark-theme"], [data-mode="dark"], body.dark) .tejasai-enhance-button:hover:not(:disabled),
+:is(.dark, [data-theme="dark"], [class*="dark-theme"], [data-mode="dark"], body.dark) .tejasai-save-button:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.12) !important;
   border: none !important;
   color: #FFFFFF !important;
@@ -133,12 +193,68 @@
 }
 
 /* ==========================================================================
+   ChatGPT (chatgpt.com) Native Styling
+   Matches ChatGPT's 32px circular action toolbar buttons.
+   ========================================================================== */
+.tejasai-enhance-button.tejasai-enhance-btn-chatgpt,
+.tejasai-save-button.tejasai-save-btn-chatgpt {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  max-width: 32px !important;
+  max-height: 32px !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  border: none !important;
+  color: #B4B4B4 !important;
+  padding: 0 !important;
+  margin: 0 3px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  box-shadow: none !important;
+  outline: none !important;
+  transform: none !important;
+  flex-shrink: 0 !important;
+  align-self: center !important;
+}
+
+.tejasai-enhance-button.tejasai-enhance-btn-chatgpt:hover:not(:disabled),
+.tejasai-save-button.tejasai-save-btn-chatgpt:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #FFFFFF !important;
+  transform: scale(1.06) !important;
+}
+
+.tejasai-enhance-button.tejasai-enhance-btn-chatgpt:active:not(:disabled),
+.tejasai-save-button.tejasai-save-btn-chatgpt:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18) !important;
+  transform: scale(0.95) !important;
+}
+
+html:not(.dark) body:not(.dark) .tejasai-enhance-button.tejasai-enhance-btn-chatgpt,
+html:not(.dark) body:not(.dark) .tejasai-save-button.tejasai-save-btn-chatgpt {
+  color: #5d5d5d !important;
+  background: transparent !important;
+}
+
+html:not(.dark) body:not(.dark) .tejasai-enhance-button.tejasai-enhance-btn-chatgpt:hover:not(:disabled),
+html:not(.dark) body:not(.dark) .tejasai-save-button.tejasai-save-btn-chatgpt:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.08) !important;
+  color: #0d0d0d !important;
+}
+
+/* ==========================================================================
    Anthropic Claude (claude.ai) - 100% Native Interface Matching
    Seamlessly integrates with Claude's toolbar, colors, and typography.
    ========================================================================== */
 
 /* Claude native button: exactly 32px x 32px matching Claude's utility buttons and send button */
-.tejasai-enhance-button.tejasai-enhance-btn-claude {
+.tejasai-enhance-button.tejasai-enhance-btn-claude,
+.tejasai-save-button.tejasai-save-btn-claude {
   width: 32px !important;
   height: 32px !important;
   min-width: 32px !important;
@@ -165,7 +281,8 @@
 }
 
 /* Claude Dark Mode Hover: subtle rounded background with Claude signature terracotta glow */
-.tejasai-enhance-button.tejasai-enhance-btn-claude:hover:not(:disabled) {
+.tejasai-enhance-button.tejasai-enhance-btn-claude:hover:not(:disabled),
+.tejasai-save-button.tejasai-save-btn-claude:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.08) !important;
   color: #D97757 !important; /* Claude terracotta brand accent */
   transform: none !important;
@@ -174,27 +291,32 @@
 }
 
 /* Claude Active / Pressed state */
-.tejasai-enhance-button.tejasai-enhance-btn-claude:active:not(:disabled) {
+.tejasai-enhance-button.tejasai-enhance-btn-claude:active:not(:disabled),
+.tejasai-save-button.tejasai-save-btn-claude:active:not(:disabled) {
   background: rgba(255, 255, 255, 0.14) !important;
   transform: scale(0.96) !important;
 }
 
-.tejasai-enhance-button.tejasai-enhance-btn-claude:focus-visible {
+.tejasai-enhance-button.tejasai-enhance-btn-claude:focus-visible,
+.tejasai-save-button.tejasai-save-btn-claude:focus-visible {
   box-shadow: 0 0 0 2px rgba(217, 119, 87, 0.45) !important;
 }
 
 /* Claude Light Theme */
-html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-enhance-button.tejasai-enhance-btn-claude {
+html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-enhance-button.tejasai-enhance-btn-claude,
+html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-save-button.tejasai-save-btn-claude {
   color: #6B6B66 !important;
   background: transparent !important;
 }
 
-html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-enhance-button.tejasai-enhance-btn-claude:hover:not(:disabled) {
+html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-enhance-button.tejasai-enhance-btn-claude:hover:not(:disabled),
+html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-save-button.tejasai-save-btn-claude:hover:not(:disabled) {
   background: rgba(0, 0, 0, 0.06) !important;
   color: #C15F3C !important;
 }
 
-html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-enhance-button.tejasai-enhance-btn-claude:active:not(:disabled) {
+html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-enhance-button.tejasai-enhance-btn-claude:active:not(:disabled),
+html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-save-button.tejasai-save-btn-claude:active:not(:disabled) {
   background: rgba(0, 0, 0, 0.1) !important;
   color: #C15F3C !important;
 }
@@ -224,7 +346,8 @@ html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-enhance-btn-cl
 }
 
 /* DeepSeek (chat.deepseek.com) Native Styling */
-.tejasai-enhance-button.tejasai-enhance-btn-deepseek {
+.tejasai-enhance-button.tejasai-enhance-btn-deepseek,
+.tejasai-save-button.tejasai-save-btn-deepseek {
   width: 32px !important;
   height: 32px !important;
   min-width: 32px !important;
@@ -247,13 +370,15 @@ html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-enhance-btn-cl
   transform: none !important;
 }
 
-.tejasai-enhance-button.tejasai-enhance-btn-deepseek:hover:not(:disabled) {
+.tejasai-enhance-button.tejasai-enhance-btn-deepseek:hover:not(:disabled),
+.tejasai-save-button.tejasai-save-btn-deepseek:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.08) !important;
   color: #4D6BFE !important; /* DeepSeek Blue */
   transform: none !important;
 }
 
-.tejasai-enhance-button.tejasai-enhance-btn-deepseek:active:not(:disabled) {
+.tejasai-enhance-button.tejasai-enhance-btn-deepseek:active:not(:disabled),
+.tejasai-save-button.tejasai-save-btn-deepseek:active:not(:disabled) {
   background: rgba(255, 255, 255, 0.14) !important;
   transform: scale(0.95) !important;
 }
@@ -276,7 +401,8 @@ html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-enhance-btn-cl
 }
 
 /* Grok (grok.com & x.com) Native Styling */
-.tejasai-enhance-button.tejasai-enhance-btn-grok {
+.tejasai-enhance-button.tejasai-enhance-btn-grok,
+.tejasai-save-button.tejasai-save-btn-grok {
   width: 32px !important;
   height: 32px !important;
   min-width: 32px !important;
@@ -299,13 +425,15 @@ html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-enhance-btn-cl
   transform: none !important;
 }
 
-.tejasai-enhance-button.tejasai-enhance-btn-grok:hover:not(:disabled) {
+.tejasai-enhance-button.tejasai-enhance-btn-grok:hover:not(:disabled),
+.tejasai-save-button.tejasai-save-btn-grok:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.1) !important;
   color: #1D9BF0 !important; /* Grok Blue */
   transform: none !important;
 }
 
-.tejasai-enhance-button.tejasai-enhance-btn-grok:active:not(:disabled) {
+.tejasai-enhance-button.tejasai-enhance-btn-grok:active:not(:disabled),
+.tejasai-save-button.tejasai-save-btn-grok:active:not(:disabled) {
   background: rgba(255, 255, 255, 0.18) !important;
   transform: scale(0.95) !important;
 }
@@ -328,7 +456,8 @@ html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-enhance-btn-cl
 }
 
 /* Perplexity AI (perplexity.ai) Native Styling */
-.tejasai-enhance-button.tejasai-enhance-btn-perplexity {
+.tejasai-enhance-button.tejasai-enhance-btn-perplexity,
+.tejasai-save-button.tejasai-save-btn-perplexity {
   width: 32px !important;
   height: 32px !important;
   min-width: 32px !important;
@@ -352,12 +481,14 @@ html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-enhance-btn-cl
   flex-shrink: 0 !important;
 }
 
-.tejasai-enhance-button.tejasai-enhance-btn-perplexity:hover:not(:disabled) {
+.tejasai-enhance-button.tejasai-enhance-btn-perplexity:hover:not(:disabled),
+.tejasai-save-button.tejasai-save-btn-perplexity:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.1) !important;
   transform: scale(1.06) !important;
 }
 
-.tejasai-enhance-button.tejasai-enhance-btn-perplexity:active:not(:disabled) {
+.tejasai-enhance-button.tejasai-enhance-btn-perplexity:active:not(:disabled),
+.tejasai-save-button.tejasai-save-btn-perplexity:active:not(:disabled) {
   background: rgba(255, 255, 255, 0.16) !important;
   transform: scale(0.95) !important;
 }
@@ -373,7 +504,8 @@ html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-enhance-btn-cl
 /* Google Gemini (gemini.google.com) Native Styling
    Gemini's toolbar buttons are ~36×36px circular, vertically centred in a horizontal flex row.
    We match size, shape, spacing, and hover behaviour exactly. */
-.tejasai-enhance-button.tejasai-enhance-btn-gemini {
+.tejasai-enhance-button.tejasai-enhance-btn-gemini,
+.tejasai-save-button.tejasai-save-btn-gemini {
   width: 36px !important;
   height: 36px !important;
   min-width: 36px !important;
@@ -398,17 +530,20 @@ html:not(.dark):not([data-theme="dark"]) body:not(.dark) .tejasai-enhance-btn-cl
   position: relative !important;
 }
 
-.tejasai-enhance-button.tejasai-enhance-btn-gemini:hover:not(:disabled) {
+.tejasai-enhance-button.tejasai-enhance-btn-gemini:hover:not(:disabled),
+.tejasai-save-button.tejasai-save-btn-gemini:hover:not(:disabled) {
   background: rgba(138, 180, 248, 0.15) !important; /* Gemini blue tint */
   transform: none !important;
 }
 
-.tejasai-enhance-button.tejasai-enhance-btn-gemini:active:not(:disabled) {
+.tejasai-enhance-button.tejasai-enhance-btn-gemini:active:not(:disabled),
+.tejasai-save-button.tejasai-save-btn-gemini:active:not(:disabled) {
   background: rgba(138, 180, 248, 0.25) !important;
   transform: scale(0.93) !important;
 }
 
-.tejasai-enhance-button.tejasai-enhance-btn-gemini:focus-visible {
+.tejasai-enhance-button.tejasai-enhance-btn-gemini:focus-visible,
+.tejasai-save-button.tejasai-save-btn-gemini:focus-visible {
   box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.55) !important;
 }
 

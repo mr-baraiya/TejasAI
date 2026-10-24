@@ -94,7 +94,7 @@ window.TejasAIAdapters['gemini'] = {
       let cur = sendBtn.parentElement;
       while (cur && cur !== document.body && cur !== root) {
         const style = window.getComputedStyle(cur);
-        const buttons = cur.querySelectorAll('button:not(.tejasai-enhance-button)');
+        const buttons = cur.querySelectorAll('button:not(.tejasai-enhance-button):not(.tejasai-save-button)');
         if (
           (style.display === 'flex' || style.display === 'inline-flex') &&
           style.flexDirection !== 'column' &&
@@ -155,7 +155,7 @@ window.TejasAIAdapters['gemini'] = {
     for (const sel of sendSelectors) {
       try {
         const btn = root.querySelector(sel);
-        if (btn && !btn.classList.contains('tejasai-enhance-button')) {
+        if (btn && !btn.classList.contains('tejasai-enhance-button') && !btn.classList.contains('tejasai-save-button')) {
           const rect = btn.getBoundingClientRect();
           if (rect.width > 0 && rect.height > 0) return btn;
           if (btn.offsetParent !== null) return btn;
@@ -171,8 +171,8 @@ window.TejasAIAdapters['gemini'] = {
       // Walk siblings after mic
       let sib = micBtn.nextElementSibling;
       while (sib) {
-        if (sib.tagName === 'BUTTON' && !sib.classList.contains('tejasai-enhance-button')) return sib;
-        const btn = sib.querySelector('button:not(.tejasai-enhance-button)');
+        if (sib.tagName === 'BUTTON' && !sib.classList.contains('tejasai-enhance-button') && !sib.classList.contains('tejasai-save-button')) return sib;
+        const btn = sib.querySelector('button:not(.tejasai-enhance-button):not(.tejasai-save-button)');
         if (btn) return btn;
         sib = sib.nextElementSibling;
       }
@@ -183,7 +183,7 @@ window.TejasAIAdapters['gemini'] = {
       'div.trailing-actions, div[class*="trailing-actions"], div[class*="bottom-bar"], div[class*="bottom-row"]'
     );
     if (trailing) {
-      const buttons = Array.from(trailing.querySelectorAll('button:not(.tejasai-enhance-button)'));
+      const buttons = Array.from(trailing.querySelectorAll('button:not(.tejasai-enhance-button):not(.tejasai-save-button)'));
       if (buttons.length > 0) return buttons[buttons.length - 1];
     }
 

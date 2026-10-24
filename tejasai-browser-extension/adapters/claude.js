@@ -136,7 +136,8 @@ window.TejasAIAdapters['claude'] = {
           btn &&
           btn.offsetParent !== null &&
           !btn.closest('header, nav, aside') &&
-          !btn.classList.contains('tejasai-enhance-button')
+          !btn.classList.contains('tejasai-enhance-button') &&
+          !btn.classList.contains('tejasai-save-button')
         ) {
           return btn;
         }
@@ -162,7 +163,8 @@ window.TejasAIAdapters['claude'] = {
           btn &&
           btn.offsetParent !== null &&
           !btn.closest('header, nav, aside') &&
-          !btn.classList.contains('tejasai-enhance-button')
+          !btn.classList.contains('tejasai-enhance-button') &&
+          !btn.classList.contains('tejasai-save-button')
         ) {
           return btn;
         }
@@ -175,7 +177,8 @@ window.TejasAIAdapters['claude'] = {
         (b) =>
           b.offsetParent !== null &&
           !b.closest('header, nav, aside') &&
-          !b.classList.contains('tejasai-enhance-button')
+          !b.classList.contains('tejasai-enhance-button') &&
+          !b.classList.contains('tejasai-save-button')
       );
 
       if (allButtons.length >= 1) {
@@ -201,7 +204,7 @@ window.TejasAIAdapters['claude'] = {
       let current = submitBtn.parentElement;
       while (current && current !== box && current !== document.body) {
         const buttons = Array.from(current.querySelectorAll('button, [role="button"]')).filter(
-          (b) => !b.classList.contains('tejasai-enhance-button')
+          (b) => !b.classList.contains('tejasai-enhance-button') && !b.classList.contains('tejasai-save-button')
         );
 
         const style = window.getComputedStyle(current);
@@ -228,7 +231,7 @@ window.TejasAIAdapters['claude'] = {
           for (const child of current.children) {
             if (child.contains(submitBtn)) {
               const childButtons = Array.from(child.querySelectorAll('button, [role="button"]')).filter(
-                (b) => !b.classList.contains('tejasai-enhance-button')
+                (b) => !b.classList.contains('tejasai-enhance-button') && !b.classList.contains('tejasai-save-button')
               );
               const childStyle = window.getComputedStyle(child);
               const childIsCol = childStyle.flexDirection.includes('column');

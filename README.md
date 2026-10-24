@@ -1,523 +1,390 @@
-# TejasAI - AI Prompt Enhancer
+# TejasAI
 
-> **Live Application:** [https://tejasai-eta.vercel.app/](https://tejasai-eta.vercel.app/)  
-> **Production API Endpoint:** [`POST https://tejasai-eta.vercel.app/api/enhance`](https://tejasai-eta.vercel.app/api/enhance)  
-> **Health Check Endpoint:** [`GET https://tejasai-eta.vercel.app/api/health`](https://tejasai-eta.vercel.app/api/health)
+### Open-Source AI Prompt Optimization Engine and Universal Browser Extension
 
-TejasAI is a full-stack, single-page application that transforms brief, unstructured, or ambiguous prompts into high-precision, production-grade instructions. Leveraging Groq ultra-low latency LPU inference, TejasAI helps creators, engineers, researchers, and students obtain significantly higher-quality outputs from large language models.
-
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Key Capabilities](#key-capabilities)
-- [System Architecture](#system-architecture)
-- [Technology Stack](#technology-stack)
-- [Project Directory Structure](#project-directory-structure)
-- [Prerequisites](#prerequisites)
-- [Environment Configuration](#environment-configuration)
-- [Installation and Setup](#installation-and-setup)
-- [Running the Application](#running-the-application)
-- [Browser Extension (Chrome / Brave / Edge)](#browser-extension-chrome--brave--edge)
-- [API Reference](#api-reference)
-  - [GET /api/health](#get-apihealth)
-  - [POST /api/enhance](#post-apienhance)
-- [Testing and Verification](#testing-and-verification)
-- [Production Deployment](#production-deployment)
-  - [Single-Project Vercel Deployment (Recommended)](#single-project-vercel-deployment-recommended)
-  - [Decoupled Architecture](#decoupled-architecture)
-  - [Unified Node.js Service](#unified-nodejs-service-vps--docker)
-- [Security and Privacy](#security-and-privacy)
-- [License](#license)
+Live Web Application: https://tejasai-eta.vercel.app/  
+Chrome Extension Package: https://tejasai-eta.vercel.app/tejasai-extension.zip  
+GitHub Repository: https://github.com/mr-baraiya/TejasAI  
+Sponsor this Project: https://github.com/sponsors/mr-baraiya  
 
 ---
 
-## Overview
+## Executive Summary
 
-Prompt quality is often the primary bottleneck when working with modern AI systems. TejasAI addresses this challenge by applying domain-informed prompt engineering principles, structured framing, role delineation, constraint enforcement, and contextual scaffolding.
+TejasAI is an open-source productivity platform that transforms rough, informal thoughts into high-precision, production-grade prompts in under 300 milliseconds. 
 
-The platform provides a responsive web interface paired with a secure Node.js backend gateway that interfaces directly with Groq models (specifically `qwen/qwen3.8-27b`), delivering near-instant prompt upgrades without exposing API credentials to client browsers.
+Most people receive generic or incomplete answers from artificial intelligence models not because the models are weak, but because informal human drafts lack role boundaries, concrete specifications, negative constraints, and output formatting. TejasAI bridges that gap automatically.
+
+The project consists of two tightly integrated components:
+
+1. Web Application: A responsive, editorial-grade workspace featuring real-time AI prompt enhancement, an interactive multi-framework Prompt Builder, side-by-side prompt diffing, prompt explanation metrics, and local favorites management.
+2. Universal Browser Extension: A Chrome Manifest V3 extension that embeds a native "Enhance" button directly inside the composer boxes of ChatGPT, Claude, Google Gemini, Perplexity, DeepSeek, and Grok.
 
 ---
 
-## Key Capabilities
+## Why Sponsor TejasAI?
 
-- Domain-Tailored Refinement:
-  - Coding and Development: Modern architectures, type safety, error boundaries, edge cases, and modularity.
-  - Creative and Copywriting: Pacing, narrative voice, emotional resonance, and stylistic distinction.
-  - Academic and Research: Methodology rigor, balanced synthesis, structured citations, and objective inquiry.
-  - Learning and Teaching: Pedagogical progression, analogies, and comprehension verification.
-  - Business and Strategy: Executive clarity, KPI orientation, actionable roadmaps, and stakeholder context.
-  - Image Generation: Subject detailing, lighting schemas, lens parameters, and composition styles.
-  - General Tasks: Eliminating ambiguity, establishing clear outputs, and enforcing formatting rules.
-- Target Model Tailoring: Optimize instructions for general foundation models or tailor them specifically for ChatGPT, Claude, or Gemini.
-- Iterative Tweak Controls: Re-run enhancements with one-click directives for shorter responses, simpler language, or deeper practical detail.
-- Dual Comparison Modes: View enhanced prompts in a full-width reading view or side-by-side against the original input.
-- Improvement Explanations: Each generation returns concise bullet points explaining why the new prompt will yield superior results.
-- Productivity Actions: One-click clipboard copy with visual feedback, formatted Markdown download (`.md`), and prompt reset.
-- Local History: Automatically saves recent prompts and their enhancements to browser local storage for instant recall.
-- Theme Support: Dark and light modes with ambient styling, high-contrast typography, and smooth transitions.
+TejasAI is developed and maintained as a public utility for the global developer, researcher, and creator community.
+
+By sponsoring TejasAI through GitHub Sponsors, you directly fund:
+
+- Free, Unrestricted Access: Keeping the hosted web application and browser extension 100% free for students, indie developers, and researchers without paywalls, subscriptions, or intrusive advertisements.
+- High-Speed Cloud Inference: Covering the high-throughput Groq LPU inference capacity and multi-region server infrastructure required to deliver sub-300ms turnaround times.
+- Cross-Browser Store Distribution: Supporting official publishing fees and automated builds for the Chrome Web Store, Firefox Add-ons, and Microsoft Edge Add-ons catalogs.
+- Continuous Adapter Maintenance: Keeping site adapters robust against frequent layout changes on ChatGPT, Claude, Gemini, DeepSeek, Perplexity, and Grok.
+- Feature Roadmap Acceleration: Delivering planned capabilities such as prompt versioning, offline heuristic fallbacks, team sharing libraries, and keyboard command palettes.
+
+Support the project on GitHub: https://github.com/sponsors/mr-baraiya
+
+---
+
+## The Core Problem and Solution
+
+When users type informal queries into modern language models, they typically face repetitive iteration cycles:
+
+```text
+[ Typical User Query ]
+"Make this api call retry if it fails"
+
+        |
+        v  (Traditional Result: generic 10-line loop without timeout or status checking)
+        |
+        v  (TejasAI Automated Transformation: sub-300ms)
+
+[ TejasAI Enhanced Prompt ]
+"Write a production-grade TypeScript wrapper for this fetch call implementing
+exponential backoff. Retry up to 3 times strictly on HTTP 429 and 5xx errors,
+enforce an explicit 10-second timeout via AbortSignal, and fail fast without
+retrying on 4xx client errors. Return typed responses and structured errors."
+```
+
+Every enhanced prompt is accompanied by transparent "Why this works better" bullet points, educating the user on effective prompt architecture with every generation.
+
+---
+
+## Key Features
+
+### 1. Instant Sub-300ms Enhancement
+Powered by open-weights models running on Groq LPUs with automated failover to Google Gemini, the platform delivers near-instantaneous rewrites without latency lag.
+
+### 2. Multi-Framework Dynamic Prompt Builder
+An interactive visual studio supporting six dedicated domain frameworks:
+- Coding and Engineering: Architecture patterns, type safety, error boundaries, test requirements.
+- Education and Study: Pedagogical progression, level adjustment, analogies, comprehension checks.
+- Professional Writing: Audience adaptation, tone calibration, voice boundaries, length constraints.
+- Product and Marketing: Persona definitions, value propositions, call-to-actions, conversion goals.
+- Research and Analysis: Synthesis guidelines, methodology rigor, citation structures.
+- Image Generation: Subject framing, camera/lens parameters, lighting schematics, composition.
+
+### 3. Universal Browser Extension (Manifest V3)
+Zero-configuration in-composer assistance injected directly into the active tabs of:
+- ChatGPT (chatgpt.com)
+- Claude (claude.ai)
+- Google Gemini (gemini.google.com)
+- Perplexity (perplexity.ai)
+- DeepSeek (chat.deepseek.com)
+- Grok (grok.com and x.com)
+
+### 4. Zero Prompt Retention and Privacy Guarantee
+User prompts are processed in-flight over encrypted HTTPS connections solely to compute the enhanced variant. Prompts are never stored, never sold, and never used to train machine learning models.
+
+### 5. Local Favorites and Offline Library
+A slide-over drawer on the web and a dedicated tab in the extension allow users to organize, search, edit, and export their favorite prompts directly to portable JSON backups.
 
 ---
 
 ## System Architecture
 
 ```text
-[ Browser / Client ]
-  |
-  |  (1) HTTP / JSON Request
-  v
-[ Express Backend Gateway (Port 5000) ]
-  |  - Rate Limiter (60 req / 15 min)
-  |  - Input Validation & Length Bounds
-  |  - CORS & Error Handling
-  |  - System Instruction Composition
-  |
-  |  (2) Authenticated API Call (GROQ_API_KEY)
-  v
-[ Groq Cloud LPU Inference Engine ]
-  |
-  |  (3) JSON Structured Response
-  v
-[ Express Backend Gateway ]
-  |  - Format Validation & Bracket Stripping
-  |  - Heuristic Retries (if malformed)
-  |  - Clean Sanitized Payload
-  |
-  |  (4) Response Payload
-  v
-[ Browser / Client ]
-  |  - Dual-View Render
-  |  - Local Storage Cache
++-------------------------------------------------------------------------+
+|                              Client Layer                               |
+|                                                                         |
+|   +--------------------------+       +------------------------------+   |
+|   |   Vite + React 19 App    |       |  Manifest V3 Chrome Ext      |   |
+|   |  - Dynamic Prompt Studio |       |  - 6 AI Site Adapters        |   |
+|   |  - Side-by-Side Diffing  |       |  - In-Composer DOM Injection |   |
+|   |  - Local Favorites Sync  |       |  - Pop-up Builder & Storage  |   |
+|   +--------------------------+       +------------------------------+   |
++-------------------------------------------------------------------------+
+                                    |
+                                    | HTTPS / JSON
+                                    v
++-------------------------------------------------------------------------+
+|                       Backend API Gateway (Express)                     |
+|                                                                         |
+|   - Rate Limiting (express-rate-limit)                                  |
+|   - Strict Input Sanitization & Boundary Validation                     |
+|   - Content Policy & Refusal Enforcement                                |
+|   - Failover State Manager (Groq -> Gemini Cooldown Circuit)            |
++-------------------------------------------------------------------------+
+                     |                                 |
+       (Primary)     |                   (Fallback)    |
+                     v                                 v
++---------------------------+             +---------------------------+
+|    Groq LPU Cloud         |             |    Google Gemini Flash    |
+|   (qwen/qwen3.8-27b)      |             |  (gemini-3.5-flash-lite)  |
+|  Low-latency inference    |             |  Automatic rate-limit     |
+|   under 300 milliseconds  |             |  overflow protection      |
++---------------------------+             +---------------------------+
 ```
 
 ---
 
 ## Technology Stack
 
-### Frontend (`client/`)
-- Framework: React 19 (`react`, `react-dom`)
-- Build System: Vite 8
-- Styling: Tailwind CSS v4 (`@tailwindcss/vite`)
-- Icons: Phosphor Icons (`@phosphor-icons/react`)
-- Linter: Oxlint
-- Language: JavaScript (ES Modules, JSX)
+### Frontend
+- Core Framework: React 19
+- Build Tool: Vite 8
+- Styling: Tailwind CSS v4
+- Icon System: Phosphor Icons (`@phosphor-icons/react`)
+- Quality Tooling: Oxlint
 
-### Backend (`server/`)
-- Runtime: Node.js (v18.0.0 or higher, ES Modules)
-- Framework: Express.js (v4)
-- AI SDK: Official `groq-sdk`
+### Backend Service
+- Runtime: Node.js (v18.0.0+ / v20+ recommended)
+- Server Framework: Express 4
+- AI Integration: Official `groq-sdk` and `@google/generative-ai`
+- Database (Optional): PostgreSQL / Neon serverless driver
 - Rate Limiting: `express-rate-limit`
-- Environment Management: `dotenv`
-- CORS: `cors`
 
-### Root Workspace
-- Process Runner: Custom concurrent runner (`dev.js`)
-- Package Management: npm workspaces scripts
+### Browser Extension
+- Architecture: Manifest V3 (Service Worker + Content Scripts)
+- Design: Vanilla JavaScript and CSS with Phosphor SVGs (zero external CDN dependencies for strict security compliance)
+- Compatibility: Google Chrome, Brave, Microsoft Edge, Opera, Arc
 
 ---
 
-## Project Directory Structure
+## Project Structure
 
 ```text
 TejasAI/
-├── client/
-│   ├── public/
+├── client/                          # React Frontend Application
+│   ├── public/                      # Static assets and extension zip package
 │   │   ├── favicon/
-│   │   ├── favicon.ico
-│   │   └── logo.png
+│   │   ├── logo.png
+│   │   └── tejasai-extension.zip    # Pre-packaged browser extension for direct download
 │   ├── src/
-│   │   ├── assets/
-│   │   ├── components/
-│   │   │   ├── CategorySelector.jsx
-│   │   │   ├── ErrorAlert.jsx
-│   │   │   ├── ExamplesGallery.jsx
-│   │   │   ├── FaqSection.jsx
-│   │   │   ├── Footer.jsx
-│   │   │   ├── Header.jsx
-│   │   │   ├── HowItWorks.jsx
-│   │   │   ├── OutputDisplay.jsx
-│   │   │   ├── PromptInput.jsx
-│   │   │   └── RecentPrompts.jsx
-│   │   ├── data/
-│   │   │   └── categories.js
-│   │   ├── services/
-│   │   │   └── api.js
-│   │   ├── App.css
-│   │   ├── App.jsx
-│   │   ├── index.css
-│   │   └── main.jsx
-│   ├── .env.example
-│   ├── .gitignore
-│   ├── .oxlintrc.json
-│   ├── index.html
+│   │   ├── components/              # Modular UI components
+│   │   │   ├── CategorySelector.jsx # Example chips and target AI selector
+│   │   │   ├── ErrorAlert.jsx       # Error and policy rejection notifications
+│   │   │   ├── ExamplesGallery.jsx  # Before/after editorial showcase
+│   │   │   ├── ExtensionModal.jsx   # Download and 3-step setup modal
+│   │   │   ├── FaqSection.jsx       # Accordion FAQ
+│   │   │   ├── FavoritesDrawer.jsx  # Slide-over saved prompts manager
+│   │   │   ├── Header.jsx           # Responsive editorial header
+│   │   │   ├── OutputDisplay.jsx    # Dual comparison and platform launch bar
+│   │   │   ├── PromptBuilder.jsx    # Dynamic template-driven studio
+│   │   │   ├── PromptInput.jsx      # Speech dictation and input canvas
+│   │   │   └── RecentPrompts.jsx    # Local session draft restore
+│   │   ├── data/                    # Multi-category prompt templates
+│   │   ├── services/                # API client and favorites persistence
+│   │   ├── App.jsx                  # Application root coordinator
+│   │   └── index.css                # Global stylesheet and Tailwind tokens
 │   ├── package.json
-│   ├── README.md
-│   └── vite.config.js
+│   └── vite.config.js               # Vite configuration and proxy setup
 │
-├── server/
-│   ├── middleware/
-│   │   └── errorHandler.js
-│   ├── routes/
-│   │   └── enhance.js
-│   ├── services/
-│   │   ├── aiService.js
-│   │   └── systemInstruction.js
-│   ├── tests/
-│   │   ├── capture_screens.js
-│   │   └── enhance.test.js
-│   ├── utils/
-│   │   └── validatePrompt.js
-│   ├── .env.example
-│   ├── .gitignore
+├── server/                          # Backend Gateway Service
+│   ├── routes/                      # Route handlers (/api/enhance, /api/health)
+│   ├── services/                    # Inference logic, failover, and system instructions
+│   │   ├── aiService.js             # Dual Groq/Gemini resilient caller
+│   │   ├── db.js                    # Optional PostgreSQL logging
+│   │   └── systemInstruction.js     # Specialized prompt optimization rules
+│   ├── tests/                       # Automated test suites
+│   ├── .env.example                 # Environment configuration template
 │   ├── package.json
-│   ├── README.md
-│   └── server.js
+│   └── server.js                    # Express application entrypoint
 │
-├── .gitignore
-├── dev.js
-├── LICENSE
-├── package.json
+├── tejasai-browser-extension/       # Chrome Manifest V3 Browser Extension
+│   ├── adapters/                    # Dedicated DOM injectors per platform
+│   │   ├── chatgpt.js
+│   │   ├── claude.js
+│   │   ├── deepseek.js
+│   │   ├── gemini.js
+│   │   ├── grok.js
+│   │   └── perplexity.js
+│   ├── icons/                       # Official extension icons
+│   ├── content.js                   # Extension coordinator and in-composer UI
+│   ├── content.css                  # Isolated stylesheet for in-page overlays
+│   ├── manifest.json                # Manifest V3 specification
+│   ├── popup.html                   # Extension action popup
+│   ├── popup.js                     # Extension popup logic (Enhance, Builder, Favorites)
+│   └── popup.css                    # Popup styling
+│
+├── dev.js                           # Unified local development process runner
+├── package.json                     # Workspace definition and root scripts
 └── README.md
 ```
 
 ---
 
-## Prerequisites
+## Getting Started Locally
 
+### Prerequisites
 - Node.js 18.0.0 or higher (v20+ recommended)
 - npm 9.0.0 or higher
-- A Groq API key (available from the Groq Cloud Console at https://console.groq.com/keys)
+- A Groq API key from https://console.groq.com/keys
+- (Optional) A Google Gemini API key from https://aistudio.google.com/app/apikey for automatic fallback redundancy
 
----
+### 1. Clone the Repository
+```bash
+git clone https://github.com/mr-baraiya/TejasAI.git
+cd TejasAI
+```
 
-## Environment Configuration
+### 2. Install Dependencies
+Install dependencies across both workspace packages:
+```bash
+npm run install:all
+```
 
-### Backend Configuration
+### 3. Configure Environment Variables
+Copy the server environment template:
 
-In the `server/` directory, create a `.env` file based on `.env.example`:
-
+On macOS/Linux:
 ```bash
 cp server/.env.example server/.env
 ```
 
 On Windows PowerShell:
-
 ```powershell
 Copy-Item server/.env.example server/.env
 ```
 
-Open `server/.env` and configure your settings:
-
+Open `server/.env` and add your API credentials:
 ```env
 PORT=5000
 NODE_ENV=development
 FRONTEND_URL=http://localhost:5173
 
-# Replace with your actual Groq API key
-GROQ_API_KEY=gsk_your_groq_api_key_here
-
-# Model identifier (e.g. qwen/qwen3.8-27b)
+# Required: Primary inference key
+GROQ_API_KEY=your_actual_groq_api_key_here
 GROQ_MODEL=qwen/qwen3.8-27b
 
-MAX_PROMPT_LENGTH=10000
-AI_TIMEOUT_MS=60000
+# Optional: Automatic fallback redundancy
+GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_FALLBACK_MODEL=gemini-3.5-flash-lite
+
+# Optional: Prompt analytics database
+DATABASE_URL=
 ```
 
-### Frontend Configuration (Optional)
-
-The client connects to `/api` by default, which is forwarded to `http://localhost:5000` via the Vite proxy during local development. If deploying the frontend to a separate host in production, create `client/.env`:
-
-```env
-VITE_API_BASE_URL=https://your-backend-api-domain.com/api
-```
-
----
-
-## Installation and Setup
-
-Install dependencies across both workspace packages from the root directory:
-
-```bash
-npm run install:all
-```
-
-Alternatively, install dependencies in each directory individually:
-
-```bash
-cd server && npm install
-cd ../client && npm install
-```
-
----
-
-## Running the Application
-
-### Option 1: Unified Runner (Recommended)
-
-From the project root:
-
+### 4. Start Development Servers
+Run both backend and frontend concurrently with a single command:
 ```bash
 npm run dev
 ```
 
-Or:
-
-```bash
-node dev.js
-```
-
-This concurrently launches:
-- Express Backend on `http://localhost:5000`
-- Vite Frontend on `http://localhost:5173`
-
-Both processes pipe standard output to your terminal, and terminating the runner cleanly stops both servers.
-
-### Option 2: Separate Terminals
-
-#### Terminal 1 (Backend):
-```bash
-cd server
-npm run dev
-```
-
-#### Terminal 2 (Frontend):
-```bash
-cd client
-npm run dev
-```
-
-Open `http://localhost:5173` in your browser.
+- Web Application: http://localhost:5173
+- Backend API Health: http://localhost:5000/api/health
 
 ---
 
-## Browser Extension (Chrome / Brave / Edge)
+## Installing the Browser Extension
 
-TejasAI includes an official Chrome Manifest V3 browser extension located in [`tejasai-browser-extension/`](tejasai-browser-extension/) that brings prompt enhancement directly into ChatGPT, Google Gemini, Claude, Perplexity, and DeepSeek.
+You can test or use the extension in Chrome, Brave, Edge, or Opera in under a minute:
 
-### 1. Download from Website
-Users can download the extension directly from your live website:
-- Click the **"Extension"** button in the header of [https://tejasai-eta.vercel.app/](https://tejasai-eta.vercel.app/)
-- Or download the ZIP package directly at: `https://tejasai-eta.vercel.app/tejasai-extension.zip`
-
-### 2. Install in Browser (30 seconds)
-1. Extract `tejasai-extension.zip`.
-2. Open `chrome://extensions` in Chrome, Brave, or Edge.
-3. Turn **ON** **Developer mode** in the top-right corner.
-4. Click **Load unpacked** (top-left) and select the extracted folder: `tejasai-browser-extension`.
+1. Download or locate the extension:
+   - Download the pre-built zip from the web app or find the `tejasai-browser-extension` folder in this repository.
+2. In your Chromium browser, navigate to:
+   ```text
+   chrome://extensions
+   ```
+3. Enable Developer mode via the toggle switch in the upper-right corner.
+4. Click Load unpacked in the upper-left corner.
+5. Select the `tejasai-browser-extension` folder.
+6. Navigate to ChatGPT, Claude, Gemini, Perplexity, DeepSeek, or Grok. The TejasAI Enhance button will automatically appear next to the prompt input box.
 
 ---
 
 ## API Reference
 
-- **Production Base URL:** `https://tejasai-eta.vercel.app/api`
-- **Local Dev Base URL:** `http://localhost:5000/api`
+The backend provides a standardized, clean REST interface.
 
-### GET /api/health
-
-`GET https://tejasai-eta.vercel.app/api/health`
-
-Returns backend connectivity status, Groq key configuration state, and the active model identifier.
-
+### 1. Health Check
+```http
+GET /api/health
+```
 
 #### Response Example (200 OK)
-
 ```json
 {
   "status": "online",
   "app": "TejasAI Server",
   "groqConfigured": true,
   "groqModel": "qwen/qwen3.8-27b",
-  "timestamp": "2026-10-22T02:20:00.000Z"
+  "timestamp": "2026-10-24T22:00:00.000Z"
 }
 ```
 
----
+### 2. Prompt Enhancement
+```http
+POST /api/enhance
+Content-Type: application/json
+```
 
-### POST /api/enhance
-
-`POST https://tejasai-eta.vercel.app/api/enhance`
-
-Accepts an input prompt along with optional target platform and iterative refinement options.
-
-
-#### Request Headers
-
-`Content-Type: application/json`
-
-#### Request Body
-
-| Parameter | Type | Required | Description |
-|---|---|---|---|
-| prompt | String | Yes | Input text to enhance (3 to 1,500 characters). |
-| targetAI | String | No | Target engine. Values: `any`, `chatgpt`, `gemini`, `claude`. Default: `any`. |
-| tweak | String | No | Refinement directive. Values: `shorter`, `simpler`, `moreDetail`. |
-| previousResult | String | No | Prior enhanced output to be tweaked. |
-
-#### Request Example
-
+#### Request Payload
 ```json
 {
-  "prompt": "Explain database indexing for junior software developers.",
-  "targetAI": "chatgpt",
+  "prompt": "Write a python script to parse csv files and upload to s3",
+  "targetAI": "any",
   "tweak": "",
   "previousResult": ""
 }
 ```
 
-#### Success Response Example (200 OK)
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `prompt` | string | Yes | The draft prompt or objective (3 to 10,000 characters). |
+| `targetAI` | string | No | Optional optimization target (`any`, `chatgpt`, `gemini`, `claude`, `perplexity`, `deepseek`, `grok`). |
+| `tweak` | string | No | Optional iterative adjustment (`shorter`, `simpler`, `moreDetail`). |
+| `previousResult`| string | No | The prior enhanced text when requesting a tweak. |
 
+#### Response Example (200 OK)
 ```json
 {
   "success": true,
-  "enhancedPrompt": "Explain relational database indexing to an entry-level software engineer. Begin with an intuitive analogy comparing an index to a book's index. Contrast full-table scans with B-Tree index lookups using visual step-by-step descriptions. Discuss the operational tradeoffs between faster SELECT query reads versus slower INSERT, UPDATE, and DELETE writes. Conclude with three practical best practices for choosing which columns to index.",
+  "enhancedPrompt": "Write an idiomatic Python script using boto3 and pandas to stream-parse large CSV files and upload the processed records to an AWS S3 bucket. Include robust error handling for missing files, invalid delimiter formats, and AWS credentials failures. Use environment variables for AWS keys and bucket names. Implement progress logging and memory-safe batch chunking for files exceeding 1GB.",
   "whyBetter": [
-    "Grounds abstract database theory in a familiar analogy and visual traversal steps",
-    "Highlights critical write-overhead tradeoffs that entry-level engineers frequently overlook",
-    "Provides actionable criteria for selecting appropriate columns for production indexing"
+    "Specifies memory-safe stream parsing and batch chunking to prevent out-of-memory crashes on large files",
+    "Establishes secure credential handling via environment variables rather than hardcoded credentials",
+    "Defines explicit error handling paths for network partitions and malformed CSV rows"
   ],
   "meta": {
-    "targetAI": "chatgpt",
+    "targetAI": "any",
     "tweak": null
   }
 }
 ```
 
-#### Error Response Example (400 Bad Request)
+---
 
-```json
-{
-  "success": false,
-  "error": "Please enter a prompt with at least 3 characters."
-}
-```
+## Security, Privacy, and Responsible AI
+
+- Zero Client-Side Secrets: Inference keys are strictly stored on the server runtime. Client applications and browser extensions communicate solely with backend proxies and never possess API keys.
+- Input Boundaries and Sanitization: Requests are strictly validated and length-bounded to protect against denial-of-service and payload abuse.
+- Sensitive Content Filtering: The system implements rigorous content policy boundaries, returning polite structured refusals when requests violate ethical or security boundaries.
+- Rate Limiting Protection: The public API enforces sliding-window IP limits to preserve platform availability for everyone.
 
 ---
 
-## Testing and Verification
+## Project Roadmap
 
-### 1. Test Backend Health
-
-```bash
-# Test Live Vercel Production Deployment:
-curl -s https://tejasai-eta.vercel.app/api/health
-
-# Test Local Dev Server:
-curl -s http://localhost:5000/api/health
-
-# Using PowerShell (Live):
-Invoke-RestMethod -Uri https://tejasai-eta.vercel.app/api/health -Method GET
-```
-
-
-### 2. Automated Test Suite
-
-A standalone integration test suite is located in `server/tests/enhance.test.js`. It validates 8 scenarios including standard prompts, boundary lengths, adversarial inputs, output formatting, and response bullet count constraints:
-
-```bash
-cd server
-node tests/enhance.test.js
-```
-
-### 3. Frontend Linting
-
-```bash
-cd client
-npm run lint
-```
+- Chrome Web Store and Firefox Add-ons official store verification.
+- Keyboard shortcut palette (Command/Ctrl + K) for quick prompt generation.
+- Expanded platform adapters for GitHub Copilot Chat, Cursor, and v0.dev.
+- Community prompt template contributions via verified pull requests.
+- Optional client-side encrypted sync for prompt libraries across multiple devices.
 
 ---
 
-## Production Deployment
+## Contributing
 
-### Single-Project Vercel Deployment (Recommended)
+Contributions are welcomed from developers of all skill levels:
 
-TejasAI is live in production at **[https://tejasai-eta.vercel.app/](https://tejasai-eta.vercel.app/)** and pre-configured to deploy frontend (Vite React) and backend (Express API as a serverless function) together as a **single project on Vercel**!
-
-#### Prerequisites:
-- A GitHub repository containing this project
-- A free account on [vercel.com](https://vercel.com)
-- Your Groq API key from [console.groq.com](https://console.groq.com)
-
-#### Option A: Deploy via Vercel Web Dashboard (Easiest)
-
-1. **Push your code to GitHub**:
-   ```bash
-   git add .
-   git commit -m "feat: setup for vercel single project deployment"
-   git push origin main
-   ```
-2. **Import into Vercel**:
-   - Go to [vercel.com/new](https://vercel.com/new).
-   - Select your `TejasAI` repository and click **Import**.
-3. **Configure Project Settings**:
-   - **Framework Preset**: Select **Vite** (or leave as Other).
-   - **Root Directory**: `./` (leave default, do NOT select `client` or `server`).
-   - **Build & Development Settings**: Keep defaults (Vercel automatically detects `vercel.json` with `outputDirectory: client/dist` and `npm run build`).
-4. **Add Environment Variables**:
-   Under **Environment Variables**, add:
-   - `GROQ_API_KEY`: `gsk_...` (your Groq API key)
-   - (Optional) `GROQ_MODEL`: `qwen/qwen3.8-27b`
-   - (Optional) `NODE_ENV`: `production`
-5. **Click Deploy**:
-   Vercel will install dependencies, build the React frontend, and deploy the Express API function. Once finished, your full-stack app will be live at:
-   - **Web App:** [https://tejasai-eta.vercel.app/](https://tejasai-eta.vercel.app/)
-   - **API Endpoint:** [https://tejasai-eta.vercel.app/api/enhance](https://tejasai-eta.vercel.app/api/enhance)
-   - **Health Check:** [https://tejasai-eta.vercel.app/api/health](https://tejasai-eta.vercel.app/api/health)
-
-
-#### Option B: Deploy via Vercel CLI
-
-```bash
-# 1. Install Vercel CLI (if not installed)
-npm install -g vercel
-
-# 2. Login to your Vercel account
-vercel login
-
-# 3. Deploy from the repository root
-vercel
-
-# 4. Add your Groq API key to Vercel
-vercel env add GROQ_API_KEY production
-
-# 5. Deploy to Production
-vercel --prod
-```
-
-### Decoupled Architecture
-
-#### Frontend:
-Deploy `client/` to static hosts like Vercel, Netlify, or Cloudflare Pages.
-- Build command: `npm run build`
-- Output directory: `dist`
-- Environment variable: `VITE_API_BASE_URL=https://your-backend-api.onrender.com/api`
-
-#### Backend:
-Deploy `server/` to platforms like Render, Railway, Fly.io, or any containerized VPS.
-- Start command: `node server.js`
-- Set environment variables: `GROQ_API_KEY`, `GROQ_MODEL`, `PORT`, and `FRONTEND_URL` (to match your frontend domain).
-
-### Unified Node.js Service (VPS / Docker)
-
-To serve the frontend static files directly from the Express backend on a long-running Node.js server:
-
-1. Build the client bundle:
-   ```bash
-   npm run build
-   ```
-2. Run `npm start` from root or server to serve both frontend and backend on a single port.
-
-
----
-
-## Security and Privacy
-
-- Zero Client-Side Secrets: The Groq API key is strictly maintained within the backend runtime. It is never bundled into client JavaScript.
-- Rate Limiting: The Express server enforces a limit of 60 requests per 15 minutes per IP address to safeguard resources.
-- Input Bounds: Client prompts are bounded between 3 and 1,500 characters, mitigating payload abuse.
-- Safe Error Interception: Server errors are scrubbed by `errorHandler.js` so internal exception stacks and credentials are never exposed in responses.
-- Content Privacy: Prompts are not stored in any external database or logged to disk by the backend service.
+1. Fork the repository.
+2. Create your feature branch (`git checkout -b feature/new-framework`).
+3. Commit your changes (`git commit -m "feat: add rust engineering prompt framework"`).
+4. Push to the branch (`git push origin feature/new-framework`).
+5. Open a Pull Request with a clear description of your improvements.
 
 ---
 

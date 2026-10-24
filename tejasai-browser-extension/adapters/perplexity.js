@@ -17,10 +17,26 @@ window.TejasAIAdapters['perplexity'] = {
   },
 
   findInput() {
+    // 0. Active element if currently focused
+    const active = document.activeElement;
+    if (active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT' || active.isContentEditable)) {
+      if (!active.closest('header, nav, aside, [role="navigation"]')) {
+        return active;
+      }
+    }
+
     const selectors = [
-      'textarea[placeholder*="Ask follow-up" i]',
-      'textarea[placeholder*="Ask a follow-up" i]',
+      '#ask-input',
+      'div#ask-input',
+      'div[contenteditable="true"].composer-editable',
+      'div[contenteditable="true"][role="textbox"]',
+      'div[contenteditable="true"][data-lexical-editor="true"]',
+      'div[data-testid="search-input"] [contenteditable="true"]',
+      'div[contenteditable="true"]',
+      'div[data-testid="search-input"] textarea',
       'textarea[placeholder*="Ask anything" i]',
+      'textarea[placeholder*="Ask a follow-up" i]',
+      'textarea[placeholder*="Ask follow-up" i]',
       'textarea[placeholder*="Search or ask" i]',
       'textarea[placeholder*="Search anything" i]',
       'textarea[placeholder*="connectors" i]',
@@ -30,16 +46,15 @@ window.TejasAIAdapters['perplexity'] = {
       'textarea[placeholder*="anything" i]',
       'textarea[placeholder*="question" i]',
       'textarea[placeholder*="follow-up" i]',
-      'div[data-testid="search-input"] textarea',
       'textarea[data-testid*="search" i]',
       'textarea[data-testid*="input" i]',
+      'main [contenteditable="true"]',
       'main textarea',
+      'form [contenteditable="true"]',
       'form textarea',
       'textarea.overflow-auto',
       'textarea',
       '[data-testid="search-input"]',
-      'div[contenteditable="true"][role="textbox"]',
-      'div[contenteditable="true"]',
     ];
 
     for (const sel of selectors) {
@@ -51,7 +66,7 @@ window.TejasAIAdapters['perplexity'] = {
 
           // If a container wrapper was matched, drill down to the actual editable field
           if (el.tagName !== 'TEXTAREA' && el.tagName !== 'INPUT' && !el.isContentEditable) {
-            const inner = el.querySelector('textarea, [contenteditable="true"], input');
+            const inner = el.querySelector('#ask-input, [contenteditable="true"], textarea, input');
             if (inner) el = inner;
           }
 
@@ -75,7 +90,7 @@ window.TejasAIAdapters['perplexity'] = {
     if (!el) return '';
     let target = el;
     if (target.tagName !== 'TEXTAREA' && target.tagName !== 'INPUT' && !target.isContentEditable) {
-      const inner = target.querySelector('textarea, [contenteditable="true"], input');
+      const inner = target.querySelector('#ask-input, [contenteditable="true"], textarea, input');
       if (inner) target = inner;
     }
 
@@ -91,7 +106,7 @@ window.TejasAIAdapters['perplexity'] = {
     // Resolve container element to actual textarea or contenteditable element
     let target = el;
     if (target.tagName !== 'TEXTAREA' && target.tagName !== 'INPUT' && !target.isContentEditable) {
-      const inner = target.querySelector('textarea, [contenteditable="true"], input');
+      const inner = target.querySelector('#ask-input, [contenteditable="true"], textarea, input');
       if (inner) target = inner;
     }
 
@@ -99,14 +114,94 @@ window.TejasAIAdapters['perplexity'] = {
       target.focus();
     } catch (_) {}
 
-    // 1. Textarea / Input (Primary Perplexity Composer)
+    // Case 1: ContentEditable (Perplexity's modern #ask-input Lexical composer)
+    if (target.isContentEditable || target.getAttribute('contenteditable') === 'true' || target.getAttribute('role') === 'textbox') {
+      // Method A: DOM Range Selection + native execCommand('insertText')
+      try {
+        target.focus();
+        const sel = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(target);
+        sel.removeAllRanges();
+        sel.addRange(range);
+
+        const ok = document.execCommand('insertText', false, text);
+        if (ok) {
+          target.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+          target.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+          return true;
+        }
+      } catch {
+        // Fall through to paste event fallback
+      }
+
+      // Method B: Synthetic Clipboard Paste (DataTransfer)
+      try {
+        target.focus();
+        const sel = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(target);
+        sel.removeAllRanges();
+        sel.addRange(range);
+
+        const dt = new DataTransfer();
+        dt.setData('text/plain', text);
+        const pasteEvt = new ClipboardEvent('paste', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          clipboardData: dt,
+        });
+        target.dispatchEvent(pasteEvt);
+
+        const currentText = (target.innerText || target.textContent || '').trim();
+        if (currentText === text.trim()) {
+          target.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+          return true;
+        }
+      } catch (_) {}
+
+      // Method C: InputEvent insertReplacementText with direct textContent update
+      try {
+        target.focus();
+        const sel = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(target);
+        sel.removeAllRanges();
+        sel.addRange(range);
+
+        target.dispatchEvent(new InputEvent('beforeinput', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          inputType: 'insertReplacementText',
+          data: text,
+        }));
+        target.textContent = text;
+        target.dispatchEvent(new InputEvent('input', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          inputType: 'insertReplacementText',
+          data: text,
+        }));
+        target.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+        return true;
+      } catch (_) {
+        target.innerText = text;
+        target.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+        return true;
+      }
+    }
+
+    // Case 2: Textarea / Input (Perplexity fallback or follow-up inputs)
     if (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT') {
       let replaced = false;
 
-      // Method A: Native insertText via document.execCommand
+      // Method A: Native insertText with proper selection
       try {
         target.focus();
-        document.execCommand('selectAll', false, null);
+        target.select();
         target.setSelectionRange(0, target.value.length);
         replaced = document.execCommand('insertText', false, text);
       } catch {
@@ -134,14 +229,14 @@ window.TejasAIAdapters['perplexity'] = {
           target.value = text;
         }
 
-        // Fire beforeinput (essential for React 18 synthetic onChange)
+        // Fire beforeinput (essential for React synthetic onChange)
         try {
           target.dispatchEvent(new InputEvent('beforeinput', {
             bubbles: true,
             cancelable: true,
             composed: true,
             data: text,
-            inputType: 'insertText',
+            inputType: 'insertReplacementText',
           }));
         } catch (_) {}
 
@@ -152,7 +247,7 @@ window.TejasAIAdapters['perplexity'] = {
             cancelable: true,
             composed: true,
             data: text,
-            inputType: 'insertText',
+            inputType: 'insertReplacementText',
           }));
         } catch (_) {
           target.dispatchEvent(new Event('input', { bubbles: true, cancelable: true, composed: true }));
@@ -168,7 +263,7 @@ window.TejasAIAdapters['perplexity'] = {
         target.selectionEnd = target.value.length;
       } catch (_) {}
 
-      // Trigger height calculation and enable Perplexity's send button
+      // Trigger height calculation
       try {
         target.style.height = 'auto';
         if (target.scrollHeight > 0) {
@@ -176,59 +271,10 @@ window.TejasAIAdapters['perplexity'] = {
         }
       } catch (_) {}
 
-      try {
-        target.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true, composed: true }));
-        target.dispatchEvent(new KeyboardEvent('keyup', { key: ' ', code: 'Space', bubbles: true, composed: true }));
-      } catch (_) {}
-
       return true;
     }
 
-    // 2. ContentEditable / Rich Text
-    try {
-      target.focus();
-      document.execCommand('selectAll', false, null);
-      const success = document.execCommand('insertText', false, text);
-      if (success) {
-        target.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-        target.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
-        return true;
-      }
-    } catch (_) {}
-
-    try {
-      target.innerHTML = '';
-      const lines = text.split('\n');
-      lines.forEach((line) => {
-        const p = document.createElement('p');
-        if (line.trim().length === 0) {
-          p.appendChild(document.createElement('br'));
-        } else {
-          p.textContent = line;
-        }
-        target.appendChild(p);
-      });
-      target.dispatchEvent(new InputEvent('beforeinput', {
-        bubbles: true,
-        cancelable: true,
-        composed: true,
-        inputType: 'insertText',
-        data: text,
-      }));
-      target.dispatchEvent(new InputEvent('input', {
-        bubbles: true,
-        cancelable: true,
-        composed: true,
-        inputType: 'insertText',
-        data: text,
-      }));
-      target.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
-      return true;
-    } catch (_) {
-      target.innerText = text;
-      target.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-      return true;
-    }
+    return false;
   },
 
   getComposerBox(inputEl) {

@@ -340,12 +340,12 @@
 
       // Auto-Replace mode: If user enabled "Auto-Replace Input", directly replace text without asking permission
       if (isAutoReplace) {
-        const elToUpdate = (inputEl && inputEl.isConnected) ? inputEl : (adapter.findInput() || inputEl);
+        const elToUpdate = adapter.findInput() || ((inputEl && inputEl.isConnected) ? inputEl : null);
         if (elToUpdate) {
           adapter.setText(elToUpdate, response.enhancedPrompt);
           syncSaveButtonState();
           showToast('Prompt enhanced & replaced!', 'success', () => {
-            const undoEl = (elToUpdate && elToUpdate.isConnected) ? elToUpdate : (adapter.findInput() || elToUpdate);
+            const undoEl = adapter.findInput() || ((elToUpdate && elToUpdate.isConnected) ? elToUpdate : null);
             if (undoEl) {
               adapter.setText(undoEl, originalPromptCache);
               syncSaveButtonState();
@@ -502,9 +502,7 @@
         });
       }
       // Resolve live DOM input in case element was re-mounted or detached during preview
-      const elToUpdate = (inputElement && inputElement.isConnected)
-        ? inputElement
-        : (adapter.findInput() || inputElement);
+      const elToUpdate = adapter.findInput() || ((inputElement && inputElement.isConnected) ? inputElement : null);
 
       if (elToUpdate && result.enhancedPrompt) {
         adapter.setText(elToUpdate, result.enhancedPrompt);

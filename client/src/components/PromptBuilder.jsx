@@ -332,16 +332,16 @@ export function PromptBuilder({ onSendToMain, onShowToast }) {
             </div>
           </div>
 
-          {/* Prompt Canvas / Editor (Single Clean Border, Zero Nested Boxes) */}
+          {/* Prompt Canvas / Editor (Single Clean Border, Zero Nested Boxes, Natural Height) */}
           {isEditingManually ? (
             <textarea
-              rows={12}
+              rows={Math.max(14, (manualPrompt || '').split('\n').length + 2)}
               value={manualPrompt}
               onChange={(e) => setManualPrompt(e.target.value)}
-              className="w-full text-xs sm:text-sm bg-[#FFFFFF] text-[#111827] border border-[#EDE8E1] p-4 sm:p-5 rounded-none focus:outline-none focus:border-[#111827] font-mono leading-relaxed resize-y"
+              className="w-full text-xs sm:text-sm bg-[#FFFFFF] text-[#111827] border border-[#EDE8E1] p-4 sm:p-5 rounded-none focus:outline-none focus:border-[#111827] font-mono leading-relaxed resize-y min-h-[300px]"
             />
           ) : (
-            <div className="bg-[#FFFFFF] border border-[#EDE8E1] p-4 sm:p-5 text-xs sm:text-sm text-[#111827] font-mono whitespace-pre-wrap leading-relaxed min-h-[280px] max-h-[420px] overflow-y-auto selection:bg-[#111827] selection:text-white">
+            <div className="bg-[#FFFFFF] border border-[#EDE8E1] p-4 sm:p-5 text-xs sm:text-sm text-[#111827] font-mono whitespace-pre-wrap leading-relaxed min-h-[300px] selection:bg-[#111827] selection:text-white">
               {activePromptText}
             </div>
           )}

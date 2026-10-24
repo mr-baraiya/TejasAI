@@ -24,6 +24,7 @@ export function Header({ onNewPrompt, hasActivePrompt = false, onOpenFavorites, 
     { type: 'favorites', label: 'Favorites' },
     { type: 'link', label: 'Extension', href: '#extension' },
     { type: 'link', label: 'FAQ', href: '#faq' },
+    { type: 'link', label: 'Sponsor', href: '#sponsor' },
   ];
 
   const handleNavClick = (e, href) => {
@@ -80,12 +81,17 @@ export function Header({ onNewPrompt, hasActivePrompt = false, onOpenFavorites, 
                   );
                 }
 
+                const isSponsor = item.label === 'Sponsor';
                 return (
                   <a
                     key={item.href}
                     href={item.href}
                     onClick={(e) => handleNavClick(e, item.href)}
-                    className="text-sm font-medium text-[#6B7280] hover:text-[#111827] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2410C] rounded-none py-1 transition-colors"
+                    className={`text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2410C] rounded-none py-1 transition-colors ${
+                      isSponsor
+                        ? 'text-[#C2410C] underline underline-offset-4 decoration-[#C2410C] hover:text-[#9A3412]'
+                        : 'text-[#6B7280] hover:text-[#111827]'
+                    }`}
                   >
                     {item.label}
                   </a>
@@ -159,12 +165,17 @@ export function Header({ onNewPrompt, hasActivePrompt = false, onOpenFavorites, 
               );
             }
 
+            const isSponsor = item.label === 'Sponsor';
             return (
               <a
                 key={item.href}
                 href={item.href}
                 onClick={(e) => handleNavClick(e, item.href)}
-                className="block text-sm font-medium text-[#374151] hover:text-[#C2410C] py-1 transition-colors"
+                className={`block text-sm font-medium py-1 transition-colors ${
+                  isSponsor
+                    ? 'text-[#C2410C] underline underline-offset-4 decoration-[#C2410C] hover:text-[#9A3412]'
+                    : 'text-[#374151] hover:text-[#C2410C]'
+                }`}
               >
                 {item.label}
               </a>

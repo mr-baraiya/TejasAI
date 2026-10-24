@@ -6,6 +6,7 @@ import { HowItWorks } from './components/HowItWorks';
 import { ExtensionSection } from './components/ExtensionSection';
 import { ExamplesGallery } from './components/ExamplesGallery';
 import { FaqSection } from './components/FaqSection';
+import { SponsorSection } from './components/SponsorSection';
 import { RecentPrompts } from './components/RecentPrompts';
 import { Footer } from './components/Footer';
 import { ErrorAlert } from './components/ErrorAlert';
@@ -327,6 +328,8 @@ export default function App() {
           {/* FAQ Section */}
           <FaqSection />
 
+          {/* Open-Source Sponsorship Section */}
+          <SponsorSection />
         </div>
       </main>
 

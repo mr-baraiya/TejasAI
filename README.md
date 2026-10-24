@@ -376,6 +376,16 @@ Content-Type: application/json
 
 ---
 
+## Sponsoring and Support
+
+TejasAI is built and maintained as a free public utility. If TejasAI saves you time or enhances your workflow, consider supporting its continued open-source development:
+
+- Sponsor on GitHub: https://github.com/sponsors/mr-baraiya
+- Monthly and One-Time Tiers: Tier options start from as little as $1 to support ongoing server upkeep and API inference costs.
+- Corporate Sponsorship: Organizations utilizing TejasAI across engineering or content teams can sponsor to guarantee prioritized issue triage and adapter maintenance.
+
+---
+
 ## Contributing
 
 Contributions are welcomed from developers of all skill levels:

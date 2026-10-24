@@ -48,7 +48,7 @@ export function ExtensionSection() {
               Download Extension (.zip)
             </a>
             <div className="font-mono text-xs text-[#6B7280]">
-              v1.0.0 &bull; Manifest V3 &bull; Chrome, Edge, Brave
+              v1.1.0 &bull; Manifest V3 &bull; Chrome, Edge, Brave
             </div>
           </div>
 

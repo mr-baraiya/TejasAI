@@ -66,24 +66,8 @@ export function Footer() {
               <span>&copy; {new Date().getFullYear()}</span>
             </div>
 
-            {/* Links and Sponsor on right */}
+            {/* Links on right */}
             <div className="flex items-center space-x-5 sm:space-x-6 flex-wrap justify-center">
-              <iframe
-                src="https://github.com/sponsors/mr-baraiya/button"
-                title="Sponsor mr-baraiya"
-                height="32"
-                width="114"
-                className="border-0 shrink-0"
-                style={{ border: 0, borderRadius: '6px' }}
-              />
-              <a
-                href="https://github.com/sponsors/mr-baraiya"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#6B7280] hover:text-[#C2410C] font-medium transition-colors"
-              >
-                Sponsor
-              </a>
               <button
                 type="button"
                 onClick={() => openModal('privacy')}

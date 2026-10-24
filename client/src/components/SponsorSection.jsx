@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowSquareOut } from '@phosphor-icons/react';
+import { ArrowSquareOut, Heart } from '@phosphor-icons/react';
 
 /**
  * Editorial Open-Source Sponsor Section for TejasAI.
@@ -120,16 +120,18 @@ export function SponsorSection() {
                   </div>
                 </div>
 
-                {/* Official GitHub Sponsor Button */}
+                {/* GitHub Sponsor Button (Opens in new tab) */}
                 <div className="shrink-0 self-end sm:self-center pl-1 sm:pl-2">
-                  <iframe
-                    src="https://github.com/sponsors/mr-baraiya/button"
-                    title="Sponsor mr-baraiya"
-                    height="32"
-                    width="114"
-                    className="border-0 rounded-md shrink-0 block"
-                    style={{ border: 0, borderRadius: '6px' }}
-                  />
+                  <a
+                    href="https://github.com/sponsors/mr-baraiya"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] hover:border-[#8b949e] text-[#c9d1d9] hover:text-white text-xs font-semibold transition-all cursor-pointer shadow-xs shrink-0 select-none"
+                    title="Sponsor @mr-baraiya on GitHub Sponsors"
+                  >
+                    <Heart className="w-3.5 h-3.5 text-[#db61a2]" weight="bold" />
+                    <span>Sponsor</span>
+                  </a>
                 </div>
 
               </div>

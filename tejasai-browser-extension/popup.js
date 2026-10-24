@@ -6,12 +6,14 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
   const masterToggle = document.getElementById('master-toggle');
+  const autoReplaceToggle = document.getElementById('auto-replace-toggle');
   const siteToggles = document.querySelectorAll('.site-toggle');
   const statusBar = document.getElementById('status-bar');
   const statusText = document.getElementById('status-text');
 
   let currentSettings = {
     enabled: true,
+    autoReplace: false,
     sites: {
       chatgpt: true,
       gemini: true,
@@ -28,6 +30,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       currentSettings = settings;
 
       masterToggle.checked = Boolean(settings.enabled);
+      if (autoReplaceToggle) {
+        autoReplaceToggle.checked = Boolean(settings.autoReplace);
+      }
 
       siteToggles.forEach((checkbox) => {
         const siteKey = checkbox.getAttribute('data-site');
@@ -63,6 +68,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentSettings.enabled = e.target.checked;
     persistSettings();
   });
+
+  if (autoReplaceToggle) {
+    autoReplaceToggle.addEventListener('change', (e) => {
+      currentSettings.autoReplace = e.target.checked;
+      persistSettings();
+    });
+  }
 
   siteToggles.forEach((checkbox) => {
     checkbox.addEventListener('change', (e) => {

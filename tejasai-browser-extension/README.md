@@ -39,6 +39,7 @@ Production-grade Chrome Extension (Manifest V3) that brings the power of **Tejas
 4. **Polished Settings Popup**:
    - Live backend health indicator (`Connected` / `Offline`).
    - Master on/off toggle.
+   - **Auto-Replace Input Toggle**: Option to automatically replace composer text without asking for confirmation, complete with an instant "Undo" toast.
    - Individual toggles for each of the 6 supported AI platforms.
    - Direct link to open the TejasAI Web Application.
 

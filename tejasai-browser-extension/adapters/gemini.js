@@ -81,39 +81,48 @@ window.TejasAIAdapters['gemini'] = {
   },
 
   findAttachContainer(inputEl) {
-    const root = inputEl ? inputEl.closest('div.input-area, div[class*="input-area"], .chat-window, main, form') || document.body : document.body;
+    const root = inputEl
+      ? inputEl.closest('div.input-area, div[class*="input-area"], .chat-window, main, form') || document.body
+      : document.body;
 
-    const micBtn = root.querySelector('button[aria-label*="mic" i], button[aria-label*="માઇક્રોફોન" i], button:has(mat-icon[data-mat-icon-name*="mic" i])');
+    // Gemini's send button is the most reliable anchor — walk up to find
+    // the *immediate* horizontal flex row that contains it (the bottom toolbar row).
     const sendBtn = this.findSubmitButton(inputEl);
-
-    // If both mic and send button share a common parent toolbar, return that container
-    if (sendBtn && micBtn) {
-      let current = sendBtn.parentElement;
-      while (current && current !== document.body && current !== root) {
-        if (current.contains(micBtn)) {
-          return current;
+    if (sendBtn) {
+      // Walk up from send button to find first ancestor that is a flex/inline-flex row
+      // with multiple button siblings (the actual bottom toolbar row).
+      let cur = sendBtn.parentElement;
+      while (cur && cur !== document.body && cur !== root) {
+        const style = window.getComputedStyle(cur);
+        const buttons = cur.querySelectorAll('button:not(.tejasai-enhance-button)');
+        if (
+          (style.display === 'flex' || style.display === 'inline-flex') &&
+          style.flexDirection !== 'column' &&
+          buttons.length >= 1
+        ) {
+          return cur;
         }
-        current = current.parentElement;
+        cur = cur.parentElement;
       }
+      // Fallback: direct parent of send button
+      if (sendBtn.parentElement) return sendBtn.parentElement;
     }
 
-    if (sendBtn && sendBtn.parentElement) {
-      return sendBtn.parentElement;
-    }
+    // Fallback: mic button parent
+    const micBtn = root.querySelector(
+      'button[aria-label*="mic" i], button[aria-label*="માઇક્રોફોન" i], button:has(mat-icon[data-mat-icon-name*="mic" i])'
+    );
+    if (micBtn && micBtn.parentElement) return micBtn.parentElement;
 
-    if (micBtn && micBtn.parentElement) {
-      return micBtn.parentElement;
-    }
-
+    // Static class selectors as last resort
     const toolbarSelectors = [
-      '.input-area-footer',
-      'div[class*="trailing-actions"]',
-      'div[class*="bottom-bar"]',
-      'div[class*="right-actions"]',
       'div[class*="bottom-row"]',
+      'div[class*="trailing-actions"]',
+      'div[class*="right-actions"]',
+      '.input-area-footer',
+      'div[class*="bottom-bar"]',
       'div[class*="actions-container"]',
     ];
-
     for (const sel of toolbarSelectors) {
       const el = root.querySelector(sel);
       if (el && el.offsetParent !== null) return el;
@@ -123,35 +132,27 @@ window.TejasAIAdapters['gemini'] = {
   },
 
   findSubmitButton(inputEl) {
-    const root = inputEl ? inputEl.closest('div.input-area, div[class*="input-area"], .chat-window, main, form') || document.body : document.body;
+    const root = inputEl
+      ? inputEl.closest('div.input-area, div[class*="input-area"], .chat-window, main, form') || document.body
+      : document.body;
 
-    // 1. Language-independent: find microphone button first, then get the button immediately following it!
-    const micBtn = root.querySelector('button[aria-label*="mic" i], button[aria-label*="માઇક્રોફોન" i], button:has(mat-icon[data-mat-icon-name*="mic" i])');
-    if (micBtn && micBtn.parentElement) {
-      const parent = micBtn.closest('div[class*="trailing"], div[class*="actions"], div.input-area-footer') || micBtn.parentElement;
-      const buttons = Array.from(parent.querySelectorAll('button:not(.tejasai-enhance-button)'));
-      const micIndex = buttons.indexOf(micBtn);
-      if (micIndex !== -1 && buttons.length > micIndex + 1) {
-        // Return the upper arrow / send button immediately following the microphone!
-        return buttons[micIndex + 1];
-      }
-    }
-
-    // 2. Class and attribute selectors across languages
-    const selectors = [
-      'button.send-button',
-      'button[data-test-id*="send" i]',
-      'button:has(mat-icon[data-mat-icon-name*="send" i])',
-      'button:has(svg path[d*="M2.01 21L23 12"])',
-      'button:has(svg path[d*="2.01 21"])',
+    // 1. Most reliable: button with upward arrow mat-icon (send/submit)
+    const sendSelectors = [
       'button[aria-label*="Send message" i]',
       'button[aria-label*="Send prompt" i]',
       'button[aria-label*="Submit" i]',
       'button[aria-label*="સંદેશ" i]',
       'button[aria-label*="મોકલો" i]',
+      'button[aria-label*="보내기" i]',
+      'button[aria-label*="Envoyer" i]',
+      'button.send-button',
+      'button[data-test-id*="send" i]',
+      'button:has(mat-icon[data-mat-icon-name*="send" i])',
+      'button:has(mat-icon[fonticon*="send" i])',
+      'button:has(svg path[d*="M2.01 21L23 12"])',
     ];
 
-    for (const sel of selectors) {
+    for (const sel of sendSelectors) {
       try {
         const btn = root.querySelector(sel);
         if (btn && !btn.classList.contains('tejasai-enhance-button')) {
@@ -162,13 +163,28 @@ window.TejasAIAdapters['gemini'] = {
       } catch {}
     }
 
-    // 3. Fallback: last button in trailing actions
-    const trailing = root.querySelector('div.trailing-actions, div[class*="trailing-actions"], div[class*="bottom-bar"]');
+    // 2. Find mic button, then find send as the next sibling button
+    const micBtn = root.querySelector(
+      'button[aria-label*="mic" i], button[aria-label*="માઇક્રોફોન" i], button:has(mat-icon[data-mat-icon-name*="mic" i])'
+    );
+    if (micBtn) {
+      // Walk siblings after mic
+      let sib = micBtn.nextElementSibling;
+      while (sib) {
+        if (sib.tagName === 'BUTTON' && !sib.classList.contains('tejasai-enhance-button')) return sib;
+        const btn = sib.querySelector('button:not(.tejasai-enhance-button)');
+        if (btn) return btn;
+        sib = sib.nextElementSibling;
+      }
+    }
+
+    // 3. Fallback: last visible button in trailing actions area
+    const trailing = root.querySelector(
+      'div.trailing-actions, div[class*="trailing-actions"], div[class*="bottom-bar"], div[class*="bottom-row"]'
+    );
     if (trailing) {
       const buttons = Array.from(trailing.querySelectorAll('button:not(.tejasai-enhance-button)'));
-      if (buttons.length > 0) {
-        return buttons[buttons.length - 1];
-      }
+      if (buttons.length > 0) return buttons[buttons.length - 1];
     }
 
     return null;

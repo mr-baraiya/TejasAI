@@ -20,6 +20,7 @@
   // State
   let settings = {
     enabled: true,
+    autoReplace: false,
     sites: {},
   };
 
@@ -75,8 +76,8 @@
     return true;
   }
 
-  // Toast notification helper with dismissibility, non-stacking, and retry action
-  function showToast(message, type = 'normal', onRetry = null) {
+  // Toast notification helper with dismissibility, non-stacking, and custom action button (Retry/Undo)
+  function showToast(message, type = 'normal', onAction = null, actionLabel = 'Retry') {
     if (toastTimeoutId) {
       clearTimeout(toastTimeoutId);
       toastTimeoutId = null;
@@ -102,18 +103,18 @@
     msgSpan.textContent = message;
     toast.appendChild(msgSpan);
 
-    if (typeof onRetry === 'function') {
-      const retryBtn = document.createElement('button');
-      retryBtn.type = 'button';
-      retryBtn.className = 'tejasai-toast-btn';
-      retryBtn.textContent = 'Retry';
-      retryBtn.addEventListener('click', (e) => {
+    if (typeof onAction === 'function') {
+      const actionBtn = document.createElement('button');
+      actionBtn.type = 'button';
+      actionBtn.className = 'tejasai-toast-btn';
+      actionBtn.textContent = actionLabel;
+      actionBtn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         toast.remove();
-        onRetry();
+        onAction();
       });
-      toast.appendChild(retryBtn);
+      toast.appendChild(actionBtn);
     }
 
     const closeBtn = document.createElement('button');
@@ -201,9 +202,17 @@
 
       lastEnhancedResult = response.enhancedPrompt;
 
-      // Explicit user flow: DO NOT overwrite input automatically.
-      // Present floating preview card with explicit Replace & Copy actions.
-      showPreviewPanel(response, inputEl);
+      // Auto-Replace mode: If user enabled "Auto-Replace Input", directly replace text without asking permission
+      if (settings.autoReplace) {
+        adapter.setText(inputEl, response.enhancedPrompt);
+        showToast('Prompt enhanced & replaced!', 'success', () => {
+          adapter.setText(inputEl, originalPromptCache);
+          showToast('Restored original prompt.', 'normal');
+        }, 'Undo');
+      } else {
+        // Permission mode: Present floating preview card with explicit Replace & Copy actions
+        showPreviewPanel(response, inputEl);
+      }
     } catch (err) {
       if (typeof console !== 'undefined' && console.debug) {
         console.debug('[TejasAI] Enhancement error caught:', err);
@@ -274,10 +283,14 @@
         <div class="tejasai-preview-text">${escapeHtml(result.enhancedPrompt)}</div>
       </div>
       <div class="tejasai-preview-footer">
-        <button type="button" class="tejasai-action-btn tejasai-btn-secondary tejasai-btn-dismiss" title="Keep original draft untouched">
-          Keep Original
-        </button>
-        <div style="display: flex; gap: 6px;">
+        <label class="tejasai-preview-autoreplace" title="Automatically replace input in future enhancements">
+          <input type="checkbox" class="tejasai-autoreplace-cb">
+          <span>Always replace</span>
+        </label>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <button type="button" class="tejasai-action-btn tejasai-btn-secondary tejasai-btn-dismiss" title="Keep original draft untouched">
+            Keep Original
+          </button>
           <button type="button" class="tejasai-action-btn tejasai-btn-secondary tejasai-btn-copy" title="Copy enhanced prompt to clipboard">
             Copy
           </button>
@@ -294,6 +307,14 @@
 
     const replaceBtn = card.querySelector('.tejasai-btn-replace');
     replaceBtn.addEventListener('click', () => {
+      const autoReplaceCb = card.querySelector('.tejasai-autoreplace-cb');
+      if (autoReplaceCb && autoReplaceCb.checked) {
+        settings.autoReplace = true;
+        chrome.runtime.sendMessage({
+          action: 'SAVE_SETTINGS',
+          payload: { ...settings, autoReplace: true },
+        });
+      }
       if (inputElement && result.enhancedPrompt) {
         adapter.setText(inputElement, result.enhancedPrompt);
         showToast('Prompt updated in composer!', 'success');

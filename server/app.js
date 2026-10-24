@@ -6,6 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import enhanceRoutes from './routes/enhance.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { initDB } from './services/db.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,6 +14,9 @@ const __dirname = path.dirname(__filename);
 // Load environment variables locally (on Vercel, they are injected into process.env automatically)
 dotenv.config({ path: path.resolve(__dirname, '.env'), override: true });
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+// Initialise DB (creates table if not exists) — non-blocking, best-effort
+initDB().catch((err) => console.error('[DB] initDB error:', err.message));
 
 const app = express();
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';

@@ -11,6 +11,7 @@ import { enhancePromptApi, checkServerHealth, DEFAULT_API_BASE_URL } from './api
 
 export const DEFAULT_SETTINGS = {
   enabled: true,
+  autoReplace: false, // When true, replaces prompt immediately without asking permission
   sites: {
     chatgpt: true,
     gemini: true,
@@ -91,6 +92,7 @@ async function getMergedSettings() {
     return {
       ...DEFAULT_SETTINGS,
       ...stored.tejasai_settings,
+      autoReplace: Boolean(stored.tejasai_settings.autoReplace),
       sites: {
         ...DEFAULT_SETTINGS.sites,
         ...(stored.tejasai_settings.sites || {}),

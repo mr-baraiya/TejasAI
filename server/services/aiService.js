@@ -1,4 +1,5 @@
 import Groq from 'groq-sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { SYSTEM_INSTRUCTION } from './systemInstruction.js';
 
 /**
@@ -34,8 +35,35 @@ export function cleanInput(text) {
   return text.trim();
 }
 
+// ---------------------------------------------------------------------------
+// Groq â†’ Gemini fallback state
+//
+// When Groq returns a 429 (rate limit OR daily token exhaustion) we:
+//   1. Record groqCooldownUntil = now + 60 min.
+//   2. All subsequent requests route to Gemini until the window expires.
+//   3. Once expired, the next request automatically retries Groq.
+// ---------------------------------------------------------------------------
+const GROQ_COOLDOWN_MS = 60 * 60 * 1000; // 60 minutes
+let groqCooldownUntil = 0; // epoch ms; 0 = no cooldown active
+
+function isGroqOnCooldown() {
+  return Date.now() < groqCooldownUntil;
+}
+
+function setGroqCooldown() {
+  groqCooldownUntil = Date.now() + GROQ_COOLDOWN_MS;
+  console.warn(`[Fallback] Groq rate/daily limit hit. Switching to Gemini until ${new Date(groqCooldownUntil).toISOString()}.`);
+}
+
+function clearGroqCooldown() {
+  if (groqCooldownUntil !== 0) {
+    groqCooldownUntil = 0;
+    console.info('[Fallback] Groq cooldown expired. Resuming Groq as primary engine.');
+  }
+}
+
 /**
- * Builds chat messages for the Groq API call.
+ * Builds chat messages for the AI API call.
  */
 export function buildMessages({ prompt, targetAI = 'any', tweak = '', previousResult = '', isRetry = false }) {
   const cleanedPrompt = cleanInput(prompt);
@@ -53,16 +81,7 @@ export function buildMessages({ prompt, targetAI = 'any', tweak = '', previousRe
       tweakGuidance = 'Rewrite the previous result to include more practical details, helpful steps, and clear structure.';
     }
 
-    userContent = `Please rewrite the following previous prompt based on the tweak instruction.
-
-Previous prompt:
-"""${cleanedPrev}"""
-
-Tweak instruction:
-"""${tweakGuidance}"""
-
-Original request goal:
-"""${cleanedPrompt}"""`;
+    userContent = `Please rewrite the following previous prompt based on the tweak instruction.\n\nPrevious prompt:\n"""${cleanedPrev}"""\n\nTweak instruction:\n"""${tweakGuidance}"""\n\nOriginal request goal:\n"""${cleanedPrompt}"""`;
   } else {
     userContent = `"""${cleanedPrompt}"""`;
   }
@@ -94,15 +113,6 @@ Original request goal:
 
 /**
  * Validates the raw model output.
- *
- * Must reject:
- * - Invalid JSON
- * - Bracket labels like [ROLE]
- * - Markdown headings (#) or code fences (```)
- * - Intros like "Here's", "Sure", etc.
- * - whyBetter not having 2-3 items
- * - Bullets over 150 characters
- * - Word count over 220 words
  */
 export function validateOutput(rawText, originalInput) {
   if (!rawText || typeof rawText !== 'string') {
@@ -145,62 +155,48 @@ export function validateOutput(rawText, originalInput) {
 
   let trimmedPrompt = enhancedPrompt.trim();
 
-  // Intent preservation repair for image generation:
-  // "Create an image" must not become "Write a prompt for an image"
+  // Intent preservation repair for image generation
   const isDirectImageRequest = /\b(create|generate|make|produce)\s+(an?\s+)?image\b/i.test(originalInput);
   if (isDirectImageRequest) {
     trimmedPrompt = trimmedPrompt.replace(/^(please\s+)?(create|write|provide|give\s+me)\s+(a\s+)?(detailed\s+)?prompt\s+for\s+(an?\s+image\s+of\s+)?/i, 'Create an image of ');
   }
 
-  // Reject bracket labels like [ROLE], [GOAL], [CONTEXT], [FORMAT], [STEP]
   if (/\[[A-Za-z0-9_\s-]{2,}\]/.test(trimmedPrompt)) {
     return { isValid: false, reason: 'Contains bracket labels' };
   }
 
-  // Reject if the enhanced prompt itself contains markdown code fences
   if (/```/.test(trimmedPrompt)) {
     return { isValid: false, reason: 'Enhanced prompt contains code fences' };
   }
 
-  // Reject markdown headings (# Heading)
   if (/(^|\n)\s*#{1,6}\s+/.test(trimmedPrompt)) {
     return { isValid: false, reason: 'Contains markdown headings' };
   }
 
-  // Reject model conversational fluff like "Here's", "Sure", "Certainly" unless original input began with it
   const startsWithFluff = /^(Here('?s| is| are)|Sure|Certainly|Of course|Gladly|Okay|Alright)\b/i.test(trimmedPrompt);
   const inputStartsWithFluff = /^(Here('?s| is| are)|Sure|Certainly|Of course|Gladly|Okay|Alright)\b/i.test(originalInput);
   if (startsWithFluff && !inputStartsWithFluff) {
     return { isValid: false, reason: 'Contains conversational intro' };
   }
 
-  // Reject lecturing phrases on short inputs like "The input '...' appears to be a typo or abbreviation"
   if (/^The input\s+['"].*['"]\s+appears to be a typo/i.test(trimmedPrompt)) {
     return { isValid: false, reason: 'Contains conversational typo lecture' };
   }
 
-  // Reject word count over 220 words
   const words = trimmedPrompt.split(/\s+/).filter(Boolean);
   if (words.length > 220) {
     return { isValid: false, reason: `Word count exceeds 220 words (${words.length} words)` };
   }
 
-  // Normalize string whyBetter into array if model returned a string
   if (typeof whyBetter === 'string' && whyBetter.trim().length > 0) {
     const segments = whyBetter.split(/(?:\r?\n|(?<=[.!?])\s+)/).map((s) => s.trim()).filter(Boolean);
-    if (segments.length >= 1) {
-      whyBetter = segments.slice(0, 3);
-    } else {
-      whyBetter = [whyBetter.trim()];
-    }
+    whyBetter = segments.length >= 1 ? segments.slice(0, 3) : [whyBetter.trim()];
   }
 
-  // Validate whyBetter: must have 1 to 3 items
   if (!Array.isArray(whyBetter) || whyBetter.length < 1 || whyBetter.length > 3) {
     return { isValid: false, reason: 'whyBetter must contain 1 to 3 items' };
   }
 
-  // Validate each bullet: string, <= 150 characters, no bracket labels
   for (const bullet of whyBetter) {
     if (typeof bullet !== 'string' || bullet.trim().length === 0) {
       return { isValid: false, reason: 'Bullet must be a non-empty string' };
@@ -224,9 +220,9 @@ export function validateOutput(rawText, originalInput) {
   };
 }
 
-/**
- * Calls Groq API with configured parameters.
- */
+// ---------------------------------------------------------------------------
+// Groq call
+// ---------------------------------------------------------------------------
 async function callGroqChat(groq, primaryModel, messages, timeoutMs) {
   const modelChain = [
     primaryModel,
@@ -340,17 +336,116 @@ async function callGroqChat(groq, primaryModel, messages, timeoutMs) {
   throw lastError;
 }
 
+// ---------------------------------------------------------------------------
+// Gemini fallback call
+// ---------------------------------------------------------------------------
+async function callGeminiChat(messages, timeoutMs) {
+  const geminiApiKey = process.env.GEMINI_API_KEY;
+  if (!geminiApiKey || geminiApiKey.trim() === '' || geminiApiKey === 'your_gemini_api_key_here') {
+    throw new Error('Gemini API key is not configured.');
+  }
+
+  const geminiModel = process.env.GEMINI_FALLBACK_MODEL || 'gemini-3.5-flash-lite';
+  const genAI = new GoogleGenerativeAI(geminiApiKey.trim());
+
+  const systemMsg = messages.find((m) => m.role === 'system');
+  const userMsgs = messages.filter((m) => m.role !== 'system');
+
+  const model = genAI.getGenerativeModel({
+    model: geminiModel,
+    systemInstruction: systemMsg ? systemMsg.content : undefined,
+    generationConfig: {
+      responseMimeType: 'application/json',
+      temperature: 0.3,
+      maxOutputTokens: 600,
+    },
+  });
+
+  // Build chat history from all but the last user message
+  const history = [];
+  for (let i = 0; i < userMsgs.length - 1; i++) {
+    history.push({
+      role: userMsgs[i].role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: userMsgs[i].content }],
+    });
+  }
+
+  const lastUserMsg = userMsgs[userMsgs.length - 1];
+  const chat = model.startChat({ history });
+
+  const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('Gemini request timed out.')), timeoutMs)
+  );
+
+  const result = await Promise.race([
+    chat.sendMessage(lastUserMsg.content),
+    timeoutPromise,
+  ]);
+
+  const text = result.response.text();
+  console.info(`[Gemini Fallback] Request served via ${geminiModel}.`);
+  return text;
+}
+
+// ---------------------------------------------------------------------------
+// Unified AI call: Groq primary → Gemini fallback (with auto-recovery)
+// ---------------------------------------------------------------------------
+async function callAI(messages, timeoutMs, groq, groqModel) {
+  // Still in cooldown window — route directly to Gemini
+  if (isGroqOnCooldown()) {
+    console.info('[Fallback] Groq on cooldown — routing to Gemini.');
+    const text = await callGeminiChat(messages, timeoutMs);
+    return { text, engine: 'gemini' };
+  }
+
+  // Cooldown expired — clear it and retry Groq
+  clearGroqCooldown();
+
+  try {
+    const text = await callGroqChat(groq, groqModel, messages, timeoutMs);
+    return { text, engine: 'groq' };
+  } catch (err) {
+    const isRateLimit =
+      err.status === 429 ||
+      err.statusCode === 429 ||
+      err.error?.error?.code === 'rate_limit_exceeded' ||
+      err.message?.includes('rate_limit_exceeded') ||
+      err.message?.includes('TPD') ||
+      err.message?.includes('tokens per day');
+
+    if (isRateLimit) {
+      // Activate 60-minute cooldown and switch to Gemini
+      setGroqCooldown();
+
+      const geminiKey = process.env.GEMINI_API_KEY;
+      if (!geminiKey || geminiKey.trim() === '' || geminiKey === 'your_gemini_api_key_here') {
+        // No Gemini key — surface a clean error instead of crashing
+        const rateError = new Error('Daily request limit reached. Please try again later.');
+        rateError.statusCode = 429;
+        throw rateError;
+      }
+
+      console.warn('[Fallback] Groq rate/daily limit hit → Switching to Gemini fallback...');
+      const text = await callGeminiChat(messages, timeoutMs);
+      return { text, engine: 'gemini' };
+    }
+
+    // All other Groq errors — rethrow unchanged
+    throw err;
+  }
+}
+
 /**
- * Enhances a given prompt using the Groq API.
- * Retries once with a stricter reminder if validation fails.
- * Never returns hardcoded or fake enhanced prompts.
+ * Enhances a given prompt. Uses Groq as the primary engine and automatically
+ * falls back to Gemini when Groq hits a rate or daily token limit.
+ * Automatically shifts back to Groq once the 60-minute cooldown expires.
  *
  * @param {Object} options
  * @param {string} options.prompt - The cleaned user prompt.
  * @param {string} [options.targetAI='any'] - Target AI platform.
  * @param {string} [options.tweak=''] - Optional quick tweak (shorter | simpler | moreDetail).
  * @param {string} [options.previousResult=''] - Previous result for tweaking.
- * @returns {Promise<{ enhancedPrompt: string, whyBetter: string[] }>}
+ * @returns {Promise<{ enhancedPrompt: string, whyBetter: string[], engineUsed?: string }>}
  */
 export async function enhancePrompt({
   prompt,
@@ -368,102 +463,57 @@ export async function enhancePrompt({
 
   const model = process.env.GROQ_MODEL || 'qwen/qwen3.8-27b';
   const timeoutMs = parseInt(process.env.AI_TIMEOUT_MS, 10) || 45000;
-
-  const groq = new Groq({
-    apiKey: apiKey.trim(),
-  });
+  const groq = new Groq({ apiKey: apiKey.trim() });
 
   const cleanedInput = cleanInput(prompt);
   const comparisonInput = tweak && previousResult ? cleanInput(previousResult) : cleanedInput;
 
-  // Attempt 1
-  let messages = buildMessages({
-    prompt: cleanedInput,
-    targetAI,
-    tweak,
-    previousResult,
-    isRetry: false,
-  });
+  // ── Attempt 1 ─────────────────────────────────────────────────────────────
+  let messages = buildMessages({ prompt: cleanedInput, targetAI, tweak, previousResult, isRetry: false });
 
-  let rawContent1;
+  let aiRes1;
   try {
-    rawContent1 = await callGroqChat(groq, model, messages, timeoutMs);
+    aiRes1 = await callAI(messages, timeoutMs, groq, model);
   } catch (err) {
-    console.error("[Groq API Error Detail]:", err.status, err.message, err.error?.error?.message || '');
+    console.error('[AI Engine Error]:', err.status, err.message, err.error?.error?.message || '');
+
     if (err.name === 'AbortError') {
-      const timeoutError = new Error('Request timed out. Please try again.');
-      timeoutError.statusCode = 504;
-      throw timeoutError;
+      const e = new Error('Request timed out. Please try again.'); e.statusCode = 504; throw e;
     }
     if (err.status === 401 || err.status === 403) {
-      const authError = new Error('Authentication with Groq API failed.');
-      authError.statusCode = 401;
-      throw authError;
+      const e = new Error('Authentication with AI engine failed.'); e.statusCode = 401; throw e;
     }
-    if (err.status === 429) {
-      let message = 'Too many requests. Please wait a moment and try again.';
-      const raw = err.error?.error?.message || err.message || '';
-      const retryMatch = raw.match(/try again in ([^.]+)/i);
-      if (retryMatch) {
-        message = `Groq rate limit reached (Tokens Per Day limit). Please try again in ${retryMatch[1].trim()}.`;
-      } else if (raw.includes('TPD') || raw.includes('tokens per day')) {
-        message = 'Groq daily token limit reached for this model. Please try again shortly.';
-      }
-      const rateError = new Error(message);
-      rateError.statusCode = 429;
-      throw rateError;
+    if (err.statusCode === 429 || err.status === 429) {
+      const e = new Error(err.message || 'Too many requests. Please wait a moment and try again.'); e.statusCode = 429; throw e;
     }
     throw new EngineError('Something went wrong. Please try again.');
   }
 
-  const validation1 = validateOutput(rawContent1, comparisonInput);
+  const validation1 = validateOutput(aiRes1.text, comparisonInput);
+  if (validation1.isRefused) throw new RefusalError(validation1.refusalReason || "Sorry, we can't help with that request.");
+  if (validation1.isValid) return { ...validation1.data, engineUsed: aiRes1.engine };
 
-  if (validation1.isRefused) {
-    throw new RefusalError(validation1.refusalReason || "Sorry, we can't help with that request.");
-  }
+  // ── Attempt 2 — stricter retry ───────────────────────────────────────────
+  messages = buildMessages({ prompt: cleanedInput, targetAI, tweak, previousResult, isRetry: true });
 
-  if (validation1.isValid) {
-    return validation1.data;
-  }
-
-  // Attempt 2 (Retry once with stricter reminder)
-  messages = buildMessages({
-    prompt: cleanedInput,
-    targetAI,
-    tweak,
-    previousResult,
-    isRetry: true,
-  });
-
-  let rawContent2;
+  let aiRes2;
   try {
-    rawContent2 = await callGroqChat(groq, model, messages, timeoutMs);
+    aiRes2 = await callAI(messages, timeoutMs, groq, model);
   } catch (err) {
-    if (err.status === 429) {
-      let message = 'Too many requests. Please wait a moment and try again.';
-      const raw = err.error?.error?.message || err.message || '';
-      const retryMatch = raw.match(/try again in ([^.]+)/i);
-      if (retryMatch) {
-        message = `Groq rate limit reached (Tokens Per Day limit). Please try again in ${retryMatch[1].trim()}.`;
-      }
-      const rateError = new Error(message);
-      rateError.statusCode = 429;
-      throw rateError;
+    if (err.statusCode === 429 || err.status === 429) {
+      const e = new Error(err.message || 'Too many requests. Please wait a moment and try again.'); e.statusCode = 429; throw e;
     }
     throw new EngineError('Something went wrong. Please try again.');
   }
 
-  const validation2 = validateOutput(rawContent2, comparisonInput);
+  const validation2 = validateOutput(aiRes2.text, comparisonInput);
+  if (validation2.isRefused) throw new RefusalError(validation2.refusalReason || "Sorry, we can't help with that request.");
+  if (validation2.isValid) return { ...validation2.data, engineUsed: aiRes2.engine };
 
-  if (validation2.isRefused) {
-    throw new RefusalError(validation2.refusalReason || "Sorry, we can't help with that request.");
-  }
-
-  if (validation2.isValid) {
-    return validation2.data;
-  }
-
-  // After two failed attempts, return HTTP 502 with exact requested message.
-  // Never return a hardcoded or fake enhanced prompt.
   throw new EngineError('Something went wrong. Please try again.');
 }
+
+
+/**
+ * Custom error for refused requests (HTTP 422)
+ */

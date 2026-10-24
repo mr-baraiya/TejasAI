@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { validatePrompt } from '../utils/validatePrompt.js';
 import { moderatePrompt } from '../services/moderationService.js';
 import { enhancePrompt } from '../services/aiService.js';
+import { logPrompt } from '../services/db.js';
 
 const router = Router();
 
@@ -46,6 +47,18 @@ router.post('/enhance', async (req, res, next) => {
       targetAI,
       tweak,
       previousResult,
+    });
+
+    // 3. Fire-and-forget prompt log (never blocks or fails the response)
+    const clientIp = req.ip || req.headers['x-forwarded-for'] || null;
+    logPrompt({
+      original:    sanitizedPrompt,
+      enhanced:    result.enhancedPrompt,
+      targetAI:    targetAI  || null,
+      tweak:       tweak     || null,
+      whyBetter:   result.whyBetter || [],
+      engineUsed:  result.engineUsed || null,
+      requestIp:   clientIp,
     });
 
     return res.status(200).json({

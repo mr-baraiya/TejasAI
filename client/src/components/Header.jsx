@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { List, X } from '@phosphor-icons/react';
 
 /**
  * Clean, human Header matching TejasAI's editorial aesthetic.
@@ -101,7 +101,7 @@ export function Header({ onNewPrompt, hasActivePrompt = false, onOpenFavorites, 
                 aria-label="Open navigation menu"
                 className="p-1.5 text-[#374151] hover:text-[#111827] focus-visible:outline-none cursor-pointer"
               >
-                <Menu className="w-6 h-6" strokeWidth={1.75} />
+                <List className="w-6 h-6" />
               </button>
             </div>
 
@@ -132,7 +132,7 @@ export function Header({ onNewPrompt, hasActivePrompt = false, onOpenFavorites, 
             aria-label="Close navigation menu"
             className="p-1.5 text-[#374151] hover:text-[#111827] focus-visible:outline-none cursor-pointer"
           >
-            <X className="w-6 h-6" strokeWidth={1.75} />
+            <X className="w-6 h-6" />
           </button>
         </div>
 

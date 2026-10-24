@@ -99,7 +99,7 @@ The platform provides a responsive web interface paired with a secure Node.js ba
 - Framework: React 19 (`react`, `react-dom`)
 - Build System: Vite 8
 - Styling: Tailwind CSS v4 (`@tailwindcss/vite`)
-- Icons: Lucide React
+- Icons: Phosphor Icons (`@phosphor-icons/react`)
 - Linter: Oxlint
 - Language: JavaScript (ES Modules, JSX)
 

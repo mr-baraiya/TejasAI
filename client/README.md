@@ -47,7 +47,7 @@ The TejasAI frontend is a fast, responsive single-page application (SPA). It com
 - Core Framework: React 19 (`react`, `react-dom`)
 - Build Tool: Vite 8
 - Styling: Tailwind CSS v4 (`tailwindcss`, `@tailwindcss/vite`)
-- Icon Library: Lucide React (`lucide-react`)
+- Icon Library: Phosphor Icons (`@phosphor-icons/react`)
 - Linter: Oxlint (`oxlint`)
 - Language: JavaScript (ES Modules, JSX)
 

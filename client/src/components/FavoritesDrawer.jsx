@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Download, Upload, Edit3, Trash2, Copy, Check } from 'lucide-react';
+import { X, DownloadSimple, UploadSimple, PencilSimple, Trash, Copy, Check } from '@phosphor-icons/react';
 import {
   getFavorites,
   deleteFavorite,
@@ -202,7 +202,7 @@ export function FavoritesDrawer({ isOpen, onClose, onSelectPrompt, onShowToast }
                 title="Export favorites to JSON file"
                 aria-label="Export favorites"
               >
-                <Download className="w-4 h-4" />
+                <DownloadSimple className="w-4 h-4" />
               </button>
 
               <label
@@ -210,7 +210,7 @@ export function FavoritesDrawer({ isOpen, onClose, onSelectPrompt, onShowToast }
                 title="Import favorites from JSON file"
                 aria-label="Import favorites"
               >
-                <Upload className="w-4 h-4" />
+                <UploadSimple className="w-4 h-4" />
                 <input type="file" accept=".json" onChange={handleImport} className="hidden" />
               </label>
 
@@ -358,7 +358,7 @@ export function FavoritesDrawer({ isOpen, onClose, onSelectPrompt, onShowToast }
                               title="Edit favorite"
                               aria-label="Edit favorite"
                             >
-                              <Edit3 className="w-3.5 h-3.5" />
+                              <PencilSimple className="w-3.5 h-3.5" />
                             </button>
                             <button
                               type="button"
@@ -367,7 +367,7 @@ export function FavoritesDrawer({ isOpen, onClose, onSelectPrompt, onShowToast }
                               title="Delete favorite"
                               aria-label="Delete favorite"
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
+                              <Trash className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         </div>
@@ -402,7 +402,7 @@ export function FavoritesDrawer({ isOpen, onClose, onSelectPrompt, onShowToast }
                             >
                               {isCopied ? (
                                 <>
-                                  <Check className="w-3.5 h-3.5 text-[#16A34A]" />
+                                  <Check className="w-3.5 h-3.5 text-[#16A34A]" weight="bold" />
                                   <span>Copied</span>
                                 </>
                               ) : (

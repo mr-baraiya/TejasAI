@@ -8,6 +8,9 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  optimizeDeps: {
+    include: ['@phosphor-icons/react'],
+  },
   server: {
     port: 5173,
     proxy: {

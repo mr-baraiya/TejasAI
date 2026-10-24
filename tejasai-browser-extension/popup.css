@@ -667,7 +667,7 @@ input:checked + .slider:before {
   height: 14px;
   display: block;
   pointer-events: none;
-  stroke: currentColor;
+  fill: currentColor;
 }
 
 .fav-btn-insert {

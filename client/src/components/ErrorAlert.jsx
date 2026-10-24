@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertCircle, RefreshCw, X } from 'lucide-react';
+import { WarningCircle, ArrowsClockwise, X } from '@phosphor-icons/react';
 
 export function ErrorAlert({ error, onDismiss, onRetry }) {
   if (!error) return null;
@@ -24,7 +24,7 @@ export function ErrorAlert({ error, onDismiss, onRetry }) {
               : 'bg-red-50 text-[#B91C1C]'
           }`}
         >
-          <AlertCircle className="w-4 h-4" strokeWidth={1.75} />
+          <WarningCircle className="w-4 h-4" />
         </div>
 
         <div className="flex-1 pr-6">
@@ -46,7 +46,7 @@ export function ErrorAlert({ error, onDismiss, onRetry }) {
                 onClick={onRetry}
                 className="min-h-[48px] inline-flex items-center px-4 py-2 rounded-none text-xs sm:text-sm font-medium bg-[#B91C1C] hover:bg-red-800 text-white transition-colors cursor-pointer"
               >
-                <RefreshCw className="w-3.5 h-3.5 mr-1.5" strokeWidth={1.75} />
+                <ArrowsClockwise className="w-3.5 h-3.5 mr-1.5" />
                 <span>Try again</span>
               </button>
             </div>
@@ -60,7 +60,7 @@ export function ErrorAlert({ error, onDismiss, onRetry }) {
             aria-label="Dismiss error"
             className="absolute top-4 right-4 p-1 text-[#6B7280] hover:text-[#111827] transition-colors cursor-pointer"
           >
-            <X className="w-4 h-4" strokeWidth={1.75} />
+            <X className="w-4 h-4" />
           </button>
         )}
       </div>

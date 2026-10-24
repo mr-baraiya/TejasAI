@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight } from '@phosphor-icons/react';
 
 const EXAMPLES = [
   {
@@ -85,7 +85,7 @@ export function ExamplesGallery({ onSelectExample }) {
                   className="text-xs font-medium text-[#C2410C] hover:text-[#9A3412] inline-flex items-center gap-1 transition-colors cursor-pointer group"
                 >
                   <span>Try this in editor</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 stroke-[2] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" weight="bold" />
                 </button>
               </div>
             </div>

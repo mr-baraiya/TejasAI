@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Download, Copy, Check } from 'lucide-react';
+import { X, DownloadSimple, Copy, Check } from '@phosphor-icons/react';
 
 export function ExtensionModal({ isOpen, onClose }) {
   const [copiedUrl, setCopiedUrl] = useState(false);
@@ -31,7 +31,7 @@ export function ExtensionModal({ isOpen, onClose }) {
           aria-label="Close"
           className="absolute top-5 right-5 p-1 text-[#9CA3AF] hover:text-[#111827] transition-colors cursor-pointer"
         >
-          <X className="w-5 h-5" strokeWidth={1.5} />
+          <X className="w-5 h-5" />
         </button>
 
         {/* Brand Kicker */}
@@ -70,7 +70,7 @@ export function ExtensionModal({ isOpen, onClose }) {
               download="tejasai-extension.zip"
               className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#C2410C] hover:bg-[#9A3412] text-white text-xs font-semibold tracking-wide transition-colors shrink-0"
             >
-              <Download className="w-3.5 h-3.5" />
+              <DownloadSimple className="w-3.5 h-3.5" weight="bold" />
               <span>Download</span>
             </a>
           </div>
@@ -98,7 +98,7 @@ export function ExtensionModal({ isOpen, onClose }) {
                   className="font-mono bg-[#EDE8E1] text-[#111827] px-1.5 py-0.5 text-[11px] hover:bg-[#DDD6CB] transition-colors inline-flex items-center gap-1 cursor-pointer"
                 >
                   <span>chrome://extensions</span>
-                  {copiedUrl ? <Check className="w-3 h-3 text-[#16A34A]" /> : <Copy className="w-3 h-3 text-[#6B7280]" />}
+                  {copiedUrl ? <Check className="w-3 h-3 text-[#16A34A]" weight="bold" /> : <Copy className="w-3 h-3 text-[#6B7280]" />}
                 </button>
                 {' '}and turn on <strong>Developer mode</strong>.
               </span>

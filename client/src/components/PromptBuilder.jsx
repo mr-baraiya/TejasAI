@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronDown, Copy, Check } from 'lucide-react';
+import { CaretDown, Copy, Check } from '@phosphor-icons/react';
 import { PROMPT_TEMPLATES } from '../data/promptTemplates';
 import { enhancePromptApi } from '../services/api';
 import { isFavorite, toggleFavorite } from '../services/favoritesService';
@@ -268,7 +268,7 @@ export function PromptBuilder({ onSendToMain, onShowToast }) {
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="w-4 h-4 text-[#9CA3AF] absolute right-3 top-3 pointer-events-none" />
+                      <CaretDown className="w-4 h-4 text-[#9CA3AF] absolute right-3 top-3 pointer-events-none" />
                     </div>
                   ) : field.type === 'textarea' ? (
                     <textarea
@@ -384,7 +384,7 @@ export function PromptBuilder({ onSendToMain, onShowToast }) {
             >
               {copied ? (
                 <>
-                  <Check className="w-4 h-4 text-[#22C55E]" />
+                  <Check className="w-4 h-4 text-[#22C55E]" weight="bold" />
                   <span>Copied to Clipboard</span>
                 </>
               ) : (

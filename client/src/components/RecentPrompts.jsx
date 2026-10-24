@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, ArrowUpRight } from 'lucide-react';
+import { CaretDown, CaretUp, ArrowUpRight } from '@phosphor-icons/react';
 
 export function RecentPrompts({
   recentPrompts = [],
@@ -22,9 +22,9 @@ export function RecentPrompts({
       >
         <span>Recent drafts ({recentPrompts.length})</span>
         {isOpen ? (
-          <ChevronUp className="w-3.5 h-3.5" strokeWidth={1.75} />
+          <CaretUp className="w-3.5 h-3.5" />
         ) : (
-          <ChevronDown className="w-3.5 h-3.5" strokeWidth={1.75} />
+          <CaretDown className="w-3.5 h-3.5" />
         )}
       </button>
 
@@ -55,7 +55,7 @@ export function RecentPrompts({
                 </span>
                 <span className="text-[11px] font-mono text-[#C2410C] opacity-0 group-hover:opacity-100 transition-opacity shrink-0 flex items-center gap-0.5">
                   <span>Restore</span>
-                  <ArrowUpRight className="w-3 h-3" strokeWidth={2} />
+                  <ArrowUpRight className="w-3 h-3" weight="bold" />
                 </span>
               </button>
             ))}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, FileText, ShieldAlert } from 'lucide-react';
+import { X, ShieldCheck, FileText, ShieldWarning } from '@phosphor-icons/react';
 
 export function Footer() {
   const [modalType, setModalType] = useState(null); // 'privacy' | 'terms' | 'policy' | null
@@ -126,9 +126,9 @@ export function Footer() {
           >
             <div className="flex items-center justify-between pb-3.5 border-b border-[#EDE8E1]">
               <div className="flex items-center space-x-2">
-                {modalType === 'privacy' && <ShieldCheck className="w-5 h-5 text-[#C2410C]" />}
-                {modalType === 'terms' && <FileText className="w-5 h-5 text-[#C2410C]" />}
-                {modalType === 'policy' && <ShieldAlert className="w-5 h-5 text-[#C2410C]" />}
+                {modalType === 'privacy' && <ShieldCheck className="w-5 h-5 text-[#C2410C]" weight="fill" />}
+                {modalType === 'terms' && <FileText className="w-5 h-5 text-[#C2410C]" weight="fill" />}
+                {modalType === 'policy' && <ShieldWarning className="w-5 h-5 text-[#C2410C]" weight="fill" />}
                 <h3 className="text-lg font-serif font-semibold text-[#111827]">
                   {modalType === 'privacy'
                     ? 'Privacy Policy'
@@ -143,7 +143,7 @@ export function Footer() {
                 aria-label="Close modal"
                 className="p-1 rounded-none text-[#6B7280] hover:text-[#111827] cursor-pointer"
               >
-                <X className="w-5 h-5" strokeWidth={1.75} />
+                <X className="w-5 h-5" />
               </button>
             </div>
 

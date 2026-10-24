@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus } from '@phosphor-icons/react';
 
 const FAQS = [
   {
@@ -94,7 +94,7 @@ export function FaqSection() {
                       className={`w-5 h-5 transition-transform duration-200 ${
                         isOpen ? 'rotate-45 text-[#C2410C]' : ''
                       }`}
-                      strokeWidth={1.5}
+                      weight="bold"
                     />
                   </span>
                 </button>

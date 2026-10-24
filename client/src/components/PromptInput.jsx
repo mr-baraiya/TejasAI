@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, MicOff, Loader2, X, ArrowRight, Star } from 'lucide-react';
+import { Microphone, MicrophoneSlash, SpinnerGap, X, ArrowRight, Star } from '@phosphor-icons/react';
 
 export function PromptInput({
   prompt,
@@ -136,14 +136,14 @@ export function PromptInput({
               >
                 {isListening ? (
                   <>
-                    <MicOff className="w-3.5 h-3.5 text-[#C2410C]" strokeWidth={2} />
+                    <MicrophoneSlash className="w-3.5 h-3.5 text-[#C2410C]" weight="bold" />
                     <span className="text-[11px] font-mono font-semibold text-[#C2410C] animate-pulse">
                       Listening...
                     </span>
                   </>
                 ) : (
                   <>
-                    <Mic className="w-3.5 h-3.5" strokeWidth={1.75} />
+                    <Microphone className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline text-[11px]">Dictate</span>
                   </>
                 )}
@@ -159,7 +159,7 @@ export function PromptInput({
                 aria-label="Clear text"
                 className="flex items-center space-x-1 text-[11px] text-[#6B7280] hover:text-[#B91C1C] transition-colors cursor-pointer"
               >
-                <X className="w-3.5 h-3.5" strokeWidth={1.75} />
+                <X className="w-3.5 h-3.5" />
                 <span>Clear</span>
               </button>
             )}
@@ -172,7 +172,7 @@ export function PromptInput({
                 title="Open saved favorite prompts"
                 className="flex items-center space-x-1 text-[11px] text-[#6B7280] hover:text-[#D97706] transition-colors cursor-pointer"
               >
-                <Star className="w-3.5 h-3.5" strokeWidth={1.75} />
+                <Star className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Favorites</span>
               </button>
             )}
@@ -195,13 +195,13 @@ export function PromptInput({
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-current" strokeWidth={2} />
+                <SpinnerGap className="w-3.5 h-3.5 animate-spin text-current" />
                 <span>Enhancing...</span>
               </>
             ) : (
               <>
                 <span>Make it better</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-3.5 h-3.5" weight="bold" />
               </>
             )}
           </button>

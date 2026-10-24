@@ -2,17 +2,17 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   Copy,
   Check,
-  RotateCcw,
-  Edit3,
-  ChevronDown,
-  ChevronUp,
-  Share2,
+  ArrowCounterClockwise,
+  PencilSimple,
+  CaretDown,
+  CaretUp,
+  ShareNetwork,
   Scissors,
-  Smile,
+  Smiley,
   PlusCircle,
-  MessageCircle,
+  WhatsappLogo,
   Star,
-} from 'lucide-react';
+} from '@phosphor-icons/react';
 import { isFavorite, toggleFavorite } from '../services/favoritesService';
 
 const AI_TOOLS = [
@@ -304,12 +304,12 @@ export function OutputDisplay({
                 >
                   {copied ? (
                     <>
-                      <Check className="w-3.5 h-3.5" strokeWidth={1.75} />
+                      <Check className="w-3.5 h-3.5" weight="bold" />
                       <span>Copied</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="w-3.5 h-3.5" strokeWidth={1.75} />
+                      <Copy className="w-3.5 h-3.5" />
                       <span>Copy<span className="hidden sm:inline"> prompt</span></span>
                     </>
                   )}
@@ -321,7 +321,7 @@ export function OutputDisplay({
                   disabled={isLoading}
                   className="h-8 px-1.5 sm:px-2.5 rounded-none text-xs font-medium text-[#4B5563] hover:text-[#111827] hover:bg-[#FAF8F5] flex items-center space-x-1 cursor-pointer transition-colors shrink-0 whitespace-nowrap"
                 >
-                  <RotateCcw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} strokeWidth={1.75} />
+                  <ArrowCounterClockwise className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
                   <span>Try<span className="hidden sm:inline"> again</span></span>
                 </button>
 
@@ -330,7 +330,7 @@ export function OutputDisplay({
                   onClick={onEdit}
                   className="h-8 px-1.5 sm:px-2.5 rounded-none text-xs font-medium text-[#4B5563] hover:text-[#111827] hover:bg-[#FAF8F5] flex items-center space-x-1 cursor-pointer transition-colors shrink-0 whitespace-nowrap"
                 >
-                  <Edit3 className="w-3.5 h-3.5" strokeWidth={1.75} />
+                  <PencilSimple className="w-3.5 h-3.5" />
                   <span>Edit</span>
                 </button>
 
@@ -344,7 +344,7 @@ export function OutputDisplay({
                   }`}
                   title={isStarred ? 'Remove from favorites' : 'Save to favorites'}
                 >
-                  <Star className={`w-3.5 h-3.5 ${isStarred ? 'fill-current text-[#D97706]' : ''}`} strokeWidth={1.75} />
+                  <Star className={`w-3.5 h-3.5 ${isStarred ? 'text-[#D97706]' : ''}`} weight={isStarred ? 'fill' : 'regular'} />
                   <span>{isStarred ? 'Saved' : 'Favorite'}</span>
                 </button>
               </div>
@@ -358,7 +358,7 @@ export function OutputDisplay({
                   aria-label="Share enhanced prompt"
                   aria-expanded={showShareMenu}
                 >
-                  <Share2 className="w-3.5 h-3.5 text-[#6B7280]" strokeWidth={1.75} />
+                  <ShareNetwork className="w-3.5 h-3.5 text-[#6B7280]" />
                   <span>Share</span>
                 </button>
 
@@ -371,9 +371,9 @@ export function OutputDisplay({
                       >
                         <div className="flex items-center space-x-2.5">
                           {shareCopied ? (
-                            <Check className="w-3.5 h-3.5 text-[#15803D]" strokeWidth={2} />
+                            <Check className="w-3.5 h-3.5 text-[#15803D]" weight="bold" />
                           ) : (
-                            <Copy className="w-3.5 h-3.5 text-[#6B7280]" strokeWidth={1.75} />
+                            <Copy className="w-3.5 h-3.5 text-[#6B7280]" />
                           )}
                           <span className={shareCopied ? 'text-[#15803D] font-medium' : ''}>
                             {shareCopied ? 'Copied to clipboard' : 'Copy prompt text'}
@@ -388,7 +388,7 @@ export function OutputDisplay({
                         onClick={() => setShowShareMenu(false)}
                         className="w-full px-3 py-2 text-xs text-[#374151] hover:bg-[#FAF8F5] flex items-center space-x-2.5 transition-colors text-left"
                       >
-                        <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" strokeWidth={1.75} />
+                        <WhatsappLogo className="w-3.5 h-3.5 text-[#25D366]" weight="fill" />
                         <span>Share on WhatsApp</span>
                       </a>
 
@@ -421,7 +421,7 @@ export function OutputDisplay({
                           }}
                           className="w-full px-3 py-2 text-xs text-[#374151] hover:bg-[#FAF8F5] flex items-center space-x-2.5 transition-colors text-left border-t border-[#EDE8E1] mt-1 pt-2 cursor-pointer"
                         >
-                          <Share2 className="w-3.5 h-3.5 text-[#6B7280]" strokeWidth={1.75} />
+                          <ShareNetwork className="w-3.5 h-3.5 text-[#6B7280]" />
                           <span>More device options...</span>
                         </button>
                       )}
@@ -465,7 +465,7 @@ export function OutputDisplay({
                 disabled={isLoading}
                 className="h-7 px-1.5 sm:px-2 rounded-none hover:bg-[#FAF8F5] text-xs font-medium text-[#4B5563] hover:text-[#111827] flex items-center space-x-1 cursor-pointer transition-colors shrink-0 whitespace-nowrap"
               >
-                <Scissors className="w-3 h-3 text-[#6B7280]" strokeWidth={1.75} />
+                <Scissors className="w-3 h-3 text-[#6B7280]" />
                 <span>Shorter</span>
               </button>
               <button
@@ -474,7 +474,7 @@ export function OutputDisplay({
                 disabled={isLoading}
                 className="h-7 px-1.5 sm:px-2 rounded-none hover:bg-[#FAF8F5] text-xs font-medium text-[#4B5563] hover:text-[#111827] flex items-center space-x-1 cursor-pointer transition-colors shrink-0 whitespace-nowrap"
               >
-                <Smile className="w-3 h-3 text-[#6B7280]" strokeWidth={1.75} />
+                <Smiley className="w-3 h-3 text-[#6B7280]" />
                 <span>Simpler</span>
               </button>
               <button
@@ -483,7 +483,7 @@ export function OutputDisplay({
                 disabled={isLoading}
                 className="h-7 px-1.5 sm:px-2 rounded-none hover:bg-[#FAF8F5] text-xs font-medium text-[#4B5563] hover:text-[#111827] flex items-center space-x-1 cursor-pointer transition-colors shrink-0 whitespace-nowrap"
               >
-                <PlusCircle className="w-3 h-3 text-[#6B7280]" strokeWidth={1.75} />
+                <PlusCircle className="w-3 h-3 text-[#6B7280]" />
                 <span><span className="hidden sm:inline">More </span>Detail</span>
               </button>
             </div>
@@ -503,9 +503,9 @@ export function OutputDisplay({
               Why this version works better
             </span>
             {showWhyBetter ? (
-              <ChevronUp className="w-4 h-4 text-[#6B7280] group-hover:text-[#C2410C] transition-colors" strokeWidth={1.75} />
+              <CaretUp className="w-4 h-4 text-[#6B7280] group-hover:text-[#C2410C] transition-colors" />
             ) : (
-              <ChevronDown className="w-4 h-4 text-[#6B7280] group-hover:text-[#C2410C] transition-colors" strokeWidth={1.75} />
+              <CaretDown className="w-4 h-4 text-[#6B7280] group-hover:text-[#C2410C] transition-colors" />
             )}
           </button>
 

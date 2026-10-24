@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Mail, BookOpen, ShoppingBag, Utensils } from 'lucide-react';
+import { CaretDown, CaretUp, EnvelopeSimple, BookOpen, Bag, ForkKnife } from '@phosphor-icons/react';
 
 const CHIPS = [
   {
     id: 'email',
     label: 'Write an email',
-    icon: Mail,
+    icon: EnvelopeSimple,
     sample: 'Write a sick leave application email to my manager for 2 days due to fever.',
   },
   {
@@ -17,13 +17,13 @@ const CHIPS = [
   {
     id: 'product',
     label: 'Product description',
-    icon: ShoppingBag,
+    icon: Bag,
     sample: 'Write a friendly 3-sentence description for handmade cotton kurtas for my online shop.',
   },
   {
     id: 'recipe',
     label: 'Recipe idea',
-    icon: Utensils,
+    icon: ForkKnife,
     sample: 'Give me a healthy 15-minute breakfast idea using oats, milk, and seasonal fruits.',
   },
 ];
@@ -79,9 +79,9 @@ export function CategorySelector({
         >
           <span>{showMoreOptions ? 'Fewer options' : 'More options'}</span>
           {showMoreOptions ? (
-            <ChevronUp className="w-3.5 h-3.5" strokeWidth={1.75} />
+            <CaretUp className="w-3.5 h-3.5" />
           ) : (
-            <ChevronDown className="w-3.5 h-3.5" strokeWidth={1.75} />
+            <CaretDown className="w-3.5 h-3.5" />
           )}
         </button>
 

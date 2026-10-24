@@ -489,23 +489,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="fav-prompt-snippet" title="Click to expand/collapse">${escapeHtml(item.prompt)}</div>
         <div class="fav-actions-row">
           <button type="button" class="fav-btn fav-btn-copy" title="Copy to clipboard" aria-label="Copy prompt">
-            <svg class="fav-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            <svg class="fav-icon" viewBox="0 0 256 256" width="13" height="13" fill="currentColor">
+              <path d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32ZM160,208H48V96H160Zm48-48H176V88a8,8,0,0,0-8-8H96V48H208Z"></path>
             </svg>
           </button>
           <button type="button" class="fav-btn fav-btn-insert" title="Insert into active AI chat" aria-label="Insert prompt into chat">
-            <svg class="fav-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="15 14 20 9 15 4"></polyline>
-              <path d="M4 20v-7a4 4 0 0 1 4-4h12"></path>
+            <svg class="fav-icon" viewBox="0 0 256 256" width="13" height="13" fill="currentColor">
+              <path d="M232,56A104.11,104.11,0,0,1,128,160H51.31l34.35,34.34a8,8,0,0,1-11.32,11.32l-48-48a8,8,0,0,1,0-11.32l48-48a8,8,0,0,1,11.32,11.32L51.31,144H128a88.1,88.1,0,0,0,88-88,8,8,0,0,1,16,0Z"></path>
             </svg>
           </button>
           <button type="button" class="fav-btn fav-btn-danger" title="Delete favorite" aria-label="Delete favorite">
-            <svg class="fav-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              <line x1="10" y1="11" x2="10" y2="17"></line>
-              <line x1="14" y1="11" x2="14" y2="17"></line>
+            <svg class="fav-icon" viewBox="0 0 256 256" width="13" height="13" fill="currentColor">
+              <path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"></path>
             </svg>
           </button>
         </div>
@@ -523,17 +518,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
           await navigator.clipboard.writeText(item.prompt);
           copyBtn.innerHTML = `
-            <svg class="fav-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"></polyline>
+            <svg class="fav-icon" viewBox="0 0 256 256" width="13" height="13" fill="#16A34A">
+              <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"></path>
             </svg>
           `;
           showToast('Copied to clipboard!');
           setTimeout(() => {
             if (copyBtn) {
               copyBtn.innerHTML = `
-                <svg class="fav-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                <svg class="fav-icon" viewBox="0 0 256 256" width="13" height="13" fill="currentColor">
+                  <path d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32ZM160,208H48V96H160Zm48-48H176V88a8,8,0,0,0-8-8H96V48H208Z"></path>
                 </svg>
               `;
             }

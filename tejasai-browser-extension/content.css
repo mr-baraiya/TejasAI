@@ -84,7 +84,7 @@
 
 .tejasai-save-button.is-saved .tejasai-save-icon {
   fill: #F97316 !important;
-  stroke: #EA580C !important;
+  stroke: none !important;
   filter: drop-shadow(0 0 3px rgba(249, 115, 22, 0.4)) !important;
 }
 
@@ -154,7 +154,7 @@
 
   html:not(.dark):not([data-theme="dark"]):not([class*="dark"]) body:not([class*="dark"]) .tejasai-save-button.is-saved .tejasai-save-icon {
     fill: #EA580C !important;
-    stroke: #C2410C !important;
+    stroke: none !important;
   }
 }
 

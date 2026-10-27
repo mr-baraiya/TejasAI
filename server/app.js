@@ -64,10 +64,18 @@ app.use(
 // Body parser
 app.use(express.json({ limit: '2mb' }));
 
-// Rate limiter for API endpoints (e.g., max 60 requests per 15 minutes window)
+// Rate limiter for API endpoints (e.g., max 60 requests per 15 minutes in prod, generous in dev/test)
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 60,
+  max: process.env.NODE_ENV === 'production' ? 60 : 2000,
+  skip: (req) => {
+    // Never throttle localhost / test traffic during local development
+    const ip = req.ip || req.connection?.remoteAddress || '';
+    return (
+      process.env.NODE_ENV !== 'production' &&
+      (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1' || ip.includes('127.0.0.1'))
+    );
+  },
   standardHeaders: true,
   legacyHeaders: false,
   message: {

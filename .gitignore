@@ -13,6 +13,7 @@ dist-ssr/
 build/
 *.local
 .vercel
+*.vsix
 
 
 # Cache and temporary directories
@@ -32,6 +33,10 @@ server/.env.*
 client/.env
 client/.env.*
 !client/.env.example
+*.private.*
+.env.publish
+.publish_secret*
+tejasai-vscode/.publish*
 
 # Diagnostic and runtime data
 pids

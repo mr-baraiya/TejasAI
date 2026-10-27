@@ -7,14 +7,15 @@
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
-const { enhancePrompt, checkHealth } = require('./api');
+const { enhancePrompt, analyzePrompt, clarifyPrompt, checkHealth } = require('./api');
 const { DEVELOPER_TEMPLATES } = require('./devTemplates');
 const { FavoritesManager } = require('./favoritesManager');
 
 class TejasAiSidebarProvider {
-  constructor(extensionUri, context) {
+  constructor(extensionUri, context, options = {}) {
     this._extensionUri = extensionUri;
     this._context = context;
+    this._options = options;
     this._favoritesManager = new FavoritesManager(context);
     this._view = undefined;
   }
@@ -57,6 +58,76 @@ class TejasAiSidebarProvider {
           break;
         }
 
+        case 'ANALYZE_PROMPT': {
+          const { prompt, targetAI } = data.payload;
+          const result = await analyzePrompt({ prompt, targetAI });
+          if (!result.success) {
+            this._view.webview.postMessage({
+              type: 'ENHANCE_RESULT',
+              success: false,
+              error: result.error,
+            });
+            break;
+          }
+
+          if (result.needsClarification && result.question) {
+            this._view.webview.postMessage({
+              type: 'CLARIFICATION_QUESTION',
+              question: result.question,
+              clarificationHistory: [],
+              questionIndex: result.questionIndex || 1,
+              maxQuestions: result.maxQuestions || 3,
+            });
+          } else {
+            this._view.webview.postMessage({
+              type: 'ENHANCE_RESULT',
+              success: true,
+              enhancedPrompt: result.enhancedPrompt,
+              whyBetter: result.whyBetter || [],
+            });
+          }
+          break;
+        }
+
+        case 'CLARIFY_ANSWER': {
+          const { prompt, targetAI, clarificationHistory, currentQuestion, answer, skip } = data.payload;
+          const result = await clarifyPrompt({
+            prompt,
+            targetAI,
+            clarificationHistory,
+            currentQuestion,
+            answer,
+            skip,
+          });
+
+          if (!result.success) {
+            this._view.webview.postMessage({
+              type: 'ENHANCE_RESULT',
+              success: false,
+              error: result.error || 'Clarification failed.',
+            });
+            break;
+          }
+
+          if (result.needsClarification && result.nextQuestion) {
+            this._view.webview.postMessage({
+              type: 'CLARIFICATION_QUESTION',
+              question: result.nextQuestion,
+              clarificationHistory: result.clarificationHistory || [],
+              questionIndex: result.questionCount || ((clarificationHistory ? clarificationHistory.length : 0) + 1),
+              maxQuestions: result.maxQuestions || 3,
+            });
+          } else if (result.enhancedPrompt) {
+            this._view.webview.postMessage({
+              type: 'ENHANCE_RESULT',
+              success: true,
+              enhancedPrompt: result.enhancedPrompt,
+              whyBetter: result.whyBetter || [],
+            });
+          }
+          break;
+        }
+
         case 'BUILD_TEMPLATE_PROMPT': {
           const { category, templateId, values } = data.payload;
           const categoryList = DEVELOPER_TEMPLATES[category] || [];
@@ -93,19 +164,42 @@ class TejasAiSidebarProvider {
         case 'REPLACE_IN_EDITOR': {
           const editor = vscode.window.activeTextEditor;
           if (!editor) {
-            vscode.window.showWarningMessage('No active editor open to replace text.');
+            vscode.window.showWarningMessage('TejasAI: No active editor open to replace text.');
             return;
           }
 
           const selection = editor.selection;
-          editor.edit((editBuilder) => {
+          const originalText = editor.document.getText(selection);
+          const originalSelection = selection;
+          const docUri = editor.document.uri.toString();
+
+          const success = await editor.edit((editBuilder) => {
             if (selection.isEmpty) {
               editBuilder.insert(selection.active, data.text);
             } else {
               editBuilder.replace(selection, data.text);
             }
           });
-          vscode.window.showInformationMessage('TejasAI: Prompt inserted into active editor!');
+
+          if (success) {
+            if (typeof this._options.recordReplacement === 'function') {
+              this._options.recordReplacement(docUri, originalSelection, originalText, data.text);
+            }
+            const undoChoice = await vscode.window.showInformationMessage(
+              'TejasAI: Prompt inserted into active editor!',
+              'Undo'
+            );
+            if (undoChoice === 'Undo' && typeof this._options.undoLastReplacement === 'function') {
+              await this._options.undoLastReplacement();
+            }
+          }
+          break;
+        }
+
+        case 'UNDO_REPLACE': {
+          if (typeof this._options.undoLastReplacement === 'function') {
+            await this._options.undoLastReplacement();
+          }
           break;
         }
 
@@ -129,6 +223,20 @@ class TejasAiSidebarProvider {
           break;
         }
 
+        case 'UPDATE_FAVORITE': {
+          try {
+            this._favoritesManager.updateFavorite(data.id, data.payload);
+            this._view.webview.postMessage({
+              type: 'FAVORITES_UPDATED',
+              favorites: this._favoritesManager.getFavorites(),
+            });
+            vscode.window.showInformationMessage('TejasAI: Favorite updated successfully!');
+          } catch (err) {
+            vscode.window.showErrorMessage(err.message);
+          }
+          break;
+        }
+
         case 'DELETE_FAVORITE': {
           this._favoritesManager.deleteFavorite(data.id);
           this._view.webview.postMessage({
@@ -139,6 +247,15 @@ class TejasAiSidebarProvider {
         }
       }
     });
+  }
+
+  notifyUndoAvailable(canUndo) {
+    if (this._view) {
+      this._view.webview.postMessage({
+        type: 'UNDO_STATE',
+        canUndo,
+      });
+    }
   }
 
   setInputText(text) {

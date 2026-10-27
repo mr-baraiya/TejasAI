@@ -22,7 +22,18 @@ Production-ready prompt engineering and vibe-coding integration for **Google Ant
 
 ## Quick Start
 
-### 1. Run the Studio UI
+### 1. Install Extension from Open VSX Registry
+Google Antigravity natively connects to the **Open VSX Registry**:
+1. Open the Extensions view (`Ctrl+Shift+X` or `Cmd+Shift+X`) in Google Antigravity.
+2. Search for **`TejasAI`** (or `tejasai-vscode`).
+3. Click **Install**.
+
+Or install via terminal:
+```bash
+code --install-extension tejasai.tejasai-vscode
+```
+
+### 2. Run the Studio UI
 ```bash
 cd tejasai-antigravity
 npm start

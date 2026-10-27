@@ -2,6 +2,11 @@
   "name": "tejasai-root",
   "version": "1.1.0",
   "description": "TejasAI — Give Your Ideas an Edge (AI Prompt Enhancer)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mr-baraiya/TejasAI.git"
+  },
+  "homepage": "https://github.com/mr-baraiya/TejasAI",
   "private": true,
   "type": "module",
   "workspaces": [
@@ -14,7 +19,8 @@
     "dev:client": "npm --workspace=client run dev",
     "dev": "node dev.js",
     "start": "node server/server.js",
-    "build": "npm --workspace=client run build"
+    "build": "npm --workspace=client run build",
+    "test:prompts": "node test/run_system_prompt_tests.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

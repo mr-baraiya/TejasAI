@@ -1,0 +1,363 @@
+{
+  "title": "TejasAI Prompt Enhancement Test Set",
+  "version": "1.0.0",
+  "purpose": "Regression testing for prompt enhancement. The expected behavior is to improve wording while preserving the user's intent; do not answer the prompt.",
+  "usage_notes": [
+    "Inputs intentionally include everyday typing, spelling, grammar, punctuation, Hinglish, and mixed Hindi-English.",
+    "Expected outputs are illustrative targets, not the only acceptable enhancements.",
+    "For short factual questions, preserve the question and do not supply the answer.",
+    "For vague prompts that depend on missing context, preserve the reference or ask a minimal clarification only when necessary."
+  ],
+  "tests": [
+    {
+      "id": 1,
+      "category": "greeting",
+      "language": "English",
+      "input": "hii how are u",
+      "expected_output": "Hi, how are you?"
+    },
+    {
+      "id": 2,
+      "category": "greeting",
+      "language": "Hinglish",
+      "input": "hii bro kya hal he",
+      "expected_output": "Hi bro, kya haal hai?"
+    },
+    {
+      "id": 3,
+      "category": "simple_factual_question",
+      "language": "English",
+      "input": "who is our prime minister",
+      "expected_output": "Who is our current Prime Minister?"
+    },
+    {
+      "id": 4,
+      "category": "personal_context_question",
+      "language": "English",
+      "input": "tell me about my self",
+      "expected_output": "Tell me about myself."
+    },
+    {
+      "id": 5,
+      "category": "simple_factual_question",
+      "language": "English",
+      "input": "what is photosynthesis",
+      "expected_output": "What is photosynthesis?"
+    },
+    {
+      "id": 6,
+      "category": "coding",
+      "language": "English",
+      "input": "make login page in react",
+      "expected_output": "Create a login page using React."
+    },
+    {
+      "id": 7,
+      "category": "debugging",
+      "language": "English",
+      "input": "my code not working fix it",
+      "expected_output": "Debug my code, identify why it is not working, and fix the issue."
+    },
+    {
+      "id": 8,
+      "category": "explanation",
+      "language": "English",
+      "input": "explain this code",
+      "expected_output": "Explain what this code does and how it works."
+    },
+    {
+      "id": 9,
+      "category": "writing",
+      "language": "English",
+      "input": "write mail for leave",
+      "expected_output": "Write a professional leave request email."
+    },
+    {
+      "id": 10,
+      "category": "translation",
+      "language": "English",
+      "input": "translate this in gujrati",
+      "expected_output": "Translate this into Gujarati."
+    },
+    {
+      "id": 11,
+      "category": "summarization",
+      "language": "English",
+      "input": "make it short",
+      "expected_output": "Make this shorter while preserving its main meaning."
+    },
+    {
+      "id": 12,
+      "category": "creative",
+      "language": "English",
+      "input": "give me some startup name",
+      "expected_output": "Suggest some suitable names for my startup."
+    },
+    {
+      "id": 13,
+      "category": "planning",
+      "language": "English",
+      "input": "make study timetable for me",
+      "expected_output": "Create a study timetable for me."
+    },
+    {
+      "id": 14,
+      "category": "career",
+      "language": "English",
+      "input": "improve my resume",
+      "expected_output": "Improve my resume's clarity, structure, and impact while preserving accurate information."
+    },
+    {
+      "id": 15,
+      "category": "social_message",
+      "language": "English",
+      "input": "reply him that i will come late",
+      "expected_output": "Write a polite reply telling him that I will arrive late."
+    },
+    {
+      "id": 16,
+      "category": "coding",
+      "language": "English",
+      "input": "create api in node js for login and signup",
+      "expected_output": "Create login and signup APIs using Node.js."
+    },
+    {
+      "id": 17,
+      "category": "database",
+      "language": "English",
+      "input": "design database for ecommerce",
+      "expected_output": "Design a database schema for an e-commerce application."
+    },
+    {
+      "id": 18,
+      "category": "frontend",
+      "language": "English",
+      "input": "make website mobile friendly",
+      "expected_output": "Make the website responsive and usable on mobile devices."
+    },
+    {
+      "id": 19,
+      "category": "testing",
+      "language": "English",
+      "input": "write test cases for this function",
+      "expected_output": "Write test cases for this function, including relevant edge cases."
+    },
+    {
+      "id": 20,
+      "category": "code_review",
+      "language": "English",
+      "input": "check my code and tell mistakes",
+      "expected_output": "Review my code, identify mistakes, and suggest appropriate fixes."
+    },
+    {
+      "id": 21,
+      "category": "simple_factual_question",
+      "language": "English",
+      "input": "why sky is blue",
+      "expected_output": "Why is the sky blue?"
+    },
+    {
+      "id": 22,
+      "category": "personal_context_question",
+      "language": "English",
+      "input": "what do you know about me",
+      "expected_output": "What do you know about me based on the context available to you?"
+    },
+    {
+      "id": 23,
+      "category": "ambiguous_context",
+      "language": "English",
+      "input": "make this better",
+      "expected_output": "Improve this while preserving its original purpose and meaning."
+    },
+    {
+      "id": 24,
+      "category": "ambiguous_context",
+      "language": "English",
+      "input": "do same as before",
+      "expected_output": "Do the same as before."
+    },
+    {
+      "id": 25,
+      "category": "formatting",
+      "language": "English",
+      "input": "convert this into bullet point",
+      "expected_output": "Convert this into bullet points."
+    },
+    {
+      "id": 26,
+      "category": "Hinglish_coding",
+      "language": "Hinglish",
+      "input": "react me ek login page bana do acha sa",
+      "expected_output": "React mein ek achha login page bana do."
+    },
+    {
+      "id": 27,
+      "category": "Hinglish_debugging",
+      "language": "Hinglish",
+      "input": "mera code run nhi ho rha error fix kro",
+      "expected_output": "Mera code run nahi ho raha hai. Error fix karo."
+    },
+    {
+      "id": 28,
+      "category": "Hinglish_explanation",
+      "language": "Hinglish",
+      "input": "ye code kya krta he smjhao",
+      "expected_output": "Yeh code kya karta hai, samjhao."
+    },
+    {
+      "id": 29,
+      "category": "Hinglish_writing",
+      "language": "Hinglish",
+      "input": "mere teacher ko leave ke liye msg likh do",
+      "expected_output": "Mere teacher ko leave ke liye ek message likh do."
+    },
+    {
+      "id": 30,
+      "category": "Hinglish_translation",
+      "language": "Hinglish",
+      "input": "isko english me translate kro",
+      "expected_output": "Isko English mein translate karo."
+    },
+    {
+      "id": 31,
+      "category": "Hinglish_question",
+      "language": "Hinglish",
+      "input": "india ka pm kon he abhi",
+      "expected_output": "India ka PM abhi kaun hai?"
+    },
+    {
+      "id": 32,
+      "category": "Hinglish_personal",
+      "language": "Hinglish",
+      "input": "mere bare me kya pta he tumko",
+      "expected_output": "Mere baare mein tumhe kya pata hai?"
+    },
+    {
+      "id": 33,
+      "category": "Hinglish_planning",
+      "language": "Hinglish",
+      "input": "gate ke liye daily study plan bnao",
+      "expected_output": "GATE ke liye daily study plan banao."
+    },
+    {
+      "id": 34,
+      "category": "Hinglish_career",
+      "language": "Hinglish",
+      "input": "resume ko professional bna do",
+      "expected_output": "Resume ko professional banao."
+    },
+    {
+      "id": 35,
+      "category": "Hinglish_creative",
+      "language": "Hinglish",
+      "input": "mere app ke liye mast sa name suggest kro",
+      "expected_output": "Mere app ke liye ek achha naam suggest karo."
+    },
+    {
+      "id": 36,
+      "category": "Hinglish_database",
+      "language": "Hinglish",
+      "input": "mongodb me user ka data save krna he kaise kru",
+      "expected_output": "MongoDB mein user ka data save karna hai. Kaise karun?"
+    },
+    {
+      "id": 37,
+      "category": "Hinglish_frontend",
+      "language": "Hinglish",
+      "input": "website ka ui thoda modern kr do",
+      "expected_output": "Website ka UI thoda modern kar do."
+    },
+    {
+      "id": 38,
+      "category": "Hinglish_testing",
+      "language": "Hinglish",
+      "input": "is function ke test case likh do",
+      "expected_output": "Is function ke test cases likh do."
+    },
+    {
+      "id": 39,
+      "category": "Hinglish_explanation",
+      "language": "Hinglish",
+      "input": "api kya hoti he simple words me btao",
+      "expected_output": "API kya hoti hai? Simple words mein batao."
+    },
+    {
+      "id": 40,
+      "category": "Hinglish_message",
+      "language": "Hinglish",
+      "input": "usko bolna ki me 10 min late aaunga",
+      "expected_output": "Usko bolo ki main 10 minute late aaunga."
+    },
+    {
+      "id": 41,
+      "category": "mixed_language",
+      "language": "Hinglish + English",
+      "input": "bhai this error ka solution batao",
+      "expected_output": "Bhai, explain how to fix this error."
+    },
+    {
+      "id": 42,
+      "category": "mixed_language",
+      "language": "Hinglish + English",
+      "input": "please mera code optimize kar do without changing output",
+      "expected_output": "Please optimize my code without changing its output."
+    },
+    {
+      "id": 43,
+      "category": "mixed_language",
+      "language": "Hinglish + English",
+      "input": "is prompt ko better bnao for github copilot",
+      "expected_output": "Improve this prompt for GitHub Copilot while preserving its original intent."
+    },
+    {
+      "id": 44,
+      "category": "mixed_language",
+      "language": "Hinglish + English",
+      "input": "mujhe ek portfolio website chahiye using react vite tailwind",
+      "expected_output": "Create a portfolio website using React, Vite, and Tailwind CSS."
+    },
+    {
+      "id": 45,
+      "category": "mixed_language",
+      "language": "Hinglish + English",
+      "input": "database connect nhi ho raha check connection string",
+      "expected_output": "The database is not connecting. Check the connection string and identify the cause."
+    },
+    {
+      "id": 46,
+      "category": "typos_and_shortcuts",
+      "language": "English",
+      "input": "plz expln this in easy lang",
+      "expected_output": "Please explain this in simple language."
+    },
+    {
+      "id": 47,
+      "category": "typos_and_shortcuts",
+      "language": "English",
+      "input": "gve me 5 ideaz for project",
+      "expected_output": "Give me five project ideas."
+    },
+    {
+      "id": 48,
+      "category": "already_clear",
+      "language": "English",
+      "input": "Write a Python function to reverse a string.",
+      "expected_output": "Write a Python function to reverse a string."
+    },
+    {
+      "id": 49,
+      "category": "constraints",
+      "language": "English",
+      "input": "make it fast but dont change output or api",
+      "expected_output": "Improve performance without changing the output or public API."
+    },
+    {
+      "id": 50,
+      "category": "clarification_needed",
+      "language": "English",
+      "input": "make one for that thing we discussed",
+      "expected_output": "Make one for the thing we discussed."
+    }
+  ]
+}

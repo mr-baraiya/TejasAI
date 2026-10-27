@@ -1,11 +1,13 @@
 # TejasAI
 
-### Open-Source AI Prompt Optimization Engine and Universal Browser Extension
+### Open-Source AI Prompt Optimization Engine, Universal Browser Extension & VS Code Extension
 
-Live Web Application: https://tejasai-eta.vercel.app/  
-Chrome Extension Package: https://tejasai-eta.vercel.app/tejasai-extension.zip  
-GitHub Repository: https://github.com/mr-baraiya/TejasAI  
-Sponsor this Project: https://github.com/sponsors/mr-baraiya  
+- **Live Web Application:** https://tejasai-eta.vercel.app/
+- **VS Code Extension (Marketplace):** https://marketplace.visualstudio.com/items?itemName=tejasai.tejasai-vscode
+- **Install VS Code Extension:** `code --install-extension tejasai.tejasai-vscode`
+- **Chrome Extension Package:** https://tejasai-eta.vercel.app/tejasai-extension.zip
+- **GitHub Repository:** https://github.com/mr-baraiya/TejasAI
+- **Sponsor this Project:** https://github.com/sponsors/mr-baraiya
 
 ---
 
@@ -15,10 +17,11 @@ TejasAI is an open-source productivity platform that transforms rough, informal 
 
 Most people receive generic or incomplete answers from artificial intelligence models not because the models are weak, but because informal human drafts lack role boundaries, concrete specifications, negative constraints, and output formatting. TejasAI bridges that gap automatically.
 
-The project consists of two tightly integrated components:
+The project consists of three tightly integrated components:
 
-1. Web Application: A responsive, editorial-grade workspace featuring real-time AI prompt enhancement, an interactive multi-framework Prompt Builder, side-by-side prompt diffing, prompt explanation metrics, and local favorites management.
-2. Universal Browser Extension: A Chrome Manifest V3 extension that embeds a native "Enhance" button directly inside the composer boxes of ChatGPT, Claude, Google Gemini, Perplexity, DeepSeek, and Grok.
+1. **Web Application:** A responsive, editorial-grade workspace featuring real-time AI prompt enhancement, an interactive multi-framework Prompt Builder, side-by-side prompt diffing, prompt explanation metrics, and local favorites management.
+2. **Universal Browser Extension:** A Chrome Manifest V3 extension that embeds a native "Enhance" button directly inside the composer boxes of ChatGPT, Claude, Google Gemini, Perplexity, DeepSeek, and Grok.
+3. **Official Visual Studio Code Extension:** Published live on the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=tejasai.tejasai-vscode) (`tejasai.tejasai-vscode`), bringing right-click prompt enhancement, an interactive Prompt Studio sidebar with follow-up clarification questions, pre-built developer templates, and native GitHub Copilot Chat integration (`@tejasai`).
 
 ---
 
@@ -209,10 +212,46 @@ TejasAI/
 │   ├── popup.js                     # Extension popup logic (Enhance, Builder, Favorites)
 │   └── popup.css                    # Popup styling
 │
+├── tejasai-vscode/                  # Official VS Code Extension (Marketplace: tejasai.tejasai-vscode)
+│   ├── extension.js                 # Extension activation and command registration
+│   ├── src/
+│   │   ├── api.js                   # Live API client with analyze & clarify support
+│   │   ├── sidebarProvider.js       # Prompt Studio Webview provider
+│   │   ├── devTemplates.js          # Developer prompt templates (feature, debug, test)
+│   │   ├── copilotIntegration.js    # GitHub Copilot Chat participant (@tejasai)
+│   │   └── favoritesManager.js      # Global state favorites persistence
+│   └── media/                       # Sidebar HTML, CSS, JS and official icons
+│
 ├── dev.js                           # Unified local development process runner
 ├── package.json                     # Workspace definition and root scripts
 └── README.md
 ```
+
+---
+
+## ⚡ Visual Studio Code Extension (Now Live on Marketplace!)
+
+TejasAI is officially published on the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=tejasai.tejasai-vscode) to accelerate your vibe-coding workflows directly inside your editor.
+
+### 📦 Quick Install
+Install directly inside VS Code via the terminal:
+```bash
+code --install-extension tejasai.tejasai-vscode
+```
+Or open the Extensions panel (`Ctrl+Shift+X` or `Cmd+Shift+X`), search for **`tejasai`**, and click **Install**.
+
+### Key Capabilities
+- **Right-Click Context Menu**: Highlight any rough comment, prompt, or function description in any editor and select **TejasAI: Enhance Selected Prompt** or **Enhance & Replace Selection**.
+- **Interactive Prompt Studio Sidebar**: Dedicated Activity Bar panel with real-time prompt enhancement, live clarification questions (with 3 single-line choices), and custom model targeting (ChatGPT, Claude, Gemini, Copilot).
+- **GitHub Copilot Chat Participant (`@tejasai`)**: Chat directly with TejasAI in GitHub Copilot:
+  ```text
+  @tejasai /enhance make a responsive auth navbar with tailwind
+  @tejasai /feature build a realtime chat stream with websockets
+  @tejasai /debug why does this race condition trigger in useEffect
+  @tejasai /refactor convert this monolithic controller into clean services
+  @tejasai /test generate unit and integration tests with vitest
+  ```
+- **Developer Templates & Favorites**: Instant pre-built templates for Feature Development, Debugging & Root Cause Analysis, Clean Architecture Refactoring, and Test Generation.
 
 ---
 

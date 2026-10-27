@@ -18,8 +18,56 @@ const { registerCopilotParticipant } = require('./src/copilotIntegration');
 function activate(context) {
   console.log('[TejasAI] Activating TejasAI VS Code Extension...');
 
+  // State for undoing prompt replacement
+  let lastReplacement = null;
+
+  async function undoLastReplacement() {
+    if (!lastReplacement) {
+      vscode.window.showInformationMessage('TejasAI: No recent prompt replacement to undo.');
+      return false;
+    }
+
+    const editor =
+      vscode.window.visibleTextEditors.find(
+        (e) => e.document.uri.toString() === lastReplacement.documentUri
+      ) || vscode.window.activeTextEditor;
+
+    if (!editor || editor.document.uri.toString() !== lastReplacement.documentUri) {
+      vscode.window.showWarningMessage('TejasAI: Please open the original editor tab to undo the prompt replacement.');
+      return false;
+    }
+
+    const success = await editor.edit((editBuilder) => {
+      editBuilder.replace(lastReplacement.range, lastReplacement.originalText);
+    });
+
+    if (success) {
+      vscode.window.showInformationMessage('TejasAI: Successfully reverted prompt to original text.');
+      lastReplacement = null;
+      await vscode.commands.executeCommand('setContext', 'tejasai:canUndoReplace', false);
+      sidebarProvider.notifyUndoAvailable(false);
+      return true;
+    }
+    return false;
+  }
+
+  function recordReplacement(documentUri, range, originalText, replacedText) {
+    lastReplacement = {
+      documentUri,
+      range,
+      originalText,
+      replacedText,
+      timestamp: Date.now(),
+    };
+    vscode.commands.executeCommand('setContext', 'tejasai:canUndoReplace', true);
+    sidebarProvider.notifyUndoAvailable(true);
+  }
+
   // 1. Register Sidebar Webview View Provider
-  const sidebarProvider = new TejasAiSidebarProvider(context.extensionUri, context);
+  const sidebarProvider = new TejasAiSidebarProvider(context.extensionUri, context, {
+    recordReplacement,
+    undoLastReplacement,
+  });
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider('tejasai.sidebarView', sidebarProvider)
   );
@@ -70,10 +118,24 @@ function activate(context) {
             await vscode.env.clipboard.writeText(result.enhancedPrompt);
             vscode.window.showInformationMessage('Copied enhanced prompt to clipboard!');
           } else if (action === 'Replace Selection') {
-            editor.edit((editBuilder) => {
-              editBuilder.replace(selection, result.enhancedPrompt);
+            const originalSelection = selection;
+            const originalText = text;
+            await editor.edit((editBuilder) => {
+              editBuilder.replace(originalSelection, result.enhancedPrompt);
             });
-            vscode.window.showInformationMessage('Replaced selection with enhanced prompt!');
+            recordReplacement(
+              editor.document.uri.toString(),
+              originalSelection,
+              originalText,
+              result.enhancedPrompt
+            );
+            const undoChoice = await vscode.window.showInformationMessage(
+              'Replaced selection with enhanced prompt!',
+              'Undo'
+            );
+            if (undoChoice === 'Undo') {
+              await undoLastReplacement();
+            }
           } else if (action === 'Send to Copilot') {
             await sendPromptToCopilot(result.enhancedPrompt);
           }
@@ -109,16 +171,36 @@ function activate(context) {
             return;
           }
 
-          editor.edit((editBuilder) => {
-            editBuilder.replace(selection, result.enhancedPrompt);
+          const originalSelection = selection;
+          const originalText = text;
+          await editor.edit((editBuilder) => {
+            editBuilder.replace(originalSelection, result.enhancedPrompt);
           });
-          vscode.window.showInformationMessage('Replaced with enhanced prompt!');
+          recordReplacement(
+            editor.document.uri.toString(),
+            originalSelection,
+            originalText,
+            result.enhancedPrompt
+          );
+
+          const choice = await vscode.window.showInformationMessage(
+            'Replaced with enhanced prompt!',
+            'Undo'
+          );
+          if (choice === 'Undo') {
+            await undoLastReplacement();
+          }
         }
       );
     }
   );
 
-  // 4. Command: Send to GitHub Copilot Chat
+  // 4. Command: Undo Last Replacement
+  const undoReplaceCmd = vscode.commands.registerCommand('tejasai.undoReplace', async () => {
+    await undoLastReplacement();
+  });
+
+  // 5. Command: Send to GitHub Copilot Chat
   const sendToCopilotCmd = vscode.commands.registerCommand(
     'tejasai.sendToCopilot',
     async (providedPrompt) => {
@@ -158,17 +240,18 @@ function activate(context) {
     }
   );
 
-  // 5. Command: Open Sidebar
+  // 6. Command: Open Sidebar
   const openSidebarCmd = vscode.commands.registerCommand('tejasai.openSidebar', () => {
     vscode.commands.executeCommand('workbench.view.extension.tejasai-view-container');
   });
 
-  // 6. Register GitHub Copilot Chat Participant (@tejasai)
+  // 7. Register GitHub Copilot Chat Participant (@tejasai)
   registerCopilotParticipant(context);
 
   context.subscriptions.push(
     enhanceSelectionCmd,
     enhanceAndReplaceCmd,
+    undoReplaceCmd,
     sendToCopilotCmd,
     openSidebarCmd
   );

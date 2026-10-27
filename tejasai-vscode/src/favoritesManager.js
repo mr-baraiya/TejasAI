@@ -57,6 +57,27 @@ class FavoritesManager {
     return newFav;
   }
 
+  addFavorite(fav) {
+    return this.saveFavorite(fav);
+  }
+
+  updateFavorite(id, { title, prompt, category }) {
+    const list = this.getFavorites();
+    const item = list.find((f) => f.id === id);
+    if (!item) {
+      throw new Error(`Favorite with id ${id} not found.`);
+    }
+    if (title && title.trim()) item.title = title.trim();
+    if (prompt && prompt.trim()) item.prompt = prompt.trim();
+    if (category) item.category = category;
+    item.updatedAt = new Date().toLocaleDateString();
+
+    if (this.context) {
+      this.context.globalState.update(STORAGE_KEY, list);
+    }
+    return item;
+  }
+
   deleteFavorite(id) {
     let list = this.getFavorites();
     list = list.filter((item) => item.id !== id);

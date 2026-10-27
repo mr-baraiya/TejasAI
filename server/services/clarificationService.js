@@ -1,6 +1,15 @@
 import Groq from 'groq-sdk';
 import { callAI, cleanInput, RefusalError, EngineError } from './aiService.js';
 import { SYSTEM_INSTRUCTION } from './systemInstruction.js';
+import {
+  classifyPromptIntent,
+  INTENT_TYPES,
+  PERSONAL_SUBTYPES,
+  formatGreeting,
+  formatInGroupQuestion,
+  formatSelfPrompt,
+  formatSimpleQuestion,
+} from './intentClassifier.js';
 
 /**
  * System instruction for the initial prompt completeness analysis.
@@ -26,11 +35,17 @@ CATEGORIES OF SUFFICIENT PROMPTS (MUST return isSufficient: true, NEVER ask ques
 2. Simple Questions:
    * "What is 2 + 2?", "Capital of France?", "Define photosynthesis", "Who wrote Hamlet?"
    -> Return unchanged or make minimal punctuation/clarity fixes. NEVER over-complicate or ask unnecessary questions.
-3. Direct Commands & Standard Inquiries:
+3. Personal & Contextual Queries:
+   * "tell me about myself", "who am I?"
+   -> Return isSufficient: true. Enhanced prompt: "Tell me about myself." NEVER ask for a resume or professional background.
+   * "tell me who is our prime minister", "who is our president?"
+   -> Return isSufficient: true. Enhanced prompt: "Tell me who our current Prime Minister is." Preserve collective context without assuming a location.
+4. Coding Tasks & Technical Commands:
+   * "make login page in react", "build a calculator in react", "write a python script to parse CSV"
+   -> Return isSufficient: true. Preserve the requested framework/language and add practical engineering requirements (validation, error states, responsive design, tests).
+5. Direct Commands & Standard Inquiries:
    * "tell my team the launch is delayed to friday" (Intent and core message clear)
    * "explain quantum computing in simple terms" (Audience and concept clear)
-   * "build a calculator in react" (Framework and deliverable clear)
-   * "write a python script to parse CSV" (Language and task clear)
    * "create a landing page for my bakery" (Domain and page type clear)
    * "draft an email asking for sick leave" (Context and goal clear)
    * "regex to validate email address" (Specific technical requirement clear)
@@ -68,9 +83,9 @@ If INCOMPLETE:
 QUESTION DESIGN RULES:
 - Only ask for the single most essential missing detail.
 - Questions must use structured answers:
-  * "multiple_choice": 2 to 3 concise, relevant options (MAXIMUM 3 options only). Provide an optional "Other" choice (hasOther: true).
+  * "multiple_choice": Exactly 3 concise, relevant options. The system will provide "Other" as the 4th option (hasOther: true) where the user can write custom text.
   * "yes_no": Binary confirmation (options: ["Yes", "No"], hasOther: false).
-  * "number": When selecting a quantity, such as number of pages or options (options: ["1", "3", "5"], MAXIMUM 3 options only).
+  * "number": When selecting a quantity, such as number of pages or items (options: ["1", "3", "5"], hasOther: true).
 - NO open-ended text questions.
 `;
 
@@ -172,18 +187,62 @@ export async function analyzePromptCompleteness({ prompt, targetAI = 'any' }) {
 
   const cleanedPrompt = cleanInput(prompt);
 
-  // Fast-path intent preservation for casual greetings & conversational pleasantries
-  const CASUAL_GREETING_REGEX = /^(hi|hello|hey|hey there|howdy|greetings|good morning|good afternoon|good evening|how are you|how are you doing|sup)[\s!.,?]*$/i;
-  if (CASUAL_GREETING_REGEX.test(cleanedPrompt)) {
+  // Intent-aware preservation fast-paths (greetings, self-knowledge, in-group)
+  const classification = classifyPromptIntent(cleanedPrompt);
+
+  if (classification.category === INTENT_TYPES.GREETING_OR_SIMPLE) {
     return {
       success: true,
       needsClarification: false,
-      enhancedPrompt: cleanedPrompt,
+      enhancedPrompt: formatGreeting(cleanedPrompt),
       whyBetter: [
-        'Preserved conversational intent and natural greeting without unnecessary formalization',
-        'Maintained user tone and simplicity'
+        'Preserved conversational greeting tone and simplicity',
+        'Formatted with standard capitalization and punctuation without bloat',
       ],
       engineUsed: 'direct-preservation',
+      meta: { targetAI },
+    };
+  }
+
+  if (classification.category === INTENT_TYPES.PERSONAL_CONTEXTUAL) {
+    if (classification.subtype === PERSONAL_SUBTYPES.SELF_KNOWLEDGE) {
+      return {
+        success: true,
+        needsClarification: false,
+        enhancedPrompt: formatSelfPrompt(cleanedPrompt),
+        whyBetter: [
+          'Preserved self-referential inquiry without inventing background requirements',
+          'Ensured prompt is improved rather than answered',
+        ],
+        engineUsed: 'intent-preservation',
+        meta: { targetAI },
+      };
+    }
+    if (classification.subtype === PERSONAL_SUBTYPES.IN_GROUP_CONTEXT) {
+      return {
+        success: true,
+        needsClarification: false,
+        enhancedPrompt: formatInGroupQuestion(cleanedPrompt),
+        whyBetter: [
+          'Preserved collective inquiry context ("our current Prime Minister")',
+          'Polished grammar and structure without answering the question',
+        ],
+        engineUsed: 'intent-preservation',
+        meta: { targetAI },
+      };
+    }
+  }
+
+  if (classification.category === INTENT_TYPES.FACTUAL_QUESTION && classification.isSimpleFactual) {
+    return {
+      success: true,
+      needsClarification: false,
+      enhancedPrompt: formatSimpleQuestion(cleanedPrompt),
+      whyBetter: [
+        'Preserved factual inquiry format with standard punctuation',
+        'Ensured prompt is improved rather than answered',
+      ],
+      engineUsed: 'intent-preservation',
       meta: { targetAI },
     };
   }
@@ -192,7 +251,7 @@ export async function analyzePromptCompleteness({ prompt, targetAI = 'any' }) {
     { role: 'system', content: CLARIFICATION_ANALYZE_INSTRUCTION },
     {
       role: 'user',
-      content: `Target AI: ${targetAI}\n\nPrompt to analyze:\n"""${cleanedPrompt}"""`,
+      content: `Target AI: ${targetAI}\n\nPrompt to analyze:\n"""${cleanedPrompt}"""\n\n[DETECTED INTENT: ${classification.category.toUpperCase()}]\nPreservation Directives:\n- ${classification.preservationDirectives.join('\n- ')}`,
     },
   ];
 
@@ -204,13 +263,27 @@ export async function analyzePromptCompleteness({ prompt, targetAI = 'any' }) {
   }
 
   if (parsed.isSufficient === true && parsed.enhancedPrompt) {
+    let finalPrompt = parsed.enhancedPrompt.trim();
+    let finalWhyBetter = Array.isArray(parsed.whyBetter) && parsed.whyBetter.length > 0
+      ? parsed.whyBetter.map((r) => String(r).trim())
+      : ['Improved structure and intent clarity', 'Optimized for target AI assistant'];
+
+    // Post-processing sanity checks
+    if (classification.category === INTENT_TYPES.PERSONAL_CONTEXTUAL && classification.subtype === PERSONAL_SUBTYPES.SELF_KNOWLEDGE) {
+      finalPrompt = formatSelfPrompt(cleanedPrompt);
+    } else if (classification.category === INTENT_TYPES.PERSONAL_CONTEXTUAL && classification.subtype === PERSONAL_SUBTYPES.IN_GROUP_CONTEXT) {
+      finalPrompt = formatInGroupQuestion(cleanedPrompt);
+    } else if (classification.category === INTENT_TYPES.FACTUAL_QUESTION && classification.isSimpleFactual) {
+      if (!finalPrompt.endsWith('?') || finalPrompt.length > 80) {
+        finalPrompt = formatSimpleQuestion(cleanedPrompt);
+      }
+    }
+
     return {
       success: true,
       needsClarification: false,
-      enhancedPrompt: parsed.enhancedPrompt.trim(),
-      whyBetter: Array.isArray(parsed.whyBetter) && parsed.whyBetter.length > 0
-        ? parsed.whyBetter.map((r) => String(r).trim())
-        : ['Improved structure and intent clarity', 'Optimized for target AI assistant'],
+      enhancedPrompt: finalPrompt,
+      whyBetter: finalWhyBetter,
       engineUsed: aiRes.engine,
       meta: { targetAI },
     };
@@ -218,11 +291,17 @@ export async function analyzePromptCompleteness({ prompt, targetAI = 'any' }) {
 
   // Incomplete prompt -> structured question 1
   const q = parsed.question || {};
-  const options = Array.isArray(q.options) && q.options.length >= 2
-    ? q.options.map((o) => String(o).trim()).slice(0, 3)
-    : ['Option 1', 'Option 2', 'Option 3'];
-
   const type = ['multiple_choice', 'yes_no', 'number'].includes(q.type) ? q.type : 'multiple_choice';
+
+  let options;
+  if (type === 'yes_no') {
+    options = ['Yes', 'No'];
+  } else {
+    const rawOpts = Array.isArray(q.options) && q.options.length >= 2
+      ? q.options.map((o) => String(o).trim()).filter((o) => o.toLowerCase() !== 'other').slice(0, 3)
+      : ['Option 1', 'Option 2', 'Option 3'];
+    options = [...rawOpts, 'Other'];
+  }
 
   return {
     success: true,
@@ -237,8 +316,8 @@ export async function analyzePromptCompleteness({ prompt, targetAI = 'any' }) {
       question: q.text ? q.text.trim() : 'Could you specify the primary purpose or type for this request?',
       type,
       options,
-      hasOther: q.hasOther !== false,
-      allowsOther: q.hasOther !== false,
+      hasOther: true,
+      allowsOther: true,
     },
     nextQuestion: {
       id: 'q1',
@@ -246,8 +325,8 @@ export async function analyzePromptCompleteness({ prompt, targetAI = 'any' }) {
       question: q.text ? q.text.trim() : 'Could you specify the primary purpose or type for this request?',
       type,
       options,
-      hasOther: q.hasOther !== false,
-      allowsOther: q.hasOther !== false,
+      hasOther: true,
+      allowsOther: true,
     },
     clarificationHistory: [],
     engineUsed: aiRes.engine,
@@ -337,10 +416,17 @@ export async function processClarificationStep({
   // Next question
   const nextIdx = updatedHistory.length + 1;
   const q = parsed.question || {};
-  const options = Array.isArray(q.options) && q.options.length >= 2
-    ? q.options.map((o) => String(o).trim()).slice(0, 3)
-    : ['Yes', 'No'];
   const type = ['multiple_choice', 'yes_no', 'number'].includes(q.type) ? q.type : 'multiple_choice';
+
+  let options;
+  if (type === 'yes_no') {
+    options = ['Yes', 'No'];
+  } else {
+    const rawOpts = Array.isArray(q.options) && q.options.length >= 2
+      ? q.options.map((o) => String(o).trim()).filter((o) => o.toLowerCase() !== 'other').slice(0, 3)
+      : ['Option 1', 'Option 2', 'Option 3'];
+    options = [...rawOpts, 'Other'];
+  }
 
   const qObj = {
     id: `q${nextIdx}`,
@@ -348,8 +434,8 @@ export async function processClarificationStep({
     question: q.text ? q.text.trim() : 'Do you have any specific preferences or requirements?',
     type,
     options,
-    hasOther: q.hasOther !== false,
-    allowsOther: q.hasOther !== false,
+    hasOther: true,
+    allowsOther: true,
   };
 
   return {

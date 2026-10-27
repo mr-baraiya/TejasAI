@@ -173,10 +173,11 @@ export function ClarificationCard({
           </div>
         )}
 
-        {/* Multiple Choice Type (At most 3 options in one single line) */}
+        {/* Multiple Choice Type (4 options: 3 specific choices + 4th is Other) */}
         {!isYesNoType && !isNumberType && (() => {
-          const opts = (question.options || []).slice(0, 3);
-          const gridColsClass = opts.length === 2 ? 'grid-cols-2' : opts.length === 1 ? 'grid-cols-1' : 'grid-cols-3';
+          const rawOpts = (question.options || []).filter(o => o.toLowerCase() !== 'other').slice(0, 3);
+          const opts = [...rawOpts, 'Other'];
+          const gridColsClass = 'grid-cols-2 sm:grid-cols-4';
 
           return (
             <div className="space-y-2">
@@ -185,7 +186,12 @@ export function ClarificationCard({
                   <button
                     key={opt}
                     type="button"
-                    onClick={() => setSelectedOption(opt)}
+                    onClick={() => {
+                      setSelectedOption(opt);
+                      if (opt !== 'Other') {
+                        setCustomOtherText('');
+                      }
+                    }}
                     title={opt}
                     className={`py-2.5 px-2 text-center rounded-lg text-xs sm:text-sm font-medium border transition-all cursor-pointer truncate ${
                       selectedOption === opt
@@ -203,12 +209,12 @@ export function ClarificationCard({
                 <div className="pt-2 animate-fadeIn">
                   <input
                     type="text"
-                    maxLength={120}
+                    maxLength={140}
                     autoFocus
-                    placeholder="Type your specific requirement..."
+                    placeholder="Write your custom requirement here..."
                     value={customOtherText}
                     onChange={(e) => setCustomOtherText(e.target.value)}
-                    className="w-full px-3.5 py-2 text-xs sm:text-sm border border-[#C2410C] rounded-lg bg-[#FFFFFF] text-[#111827] focus:outline-none ring-1 ring-[#C2410C]/30"
+                    className="w-full px-3.5 py-2.5 text-xs sm:text-sm border border-[#C2410C] rounded-lg bg-[#FFFFFF] text-[#111827] focus:outline-none ring-2 ring-[#C2410C]/20 shadow-xs"
                   />
                 </div>
               )}

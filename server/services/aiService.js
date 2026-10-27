@@ -1,6 +1,15 @@
 import Groq from 'groq-sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { SYSTEM_INSTRUCTION } from './systemInstruction.js';
+import {
+  classifyPromptIntent,
+  INTENT_TYPES,
+  PERSONAL_SUBTYPES,
+  formatGreeting,
+  formatInGroupQuestion,
+  formatSelfPrompt,
+  formatSimpleQuestion,
+} from './intentClassifier.js';
 
 /**
  * Custom error for refused requests (HTTP 422)
@@ -131,7 +140,8 @@ export function buildMessages({ prompt, targetAI = 'any', tweak = '', previousRe
 
     userContent = `Please rewrite the following previous prompt based on the tweak instruction.\n\nPrevious prompt:\n"""${cleanedPrev}"""\n\nTweak instruction:\n"""${tweakGuidance}"""\n\nOriginal request goal:\n"""${cleanedPrompt}"""`;
   } else {
-    userContent = `"""${cleanedPrompt}"""`;
+    const classification = classifyPromptIntent(cleanedPrompt);
+    userContent = `"""${cleanedPrompt}"""\n\n[DETECTED INTENT: ${classification.category.toUpperCase()}]\nPreservation Directives:\n- ${classification.preservationDirectives.join('\n- ')}`;
   }
 
   if (targetAI && targetAI !== 'any') {
@@ -207,6 +217,36 @@ export function validateOutput(rawText, originalInput) {
   const isDirectImageRequest = /\b(create|generate|make|produce)\s+(an?\s+)?image\b/i.test(originalInput);
   if (isDirectImageRequest) {
     trimmedPrompt = trimmedPrompt.replace(/^(please\s+)?(create|write|provide|give\s+me)\s+(a\s+)?(detailed\s+)?prompt\s+for\s+(an?\s+image\s+of\s+)?/i, 'Create an image of ');
+  }
+
+  // Intent preservation repair for self-knowledge queries
+  const inputClassification = classifyPromptIntent(originalInput);
+  if (inputClassification.category === INTENT_TYPES.PERSONAL_CONTEXTUAL && inputClassification.subtype === PERSONAL_SUBTYPES.SELF_KNOWLEDGE) {
+    trimmedPrompt = formatSelfPrompt(originalInput);
+    whyBetter = [
+      'Preserved self-referential inquiry without inventing background requirements',
+      'Ensured prompt is improved rather than answered',
+    ];
+  }
+
+  // Intent preservation repair for in-group context
+  if (inputClassification.category === INTENT_TYPES.PERSONAL_CONTEXTUAL && inputClassification.subtype === PERSONAL_SUBTYPES.IN_GROUP_CONTEXT) {
+    trimmedPrompt = formatInGroupQuestion(originalInput);
+    whyBetter = [
+      'Preserved collective inquiry context ("our current Prime Minister")',
+      'Polished grammar and structure without answering the question',
+    ];
+  }
+
+  // Intent preservation repair for simple factual questions (must never answer)
+  if (inputClassification.category === INTENT_TYPES.FACTUAL_QUESTION && inputClassification.isSimpleFactual) {
+    if (!trimmedPrompt.endsWith('?') || trimmedPrompt.length > 80) {
+      trimmedPrompt = formatSimpleQuestion(originalInput);
+      whyBetter = [
+        'Preserved factual inquiry format with standard punctuation',
+        'Ensured prompt is improved rather than answered',
+      ];
+    }
   }
 
   if (/\[[A-Za-z0-9_\s-]{2,}\]/.test(trimmedPrompt)) {
@@ -379,8 +419,7 @@ async function callGroqChat(groq, primaryModel, messages, timeoutMs) {
 
       if ((isRateLimit || isNotFound || isServerDown) && nextModel) {
         console.warn(
-          `[Groq Resilient Failover] Model '${currentModel}' returned ${err.status} (${
-            err.message?.includes('TPD') ? 'Daily token limit' : 'Rate limit / Service busy'
+          `[Groq Resilient Failover] Model '${currentModel}' returned ${err.status} (${err.message?.includes('TPD') ? 'Daily token limit' : 'Rate limit / Service busy'
           }). Seamlessly failing over to next model '${nextModel}'...`
         );
         if (isRateLimit) {
@@ -549,17 +588,53 @@ export async function enhancePrompt({
 
   const cleanedInput = cleanInput(prompt);
 
-  // Fast-path intent preservation for casual greetings & conversational pleasantries
-  const CASUAL_GREETING_REGEX = /^(hi|hello|hey|hey there|howdy|greetings|good morning|good afternoon|good evening|how are you|how are you doing|sup)[\s!.,?]*$/i;
-  if (!tweak && CASUAL_GREETING_REGEX.test(cleanedInput)) {
-    return {
-      enhancedPrompt: cleanedInput,
-      whyBetter: [
-        'Preserved conversational intent and natural greeting tone without unnecessary formalization',
-        'Maintained user tone and simplicity'
-      ],
-      engineUsed: 'direct-preservation',
-    };
+  // Intent-aware preservation fast-paths (greetings, self-knowledge, in-group)
+  const classification = classifyPromptIntent(cleanedInput);
+  if (!tweak) {
+    if (classification.category === INTENT_TYPES.GREETING_OR_SIMPLE) {
+      return {
+        enhancedPrompt: formatGreeting(cleanedInput),
+        whyBetter: [
+          'Preserved conversational greeting tone and simplicity',
+          'Formatted with standard capitalization and punctuation without bloat',
+        ],
+        engineUsed: 'direct-preservation',
+      };
+    }
+
+    if (classification.category === INTENT_TYPES.PERSONAL_CONTEXTUAL) {
+      if (classification.subtype === PERSONAL_SUBTYPES.SELF_KNOWLEDGE) {
+        return {
+          enhancedPrompt: formatSelfPrompt(cleanedInput),
+          whyBetter: [
+            'Preserved self-referential inquiry without inventing background requirements',
+            'Ensured prompt is improved rather than answered',
+          ],
+          engineUsed: 'intent-preservation',
+        };
+      }
+      if (classification.subtype === PERSONAL_SUBTYPES.IN_GROUP_CONTEXT) {
+        return {
+          enhancedPrompt: formatInGroupQuestion(cleanedInput),
+          whyBetter: [
+            'Preserved collective inquiry context ("our current Prime Minister")',
+            'Polished grammar and structure without answering the question',
+          ],
+          engineUsed: 'intent-preservation',
+        };
+      }
+    }
+
+    if (classification.category === INTENT_TYPES.FACTUAL_QUESTION && classification.isSimpleFactual) {
+      return {
+        enhancedPrompt: formatSimpleQuestion(cleanedInput),
+        whyBetter: [
+          'Preserved factual inquiry format with standard punctuation',
+          'Ensured prompt is improved rather than answered',
+        ],
+        engineUsed: 'intent-preservation',
+      };
+    }
   }
 
   const comparisonInput = tweak && previousResult ? cleanInput(previousResult) : cleanedInput;

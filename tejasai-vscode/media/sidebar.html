@@ -15,33 +15,37 @@
       <span class="brand-title">TejasAI</span>
       <span class="brand-badge">Studio</span>
     </div>
-    <div title="TejasAI Live API Status">
+    <div class="header-right" title="TejasAI Live API Status">
       <span id="api-status-dot" class="status-dot"></span>
     </div>
   </header>
 
   <!-- Top Navigation Tabs -->
-  <nav class="vscode-tabs">
-    <button type="button" class="tab-btn active" data-tab="tab-enhance">Enhance</button>
-    <button type="button" class="tab-btn" data-tab="tab-templates">Templates</button>
-    <button type="button" class="tab-btn" data-tab="tab-favorites">Favorites (<span id="fav-count">0</span>)</button>
+  <nav class="vscode-tabs" role="tablist">
+    <button type="button" class="tab-btn active" data-tab="tab-enhance" role="tab" aria-selected="true">Enhance</button>
+    <button type="button" class="tab-btn" data-tab="tab-templates" role="tab" aria-selected="false">Templates</button>
+    <button type="button" class="tab-btn" data-tab="tab-favorites" role="tab" aria-selected="false">Saved (<span id="fav-count">0</span>)</button>
   </nav>
 
   <!-- TAB 1: Fast Enhance -->
-  <section id="tab-enhance" class="tab-panel active">
+  <section id="tab-enhance" class="tab-panel active" role="tabpanel">
     
     <!-- Input Box -->
     <div class="input-group">
       <div class="input-label-row">
-        <span>Draft Prompt / Task Goal</span>
-        <span id="char-counter">0/1500</span>
+        <label for="prompt-input" class="field-label">Draft Prompt</label>
+        <div class="input-meta-actions">
+          <button type="button" id="btn-clear-draft" class="btn-link" title="Clear Draft">Clear</button>
+          <span class="meta-dot">·</span>
+          <span id="char-counter">0/1500</span>
+        </div>
       </div>
-      <textarea id="prompt-input" class="vscode-textarea" rows="6" placeholder="Describe your coding task or paste code to improve..."></textarea>
+      <textarea id="prompt-input" class="vscode-textarea" rows="5" placeholder="Describe your coding task or paste code to improve..."></textarea>
     </div>
 
     <!-- Controls Row -->
     <div class="controls-row">
-      <select id="target-model-select" class="vscode-select" title="Target Model">
+      <select id="target-model-select" class="vscode-select" title="Target Model Engine">
         <option value="any">Any AI Model</option>
         <option value="chatgpt">ChatGPT / Copilot</option>
         <option value="claude">Claude</option>
@@ -49,32 +53,90 @@
       </select>
 
       <div class="tweak-chips">
-        <button type="button" class="chip-btn" data-tweak="shorter">Shorter</button>
-        <button type="button" class="chip-btn" data-tweak="simpler">Simpler</button>
-        <button type="button" class="chip-btn" data-tweak="moreDetail">More Detail</button>
+        <button type="button" class="chip-btn" data-tweak="shorter" title="Make prompt more concise">Shorter</button>
+        <button type="button" class="chip-btn" data-tweak="simpler" title="Simplify constraints">Simpler</button>
+        <button type="button" class="chip-btn" data-tweak="moreDetail" title="Expand architecture and tests">Detailed</button>
       </div>
     </div>
 
     <!-- Primary Enhance Action -->
-    <button type="button" id="enhance-btn" class="vscode-btn btn-primary">
-      <span>Enhance with TejasAI</span>
+    <button type="button" id="enhance-btn" class="vscode-btn btn-primary btn-enhance">
+      <span class="btn-icon-sparkle">✨</span>
+      <span id="enhance-btn-text">Enhance with TejasAI</span>
     </button>
 
-    <!-- Enhanced Result Card -->
-    <div class="output-card">
-      <div class="output-header">
-        <span>Enhanced Output</span>
-        <button type="button" id="btn-save-fav" class="btn-icon" title="Save to Favorites" style="display:none;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-          </svg>
-        </button>
+    <!-- Animated Loading Indicator -->
+    <div id="loading-bar" class="loading-bar" style="display:none;">
+      <div class="loading-progress"></div>
+    </div>
+
+    <!-- Error & Retry Banner -->
+    <div id="error-card" class="error-card" style="display:none;">
+      <div class="error-msg-row">
+        <span class="error-icon">⚠️</span>
+        <span id="error-message" class="error-text">Network error occurred.</span>
+      </div>
+      <button type="button" id="btn-retry-enhance" class="vscode-btn btn-secondary btn-sm">Retry</button>
+    </div>
+
+    <!-- Clarification Follow-up Card -->
+    <div id="clarify-card" class="clarify-card" style="display:none;">
+      <div class="clarify-header">
+        <span class="clarify-badge">Clarification</span>
+        <span id="clarify-count" class="clarify-count">Question 1 of 3</span>
+      </div>
+      <div id="clarify-question" class="clarify-question"></div>
+
+      <!-- Single-line options with auto-fit layout -->
+      <div id="clarify-options" class="clarify-options"></div>
+
+      <!-- Optional Custom Answer Input -->
+      <div id="clarify-other-wrap" class="clarify-other-wrap" style="display:none;">
+        <input type="text" id="clarify-other-input" class="vscode-input" placeholder="Type custom clarification answer..." />
       </div>
 
+      <!-- Action Buttons -->
+      <div class="clarify-actions">
+        <button type="button" id="btn-clarify-skip" class="vscode-btn btn-secondary btn-sm">Skip</button>
+        <button type="button" id="btn-clarify-submit" class="vscode-btn btn-primary btn-sm" disabled>Submit Answer</button>
+      </div>
+    </div>
+
+    <!-- Enhanced Result Card -->
+    <div id="output-card" class="output-card">
+      <div class="output-header">
+        <div class="output-title-group">
+          <span>Enhanced Output</span>
+          <span id="output-stats" class="output-stats" style="display:none;"></span>
+        </div>
+        <div class="output-actions-header">
+          <button type="button" id="btn-toggle-diff" class="btn-toggle" title="Toggle Before/After Comparison" style="display:none;">Diff</button>
+          <button type="button" id="btn-save-fav" class="btn-icon" title="Save to Favorites" style="display:none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Standard Output View -->
       <div id="enhanced-output" class="output-content empty">
         Click "Enhance with TejasAI" to generate a precision prompt.
       </div>
 
+      <!-- Before / After Diff Comparison View -->
+      <div id="diff-output-panel" class="diff-panel" style="display:none;">
+        <div class="diff-block original-block">
+          <div class="diff-label">Original Draft:</div>
+          <div id="diff-original-text" class="diff-text"></div>
+        </div>
+        <div class="diff-block enhanced-block">
+          <div class="diff-label">TejasAI Enhanced:</div>
+          <div id="diff-enhanced-text" class="diff-text"></div>
+        </div>
+      </div>
+
+      <!-- Why this prompt is better -->
       <div id="why-better-panel" class="why-better-panel" style="display:none;">
         <div class="why-better-title">Why this prompt is better:</div>
         <ul id="why-better-list" class="why-better-list"></ul>
@@ -84,16 +146,19 @@
     <!-- Actions Stack -->
     <div class="button-stack">
       <!-- Copilot Vibe Coding Integration -->
-      <button type="button" id="btn-send-copilot" class="vscode-btn btn-copilot" disabled>
+      <button type="button" id="btn-send-copilot" class="vscode-btn btn-copilot" disabled title="Send enhanced prompt to GitHub Copilot Chat">
         <span>Send to GitHub Copilot Chat ↗</span>
       </button>
 
       <div class="button-row">
-        <button type="button" id="btn-copy" class="vscode-btn btn-secondary" disabled>
-          <span>Copy</span>
+        <button type="button" id="btn-copy" class="vscode-btn btn-secondary" disabled title="Copy enhanced prompt to clipboard">
+          <span id="copy-text">Copy</span>
         </button>
-        <button type="button" id="btn-replace" class="vscode-btn btn-secondary" disabled>
-          <span>Replace in Editor</span>
+        <button type="button" id="btn-replace" class="vscode-btn btn-secondary" disabled title="Replace current selection in active editor">
+          <span>Replace</span>
+        </button>
+        <button type="button" id="btn-undo-replace" class="vscode-btn btn-secondary" disabled title="Undo last editor replacement">
+          <span>Undo</span>
         </button>
       </div>
     </div>
@@ -101,7 +166,7 @@
   </section>
 
   <!-- TAB 2: Developer Templates -->
-  <section id="tab-templates" class="tab-panel">
+  <section id="tab-templates" class="tab-panel" role="tabpanel">
     
     <div class="input-group">
       <label class="field-label" for="category-select">Workflow Category</label>
@@ -126,7 +191,10 @@
     </button>
 
     <div class="input-group">
-      <label class="field-label" for="template-output">Assembled Developer Prompt</label>
+      <div class="input-label-row">
+        <label class="field-label" for="template-output">Assembled Developer Prompt</label>
+        <button type="button" id="btn-template-to-draft" class="btn-link" title="Load into Enhance tab" style="display:none;">Load into Draft ➔</button>
+      </div>
       <textarea id="template-output" class="vscode-textarea" rows="6" readonly placeholder="Template prompt will appear here..."></textarea>
     </div>
 
@@ -142,10 +210,19 @@
   </section>
 
   <!-- TAB 3: Favorites & Reusable -->
-  <section id="tab-favorites" class="tab-panel">
+  <section id="tab-favorites" class="tab-panel" role="tabpanel">
     
     <div class="input-group">
-      <input type="text" id="fav-search" class="vscode-input" placeholder="Search saved prompts..." />
+      <input type="text" id="fav-search" class="vscode-input" placeholder="Search saved prompts by keyword..." />
+    </div>
+
+    <!-- Category Filter Chips -->
+    <div class="fav-filter-chips">
+      <button type="button" class="fav-filter-chip active" data-filter="all">All</button>
+      <button type="button" class="fav-filter-chip" data-filter="enhanced">Enhanced</button>
+      <button type="button" class="fav-filter-chip" data-filter="feature">Feature</button>
+      <button type="button" class="fav-filter-chip" data-filter="debug">Debug</button>
+      <button type="button" class="fav-filter-chip" data-filter="custom">Custom</button>
     </div>
 
     <div id="favorites-list" class="favorites-container"></div>

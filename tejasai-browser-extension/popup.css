@@ -508,7 +508,7 @@ input:checked + .slider:before {
 
 .builder-clarify-options {
   display: grid !important;
-  grid-template-columns: repeat(3, 1fr) !important;
+  grid-template-columns: repeat(2, 1fr) !important;
   gap: 5px !important;
   width: 100% !important;
 }

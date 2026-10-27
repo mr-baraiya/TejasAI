@@ -2,9 +2,14 @@
   "name": "tejasai-vscode",
   "displayName": "TejasAI – AI Prompt Enhancer & Copilot Vibe-Coder",
   "description": "Production-grade prompt enhancer, developer templates, and GitHub Copilot Chat vibe-coding integration powered by TejasAI.",
-  "version": "1.0.0",
+  "version": "1.0.5",
   "publisher": "tejasai",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mr-baraiya/TejasAI.git"
+  },
+  "homepage": "https://tejasai-eta.vercel.app",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -23,6 +28,13 @@
     "ai-assistant"
   ],
   "main": "./extension.js",
+  "scripts": {
+    "test": "node test/runTests.js",
+    "package": "npx @vscode/vsce package",
+    "publish:patch": "npx @vscode/vsce publish patch",
+    "publish:minor": "npx @vscode/vsce publish minor",
+    "publish:openvsx": "npx ovsx publish"
+  },
   "activationEvents": [
     "onStartupFinished"
   ],
@@ -49,7 +61,39 @@
       {
         "command": "tejasai.openSidebar",
         "title": "TejasAI: Open Prompt Studio",
-        "category": "TejasAI"
+        "category": "TejasAI",
+        "icon": "$(layout-sidebar-right)"
+      },
+      {
+        "command": "tejasai.undoReplace",
+        "title": "TejasAI: Undo Last Prompt Replacement",
+        "category": "TejasAI",
+        "icon": "$(discard)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "tejasai.enhanceSelectedPrompt",
+        "key": "ctrl+alt+e",
+        "mac": "cmd+alt+e",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "tejasai.enhanceAndReplaceSelection",
+        "key": "ctrl+alt+r",
+        "mac": "cmd+alt+r",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "tejasai.openSidebar",
+        "key": "ctrl+alt+t",
+        "mac": "cmd+alt+t"
+      },
+      {
+        "command": "tejasai.undoReplace",
+        "key": "ctrl+alt+z",
+        "mac": "cmd+alt+z",
+        "when": "tejasai:canUndoReplace"
       }
     ],
     "menus": {
@@ -68,6 +112,11 @@
           "command": "tejasai.sendToCopilot",
           "when": "editorHasSelection",
           "group": "TejasAI@3"
+        },
+        {
+          "command": "tejasai.undoReplace",
+          "when": "tejasai:canUndoReplace",
+          "group": "TejasAI@4"
         }
       ]
     },
@@ -76,7 +125,7 @@
         {
           "id": "tejasai-view-container",
           "title": "TejasAI Prompt Studio",
-          "icon": "media/icon.png"
+          "icon": "media/logo.png"
         }
       ]
     },

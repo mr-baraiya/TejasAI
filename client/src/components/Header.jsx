@@ -22,7 +22,7 @@ export function Header({ onNewPrompt, hasActivePrompt = false, onOpenFavorites, 
     { type: 'link', label: 'Examples', href: '#examples' },
     { type: 'link', label: 'How it works', href: '#how-it-works' },
     { type: 'favorites', label: 'Favorites' },
-    { type: 'link', label: 'Extension', href: '#extension' },
+    { type: 'link', label: 'Extensions', href: '#extension' },
     { type: 'link', label: 'FAQ', href: '#faq' },
     { type: 'link', label: 'Sponsor', href: '#sponsor' },
   ];

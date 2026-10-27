@@ -30,6 +30,10 @@ function registerCopilotParticipant(context) {
       return;
     }
 
+    if (token && token.isCancellationRequested) {
+      return;
+    }
+
     stream.progress('Enhancing prompt with live TejasAI AI...');
 
     switch (command) {
@@ -61,6 +65,7 @@ function registerCopilotParticipant(context) {
         }
 
         const result = await enhancePrompt({ prompt: structuredPrompt, targetAI: 'chatgpt' });
+        if (token && token.isCancellationRequested) return;
         renderChatResult(stream, result, promptInput);
         break;
       }
@@ -68,6 +73,7 @@ function registerCopilotParticipant(context) {
       case 'enhance':
       default: {
         const result = await enhancePrompt({ prompt: promptInput, targetAI: 'chatgpt' });
+        if (token && token.isCancellationRequested) return;
         renderChatResult(stream, result, promptInput);
         break;
       }
@@ -96,11 +102,17 @@ function renderChatResult(stream, result, originalPrompt) {
     stream.markdown('\n');
   }
 
-  stream.button({
-    command: 'tejasai.sendToCopilot',
-    title: '🚀 Launch in Copilot Agent',
-    arguments: [result.enhancedPrompt],
-  });
+  if (typeof stream.button === 'function') {
+    try {
+      stream.button({
+        command: 'tejasai.sendToCopilot',
+        title: '🚀 Launch in Copilot Agent',
+        arguments: [result.enhancedPrompt],
+      });
+    } catch {
+      // Safe fallback if stream.button is not supported in host environment
+    }
+  }
 }
 
 function escapeMarkdown(text) {

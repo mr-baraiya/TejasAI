@@ -1,0 +1,122 @@
+{
+  "name": "tejasai-vscode",
+  "displayName": "TejasAI – AI Prompt Enhancer & Copilot Vibe-Coder",
+  "description": "Production-grade prompt enhancer, developer templates, and GitHub Copilot Chat vibe-coding integration powered by TejasAI.",
+  "version": "1.0.0",
+  "publisher": "tejasai",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "AI",
+    "Programming Languages",
+    "Productivity"
+  ],
+  "icon": "media/logo.png",
+  "keywords": [
+    "prompt-enhancer",
+    "copilot",
+    "github-copilot",
+    "vibe-coding",
+    "tejasai",
+    "ai-assistant"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "tejasai.enhanceSelectedPrompt",
+        "title": "TejasAI: Enhance Selected Prompt",
+        "category": "TejasAI",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "tejasai.enhanceAndReplaceSelection",
+        "title": "TejasAI: Enhance & Replace Selection in Editor",
+        "category": "TejasAI",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "tejasai.sendToCopilot",
+        "title": "TejasAI: Enhance & Send to GitHub Copilot Chat",
+        "category": "TejasAI",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "tejasai.openSidebar",
+        "title": "TejasAI: Open Prompt Studio",
+        "category": "TejasAI"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "tejasai.enhanceSelectedPrompt",
+          "when": "editorHasSelection",
+          "group": "TejasAI@1"
+        },
+        {
+          "command": "tejasai.enhanceAndReplaceSelection",
+          "when": "editorHasSelection",
+          "group": "TejasAI@2"
+        },
+        {
+          "command": "tejasai.sendToCopilot",
+          "when": "editorHasSelection",
+          "group": "TejasAI@3"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "tejasai-view-container",
+          "title": "TejasAI Prompt Studio",
+          "icon": "media/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "tejasai-view-container": [
+        {
+          "type": "webview",
+          "id": "tejasai.sidebarView",
+          "name": "Prompt Studio"
+        }
+      ]
+    },
+    "chatParticipants": [
+      {
+        "id": "tejasai",
+        "name": "tejasai",
+        "description": "Enhance rough vibe-coding prompts into production-grade instructions for GitHub Copilot Chat.",
+        "commands": [
+          {
+            "name": "enhance",
+            "description": "Enhance any prompt using live TejasAI inference"
+          },
+          {
+            "name": "feature",
+            "description": "Structure a feature development prompt"
+          },
+          {
+            "name": "debug",
+            "description": "Structure a debugging and root-cause analysis prompt"
+          },
+          {
+            "name": "refactor",
+            "description": "Structure a code refactoring and clean architecture prompt"
+          },
+          {
+            "name": "test",
+            "description": "Structure a unit and integration test generation prompt"
+          }
+        ]
+      }
+    ]
+  }
+}

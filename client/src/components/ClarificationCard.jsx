@@ -136,18 +136,18 @@ export function ClarificationCard({
         {/* Number Type */}
         {isNumberType && (
           <div className="space-y-3">
-            <div className="flex flex-wrap gap-2">
-              {(question.options || ['1', '3', '5', '10']).map((num) => (
+            <div className="grid grid-cols-3 gap-2 max-w-sm">
+              {(question.options || ['1', '3', '5']).slice(0, 3).map((num) => (
                 <button
                   key={num}
                   type="button"
                   onClick={() => {
-                    setSelectedOption(num);
+                    setSelectedOption(String(num));
                     setNumberValue('');
                   }}
-                  className={`py-2 px-4 rounded-lg text-xs sm:text-sm font-medium border transition-all cursor-pointer ${
-                    selectedOption === num && !numberValue
-                      ? 'border-[#C2410C] bg-[#FFFBF5] text-[#C2410C] ring-1 ring-[#C2410C]'
+                  className={`py-2 px-3 text-center rounded-lg text-xs sm:text-sm font-medium border transition-all cursor-pointer truncate ${
+                    selectedOption === String(num) && !numberValue
+                      ? 'border-[#C2410C] bg-[#FFFBF5] text-[#C2410C] ring-1 ring-[#C2410C] font-semibold'
                       : 'border-[#EDE8E1] bg-[#FFFFFF] text-[#374151] hover:border-[#9CA3AF]'
                   }`}
                 >
@@ -173,79 +173,48 @@ export function ClarificationCard({
           </div>
         )}
 
-        {/* Multiple Choice Type */}
-        {!isYesNoType && !isNumberType && (
-          <div className="space-y-2">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {(question.options || []).map((opt) => (
-                <button
-                  key={opt}
-                  type="button"
-                  onClick={() => setSelectedOption(opt)}
-                  className={`p-3 text-left rounded-lg text-xs sm:text-sm border transition-all cursor-pointer flex items-center justify-between ${
-                    selectedOption === opt
-                      ? 'border-[#C2410C] bg-[#FFFBF5] text-[#111827] ring-1 ring-[#C2410C] shadow-xs'
-                      : 'border-[#EDE8E1] bg-[#FFFFFF] text-[#374151] hover:border-[#9CA3AF] hover:text-[#111827]'
-                  }`}
-                >
-                  <span className="font-medium">{opt}</span>
-                  <div
-                    className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ml-2 ${
-                      selectedOption === opt
-                        ? 'border-[#C2410C] bg-[#C2410C]'
-                        : 'border-[#D1D5DB]'
-                    }`}
-                  >
-                    {selectedOption === opt && (
-                      <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                    )}
-                  </div>
-                </button>
-              ))}
+        {/* Multiple Choice Type (At most 3 options in one single line) */}
+        {!isYesNoType && !isNumberType && (() => {
+          const opts = (question.options || []).slice(0, 3);
+          const gridColsClass = opts.length === 2 ? 'grid-cols-2' : opts.length === 1 ? 'grid-cols-1' : 'grid-cols-3';
 
-              {/* Optional "Other" Choice if not already in options */}
-              {question.hasOther !== false && !(question.options || []).includes('Other') && (
-                <button
-                  type="button"
-                  onClick={() => setSelectedOption('Other')}
-                  className={`p-3 text-left rounded-lg text-xs sm:text-sm border transition-all cursor-pointer flex items-center justify-between ${
-                    isOtherSelected
-                      ? 'border-[#C2410C] bg-[#FFFBF5] text-[#111827] ring-1 ring-[#C2410C] shadow-xs'
-                      : 'border-[#EDE8E1] bg-[#FFFFFF] text-[#374151] hover:border-[#9CA3AF] hover:text-[#111827]'
-                  }`}
-                >
-                  <span className="font-medium">Other / Custom</span>
-                  <div
-                    className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ml-2 ${
-                      isOtherSelected
-                        ? 'border-[#C2410C] bg-[#C2410C]'
-                        : 'border-[#D1D5DB]'
+          return (
+            <div className="space-y-2">
+              <div className={`grid ${gridColsClass} gap-2 w-full`}>
+                {opts.map((opt) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => setSelectedOption(opt)}
+                    title={opt}
+                    className={`py-2.5 px-2 text-center rounded-lg text-xs sm:text-sm font-medium border transition-all cursor-pointer truncate ${
+                      selectedOption === opt
+                        ? 'border-[#C2410C] bg-[#FFFBF5] text-[#C2410C] ring-1 ring-[#C2410C] shadow-xs font-semibold'
+                        : 'border-[#EDE8E1] bg-[#FFFFFF] text-[#374151] hover:border-[#9CA3AF] hover:text-[#111827]'
                     }`}
                   >
-                    {isOtherSelected && (
-                      <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                    )}
-                  </div>
-                </button>
+                    <span className="truncate block">{opt}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Custom Other Text Box if Other was selected */}
+              {isOtherSelected && (
+                <div className="pt-2 animate-fadeIn">
+                  <input
+                    type="text"
+                    maxLength={120}
+                    autoFocus
+                    placeholder="Type your specific requirement..."
+                    value={customOtherText}
+                    onChange={(e) => setCustomOtherText(e.target.value)}
+                    className="w-full px-3.5 py-2 text-xs sm:text-sm border border-[#C2410C] rounded-lg bg-[#FFFFFF] text-[#111827] focus:outline-none ring-1 ring-[#C2410C]/30"
+                  />
+                </div>
               )}
             </div>
-
-            {/* Custom Other Text Box */}
-            {isOtherSelected && (
-              <div className="pt-2 animate-fadeIn">
-                <input
-                  type="text"
-                  maxLength={120}
-                  autoFocus
-                  placeholder="Type your specific requirement (e.g. Pet shelter portfolio)..."
-                  value={customOtherText}
-                  onChange={(e) => setCustomOtherText(e.target.value)}
-                  className="w-full px-3.5 py-2 text-xs sm:text-sm border border-[#C2410C] rounded-lg bg-[#FFFFFF] text-[#111827] focus:outline-none ring-1 ring-[#C2410C]/30"
-                />
-              </div>
-            )}
-          </div>
-        )}
+          );
+        })()}
 
         {/* Action Controls */}
         <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#EDE8E1]/80">

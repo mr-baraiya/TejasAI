@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "tejasai": {
+      "command": "node",
+      "args": ["${workspaceFolder}/tejasai-antigravity/tejasai-mcp-server.js"]
+    }
+  }
+}

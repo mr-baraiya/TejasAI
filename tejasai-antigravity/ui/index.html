@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TejasAI for Antigravity – Developer Prompt Studio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="ag-dark-theme">
+  <div class="ag-container">
+    
+    <!-- Top Header -->
+    <header class="ag-header">
+      <div class="ag-brand">
+        <img src="logo.png" alt="TejasAI Logo" class="ag-logo-img" />
+        <div>
+          <h1 class="ag-title">TejasAI <span class="ag-sub">Antigravity Edition</span></h1>
+          <p class="ag-tagline">AI Prompt Engineering & Vibe-Coding Studio</p>
+        </div>
+      </div>
+
+      <div class="ag-header-actions">
+        <div id="connection-status" class="ag-status-pill checking">
+          <span class="status-indicator"></span>
+          <span id="status-label">Connecting to Live API...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="ag-tabs">
+      <button type="button" class="ag-tab-btn active" data-tab="tab-enhance">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+        <span>Enhance Prompt</span>
+      </button>
+
+      <button type="button" class="ag-tab-btn" data-tab="tab-templates">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="16 18 22 12 16 6"/>
+          <polyline points="8 6 2 12 8 18"/>
+        </svg>
+        <span>Developer Templates</span>
+      </button>
+
+      <button type="button" class="ag-tab-btn" data-tab="tab-favorites">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span>Favorites & Reusable</span>
+        <span id="fav-badge" class="ag-counter-badge">0</span>
+      </button>
+    </nav>
+
+    <!-- Main Content Workspace -->
+    <main class="ag-workspace">
+      
+      <!-- TAB 1: Fast Enhance -->
+      <section id="tab-enhance" class="ag-tab-panel active">
+        <div class="ag-split-grid">
+          
+          <!-- Left Column: Input Card -->
+          <div class="ag-card">
+            <div class="ag-card-header">
+              <span class="ag-card-label">Draft Prompt / Vibe Goal</span>
+              <span id="char-count" class="ag-meta-text">0 / 1500 chars</span>
+            </div>
+
+            <textarea 
+              id="raw-prompt-input" 
+              class="ag-textarea" 
+              placeholder="e.g. Build an auth middleware in Express that checks JWT tokens and rate-limits login attempts..."
+              rows="9"
+              maxlength="1500"
+            ></textarea>
+
+            <div class="ag-controls-row">
+              <div class="ag-select-wrapper">
+                <label for="target-model-select">Target Assistant:</label>
+                <select id="target-model-select" class="ag-select">
+                  <option value="any">Any AI Model</option>
+                  <option value="claude">Claude (Anthropic)</option>
+                  <option value="chatgpt">ChatGPT / OpenAI</option>
+                  <option value="gemini">Google Gemini</option>
+                </select>
+              </div>
+
+              <div class="ag-tweak-buttons">
+                <button type="button" class="ag-btn-pill" data-tweak="shorter">Shorter</button>
+                <button type="button" class="ag-btn-pill" data-tweak="simpler">Simpler</button>
+                <button type="button" class="ag-btn-pill" data-tweak="moreDetail">More Detail</button>
+              </div>
+            </div>
+
+            <div class="ag-button-row">
+              <button type="button" id="enhance-btn" class="ag-btn ag-btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                <span>Enhance for Antigravity</span>
+              </button>
+              <button type="button" id="clear-input-btn" class="ag-btn ag-btn-secondary">Clear</button>
+            </div>
+          </div>
+
+          <!-- Right Column: Enhanced Output -->
+          <div class="ag-card ag-card-highlight">
+            <div class="ag-card-header">
+              <div class="ag-card-header-left">
+                <span class="ag-card-label ag-text-cyan">Enhanced Precision Prompt</span>
+                <span id="output-meta" class="ag-meta-text">Ready for agent execution</span>
+              </div>
+              <button type="button" id="fav-current-btn" class="ag-btn-icon" title="Save to Favorites" style="display:none;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                </svg>
+              </button>
+            </div>
+
+            <div id="enhanced-output-box" class="ag-output-box empty">
+              <p class="ag-placeholder-text">Enter your draft prompt and click "Enhance for Antigravity" to generate a production-ready specification with architecture, constraints, and testing steps.</p>
+            </div>
+
+            <div id="why-better-section" class="ag-why-better-panel" style="display:none;">
+              <h4 class="ag-why-title">Why this improves agent results:</h4>
+              <ul id="why-better-list" class="ag-why-list"></ul>
+            </div>
+
+            <div class="ag-output-actions">
+              <button type="button" id="copy-enhanced-btn" class="ag-btn ag-btn-primary" disabled>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                <span>Copy to Clipboard</span>
+              </button>
+              <button type="button" id="copy-as-agent-instruction-btn" class="ag-btn ag-btn-secondary" disabled>
+                <span>Copy for Vibe-Coding Prompt</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- TAB 2: Developer Templates -->
+      <section id="tab-templates" class="ag-tab-panel">
+        <div class="ag-split-grid">
+          
+          <!-- Template Selector & Form -->
+          <div class="ag-card">
+            <div class="ag-card-header">
+              <span class="ag-card-label">Developer Workflow</span>
+            </div>
+
+            <div class="ag-category-chips" id="template-category-chips">
+              <button type="button" class="ag-chip active" data-cat="feature">Feature Development</button>
+              <button type="button" class="ag-chip" data-cat="debug">Debugging & Fixes</button>
+              <button type="button" class="ag-chip" data-cat="codegen">Code Generation</button>
+              <button type="button" class="ag-chip" data-cat="refactor">Refactoring</button>
+              <button type="button" class="ag-chip" data-cat="testing">Testing & QA</button>
+            </div>
+
+            <div class="ag-template-dropdown-row">
+              <label for="template-select">Specific Template:</label>
+              <select id="template-select" class="ag-select"></select>
+            </div>
+
+            <div id="template-fields-container" class="ag-form-fields"></div>
+
+            <div class="ag-button-row">
+              <button type="button" id="template-assemble-btn" class="ag-btn ag-btn-primary">
+                Assemble &amp; Enhance Prompt
+              </button>
+            </div>
+          </div>
+
+          <!-- Template Output Canvas -->
+          <div class="ag-card">
+            <div class="ag-card-header">
+              <span class="ag-card-label">Generated Developer Prompt</span>
+              <button type="button" id="copy-template-output-btn" class="ag-btn ag-btn-secondary ag-btn-sm" disabled>
+                Copy Prompt
+              </button>
+            </div>
+
+            <textarea id="template-output-area" class="ag-textarea font-mono" rows="14" placeholder="Your structured developer prompt will generate and enhance here..." readonly></textarea>
+
+            <div class="ag-output-actions">
+              <button type="button" id="send-to-enhancer-btn" class="ag-btn ag-btn-secondary">
+                Send to Main Enhancer ↗
+              </button>
+              <button type="button" id="save-template-fav-btn" class="ag-btn ag-btn-secondary">
+                Save as Favorite
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- TAB 3: Favorites & Reusable -->
+      <section id="tab-favorites" class="ag-tab-panel">
+        <div class="ag-card">
+          <div class="ag-card-header">
+            <div>
+              <span class="ag-card-label">Saved Favorite Prompts</span>
+              <p class="ag-meta-text">Reusable prompt templates for rapid vibe-coding iterations</p>
+            </div>
+
+            <div class="ag-search-row">
+              <input type="text" id="fav-search-input" class="ag-search-input" placeholder="Search saved prompts..." />
+            </div>
+          </div>
+
+          <div id="favorites-list-container" class="ag-fav-list"></div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Global Floating Toast Notification -->
+    <div id="ag-toast" class="ag-toast" style="display:none;"></div>
+
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

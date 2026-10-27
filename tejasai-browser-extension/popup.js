@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (type === 'yes_no') {
-      ['Yes', 'No'].forEach((opt) => {
+      ['Yes', 'No'].slice(0, 3).forEach((opt) => {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'builder-clarify-opt-btn';
@@ -395,7 +395,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         optionsContainer.appendChild(btn);
       });
     } else if (type === 'number') {
-      const numOptions = options && options.length > 0 ? options : [1, 2, 3, 5, 10];
+      const numOptions = (options && options.length > 0 ? options : [1, 3, 5]).slice(0, 3);
       numOptions.forEach((opt) => {
         const btn = document.createElement('button');
         btn.type = 'button';
@@ -405,12 +405,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         optionsContainer.appendChild(btn);
       });
     } else {
-      // multiple_choice
-      (options || []).forEach((opt) => {
+      // multiple_choice (at most 3 options only)
+      const choiceOptions = (options || ['Option 1', 'Option 2', 'Option 3']).slice(0, 3);
+      choiceOptions.forEach((opt) => {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'builder-clarify-opt-btn';
         btn.textContent = opt;
+        btn.title = opt;
         btn.addEventListener('click', () => selectOption(opt, btn));
         optionsContainer.appendChild(btn);
       });

@@ -507,15 +507,16 @@ input:checked + .slider:before {
 }
 
 .builder-clarify-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 5px !important;
+  width: 100% !important;
 }
 
 .builder-clarify-opt-btn {
   font-size: 11px;
   font-weight: 500;
-  padding: 5px 9px;
+  padding: 5px 6px;
   background: #FFFFFF;
   border: 1px solid #E5E7EB;
   border-radius: 6px;
@@ -523,6 +524,12 @@ input:checked + .slider:before {
   cursor: pointer;
   transition: all 0.15s ease;
   user-select: none;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .builder-clarify-opt-btn:hover {

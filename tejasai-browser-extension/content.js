@@ -391,12 +391,13 @@
     const history = data.clarificationHistory || [];
     const questionText = q.question || q.text || 'Could you specify the primary purpose?';
 
-    let optionsList = Array.isArray(q.options) && q.options.length > 0 ? q.options : [];
+    let optionsList = Array.isArray(q.options) && q.options.length > 0 ? q.options.slice(0, 3) : [];
     if (optionsList.length === 0) {
       if (q.type === 'yes_no') optionsList = ['Yes', 'No'];
-      else if (q.type === 'number') optionsList = ['1', '2', '3', '5'];
-      else optionsList = ['Option 1', 'Option 2'];
+      else if (q.type === 'number') optionsList = ['1', '3', '5'];
+      else optionsList = ['Option 1', 'Option 2', 'Option 3'];
     }
+    optionsList = optionsList.slice(0, 3);
 
     const optionsHtml = optionsList.map((opt) => `
       <button type="button" class="tejasai-clarify-btn" data-answer="${escapeHtml(String(opt))}">

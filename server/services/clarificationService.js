@@ -68,9 +68,9 @@ If INCOMPLETE:
 QUESTION DESIGN RULES:
 - Only ask for the single most essential missing detail.
 - Questions must use structured answers:
-  * "multiple_choice": 2 to 5 concise, relevant options. Provide an optional "Other" choice (hasOther: true).
+  * "multiple_choice": 2 to 3 concise, relevant options (MAXIMUM 3 options only). Provide an optional "Other" choice (hasOther: true).
   * "yes_no": Binary confirmation (options: ["Yes", "No"], hasOther: false).
-  * "number": When selecting a quantity, such as number of pages or options (options: ["1", "3", "5", "10"], hasOther: true).
+  * "number": When selecting a quantity, such as number of pages or options (options: ["1", "3", "5"], MAXIMUM 3 options only).
 - NO open-ended text questions.
 `;
 
@@ -219,8 +219,8 @@ export async function analyzePromptCompleteness({ prompt, targetAI = 'any' }) {
   // Incomplete prompt -> structured question 1
   const q = parsed.question || {};
   const options = Array.isArray(q.options) && q.options.length >= 2
-    ? q.options.map((o) => String(o).trim())
-    : ['Option 1', 'Option 2', 'Other'];
+    ? q.options.map((o) => String(o).trim()).slice(0, 3)
+    : ['Option 1', 'Option 2', 'Option 3'];
 
   const type = ['multiple_choice', 'yes_no', 'number'].includes(q.type) ? q.type : 'multiple_choice';
 
@@ -338,7 +338,7 @@ export async function processClarificationStep({
   const nextIdx = updatedHistory.length + 1;
   const q = parsed.question || {};
   const options = Array.isArray(q.options) && q.options.length >= 2
-    ? q.options.map((o) => String(o).trim())
+    ? q.options.map((o) => String(o).trim()).slice(0, 3)
     : ['Yes', 'No'];
   const type = ['multiple_choice', 'yes_no', 'number'].includes(q.type) ? q.type : 'multiple_choice';
 

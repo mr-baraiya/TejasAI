@@ -1,0 +1,26 @@
+{
+  "name": "tejasai-antigravity",
+  "version": "1.0.0",
+  "description": "TejasAI Integration for Google Antigravity — Prompt Enhancement, Developer Templates, MCP Server, and Vibe-Coding Agent Workflows",
+  "type": "module",
+  "main": "tejasai-mcp-server.js",
+  "bin": {
+    "tejasai": "./cli/tejasai-cli.js"
+  },
+  "scripts": {
+    "start": "node cli/tejasai-cli.js --ui",
+    "mcp": "node tejasai-mcp-server.js",
+    "cli": "node cli/tejasai-cli.js",
+    "test:api": "node -e \"import('./services/api.js').then(m => m.checkHealth().then(console.log))\""
+  },
+  "keywords": [
+    "antigravity",
+    "mcp",
+    "prompt-enhancer",
+    "vibe-coding",
+    "tejasai",
+    "ai-coding-agent"
+  ],
+  "author": "TejasAI",
+  "license": "MIT"
+}

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TejasAI Prompt Studio</title>
+  <link rel="stylesheet" href="{{stylesUri}}">
+</head>
+<body>
+  
+  <!-- Header with Brand & Health Status -->
+  <header class="vscode-header">
+    <div class="brand-row">
+      <img src="{{logoUri}}" alt="TejasAI" class="brand-logo" width="20" height="20" />
+      <span class="brand-title">TejasAI</span>
+      <span class="brand-badge">Studio</span>
+    </div>
+    <div title="TejasAI Live API Status">
+      <span id="api-status-dot" class="status-dot"></span>
+    </div>
+  </header>
+
+  <!-- Top Navigation Tabs -->
+  <nav class="vscode-tabs">
+    <button type="button" class="tab-btn active" data-tab="tab-enhance">Enhance</button>
+    <button type="button" class="tab-btn" data-tab="tab-templates">Templates</button>
+    <button type="button" class="tab-btn" data-tab="tab-favorites">Favorites (<span id="fav-count">0</span>)</button>
+  </nav>
+
+  <!-- TAB 1: Fast Enhance -->
+  <section id="tab-enhance" class="tab-panel active">
+    
+    <!-- Input Box -->
+    <div class="input-group">
+      <div class="input-label-row">
+        <span>Draft Prompt / Task Goal</span>
+        <span id="char-counter">0/1500</span>
+      </div>
+      <textarea id="prompt-input" class="vscode-textarea" rows="6" placeholder="Describe your coding task or paste code to improve..."></textarea>
+    </div>
+
+    <!-- Controls Row -->
+    <div class="controls-row">
+      <select id="target-model-select" class="vscode-select" title="Target Model">
+        <option value="any">Any AI Model</option>
+        <option value="chatgpt">ChatGPT / Copilot</option>
+        <option value="claude">Claude</option>
+        <option value="gemini">Gemini</option>
+      </select>
+
+      <div class="tweak-chips">
+        <button type="button" class="chip-btn" data-tweak="shorter">Shorter</button>
+        <button type="button" class="chip-btn" data-tweak="simpler">Simpler</button>
+        <button type="button" class="chip-btn" data-tweak="moreDetail">More Detail</button>
+      </div>
+    </div>
+
+    <!-- Primary Enhance Action -->
+    <button type="button" id="enhance-btn" class="vscode-btn btn-primary">
+      <span>Enhance with TejasAI</span>
+    </button>
+
+    <!-- Enhanced Result Card -->
+    <div class="output-card">
+      <div class="output-header">
+        <span>Enhanced Output</span>
+        <button type="button" id="btn-save-fav" class="btn-icon" title="Save to Favorites" style="display:none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+          </svg>
+        </button>
+      </div>
+
+      <div id="enhanced-output" class="output-content empty">
+        Click "Enhance with TejasAI" to generate a precision prompt.
+      </div>
+
+      <div id="why-better-panel" class="why-better-panel" style="display:none;">
+        <div class="why-better-title">Why this prompt is better:</div>
+        <ul id="why-better-list" class="why-better-list"></ul>
+      </div>
+    </div>
+
+    <!-- Actions Stack -->
+    <div class="button-stack">
+      <!-- Copilot Vibe Coding Integration -->
+      <button type="button" id="btn-send-copilot" class="vscode-btn btn-copilot" disabled>
+        <span>Send to GitHub Copilot Chat ↗</span>
+      </button>
+
+      <div class="button-row">
+        <button type="button" id="btn-copy" class="vscode-btn btn-secondary" disabled>
+          <span>Copy</span>
+        </button>
+        <button type="button" id="btn-replace" class="vscode-btn btn-secondary" disabled>
+          <span>Replace in Editor</span>
+        </button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- TAB 2: Developer Templates -->
+  <section id="tab-templates" class="tab-panel">
+    
+    <div class="input-group">
+      <label class="field-label" for="category-select">Workflow Category</label>
+      <select id="category-select" class="vscode-select">
+        <option value="feature">Feature Development</option>
+        <option value="debug">Debugging &amp; Fixes</option>
+        <option value="codegen">Code Generation</option>
+        <option value="refactor">Refactoring</option>
+        <option value="testing">Testing &amp; QA</option>
+      </select>
+    </div>
+
+    <div class="input-group">
+      <label class="field-label" for="template-select">Template Preset</label>
+      <select id="template-select" class="vscode-select"></select>
+    </div>
+
+    <div id="template-fields" class="template-form"></div>
+
+    <button type="button" id="btn-build-template" class="vscode-btn btn-primary">
+      <span>Generate &amp; Enhance Template</span>
+    </button>
+
+    <div class="input-group">
+      <label class="field-label" for="template-output">Assembled Developer Prompt</label>
+      <textarea id="template-output" class="vscode-textarea" rows="6" readonly placeholder="Template prompt will appear here..."></textarea>
+    </div>
+
+    <div class="button-row">
+      <button type="button" id="btn-template-to-copilot" class="vscode-btn btn-copilot" disabled>
+        <span>Send to Copilot</span>
+      </button>
+      <button type="button" id="btn-template-copy" class="vscode-btn btn-secondary" disabled>
+        <span>Copy</span>
+      </button>
+    </div>
+
+  </section>
+
+  <!-- TAB 3: Favorites & Reusable -->
+  <section id="tab-favorites" class="tab-panel">
+    
+    <div class="input-group">
+      <input type="text" id="fav-search" class="vscode-input" placeholder="Search saved prompts..." />
+    </div>
+
+    <div id="favorites-list" class="favorites-container"></div>
+
+  </section>
+
+  <script src="{{scriptUri}}"></script>
+</body>
+</html>

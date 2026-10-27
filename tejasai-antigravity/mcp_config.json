@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "tejasai": {
+      "command": "node",
+      "args": ["${workspaceFolder}/tejasai-antigravity/tejasai-mcp-server.js"],
+      "description": "Live TejasAI prompt enhancement and developer templates for Antigravity coding agents"
+    }
+  }
+}

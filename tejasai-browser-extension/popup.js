@@ -9,7 +9,7 @@
  */
 
 import { EXTENSION_TEMPLATES } from './promptTemplates.js';
-import { enhancePromptApi, DEFAULT_API_BASE_URL } from './api.js';
+import { enhancePromptApi, analyzePromptApi, clarifyPromptApi, DEFAULT_API_BASE_URL } from './api.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // DOM Elements - Tabs
@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const builderOutputPrompt = document.getElementById('builder-output-prompt');
   const builderStats = document.getElementById('builder-stats');
   const builderWhyBetter = document.getElementById('builder-why-better');
+  const builderClarifyCard = document.getElementById('builder-clarify-card');
   const builderEnhanceBtn = document.getElementById('builder-enhance-btn');
   const builderInsertBtn = document.getElementById('builder-insert-btn');
   const builderCopyBtn = document.getElementById('builder-copy-btn');
@@ -303,6 +304,186 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // ---------------------------------------------------------------------------
+  // Builder Clarification System (0–3 Questions Flow)
+  // ---------------------------------------------------------------------------
+  let builderClarificationSession = null;
+
+  function renderBuilderClarification() {
+    if (!builderClarifyCard) return;
+
+    if (!builderClarificationSession || !builderClarificationSession.currentQuestion) {
+      builderClarifyCard.style.display = 'none';
+      builderClarifyCard.innerHTML = '';
+      return;
+    }
+
+    const { currentQuestion, questionCount = 1, maxQuestions = 3, isSubmitting = false } = builderClarificationSession;
+    const questionText = currentQuestion.text || currentQuestion.question || '';
+    const type = currentQuestion.type || 'multiple_choice';
+    const options = Array.isArray(currentQuestion.options) ? currentQuestion.options : [];
+    const allowsOther = Boolean(currentQuestion.hasOther || currentQuestion.allowsOther);
+
+    builderClarifyCard.style.display = 'flex';
+    builderClarifyCard.innerHTML = `
+      <div class="builder-clarify-header">
+        <span class="builder-clarify-badge">Question ${questionCount} of ${maxQuestions}</span>
+        <button type="button" class="builder-clarify-skip-btn" id="builder-clarify-close-btn" title="Cancel">✕</button>
+      </div>
+      <div class="builder-clarify-question">${escapeHtml(questionText)}</div>
+      <div class="builder-clarify-options" id="builder-clarify-options-container"></div>
+      <div id="builder-clarify-other-wrapper" style="display:none;">
+        <input type="text" class="builder-clarify-other-input" id="builder-clarify-other-input" placeholder="Briefly specify (optional)..." maxlength="120" />
+      </div>
+      <div class="builder-clarify-footer">
+        <button type="button" class="builder-clarify-skip-btn" id="builder-clarify-skip-btn">Skip remaining & enhance now</button>
+        <button type="button" class="builder-clarify-submit-btn" id="builder-clarify-submit-btn" disabled>
+          ${isSubmitting ? 'Enhancing...' : 'Continue'}
+        </button>
+      </div>
+    `;
+
+    const optionsContainer = builderClarifyCard.querySelector('#builder-clarify-options-container');
+    const otherWrapper = builderClarifyCard.querySelector('#builder-clarify-other-wrapper');
+    const otherInput = builderClarifyCard.querySelector('#builder-clarify-other-input');
+    const submitBtn = builderClarifyCard.querySelector('#builder-clarify-submit-btn');
+    const skipBtn = builderClarifyCard.querySelector('#builder-clarify-skip-btn');
+    const closeBtn = builderClarifyCard.querySelector('#builder-clarify-close-btn');
+
+    let selectedValue = null;
+
+    closeBtn?.addEventListener('click', () => {
+      builderClarificationSession = null;
+      renderBuilderClarification();
+    });
+
+    skipBtn?.addEventListener('click', async () => {
+      await submitBuilderClarification(null, true);
+    });
+
+    submitBtn?.addEventListener('click', async () => {
+      if (!selectedValue) return;
+      let finalVal = selectedValue;
+      if (selectedValue === 'Other' && otherInput && otherInput.value.trim()) {
+        finalVal = `Other: ${otherInput.value.trim()}`;
+      }
+      await submitBuilderClarification(finalVal, false);
+    });
+
+    function selectOption(val, btnEl) {
+      selectedValue = val;
+      optionsContainer.querySelectorAll('.builder-clarify-opt-btn').forEach((b) => b.classList.remove('active'));
+      btnEl.classList.add('active');
+
+      if (val === 'Other' || allowsOther) {
+        if (otherWrapper) otherWrapper.style.display = 'block';
+        otherInput?.focus();
+      } else {
+        if (otherWrapper) otherWrapper.style.display = 'none';
+      }
+
+      if (submitBtn) submitBtn.disabled = false;
+    }
+
+    if (type === 'yes_no') {
+      ['Yes', 'No'].forEach((opt) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'builder-clarify-opt-btn';
+        btn.textContent = opt;
+        btn.addEventListener('click', () => selectOption(opt, btn));
+        optionsContainer.appendChild(btn);
+      });
+    } else if (type === 'number') {
+      const numOptions = options && options.length > 0 ? options : [1, 2, 3, 5, 10];
+      numOptions.forEach((opt) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'builder-clarify-opt-btn';
+        btn.textContent = String(opt);
+        btn.addEventListener('click', () => selectOption(String(opt), btn));
+        optionsContainer.appendChild(btn);
+      });
+    } else {
+      // multiple_choice
+      (options || []).forEach((opt) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'builder-clarify-opt-btn';
+        btn.textContent = opt;
+        btn.addEventListener('click', () => selectOption(opt, btn));
+        optionsContainer.appendChild(btn);
+      });
+    }
+  }
+
+  async function submitBuilderClarification(answer, skip = false) {
+    if (!builderClarificationSession) return;
+    builderClarificationSession.isSubmitting = true;
+    renderBuilderClarification();
+
+    try {
+      const res = await clarifyPromptApi({
+        prompt: builderClarificationSession.originalPrompt,
+        targetAI: 'any',
+        clarificationHistory: builderClarificationSession.clarificationHistory,
+        currentQuestion: builderClarificationSession.currentQuestion,
+        answer: skip ? 'Skipped' : answer,
+        skip,
+      });
+
+      if (!res || !res.success) {
+        showToast(res?.error || 'Clarification failed. Please try again.');
+        builderClarificationSession.isSubmitting = false;
+        renderBuilderClarification();
+        return;
+      }
+
+      if (res.needsClarification && res.nextQuestion) {
+        builderClarificationSession = {
+          originalPrompt: builderClarificationSession.originalPrompt,
+          currentQuestion: res.nextQuestion,
+          clarificationHistory: res.clarificationHistory || [],
+          questionCount: res.questionCount || (builderClarificationSession.questionCount + 1),
+          maxQuestions: res.maxQuestions || 3,
+          isSubmitting: false,
+        };
+        renderBuilderClarification();
+      } else if (res.enhancedPrompt) {
+        builderClarificationSession = null;
+        renderBuilderClarification();
+
+        if (builderOutputPrompt) {
+          builderOutputPrompt.value = res.enhancedPrompt;
+          updatePromptStats(res.enhancedPrompt);
+        }
+
+        if (builderWhyBetter && res.whyBetter && res.whyBetter.length > 0) {
+          builderWhyBetter.innerHTML = `<strong>Why Better:</strong> ${res.whyBetter.join(' • ')}`;
+          builderWhyBetter.style.display = 'block';
+        }
+
+        showToast('Enhanced with TejasAI!');
+      }
+    } catch (err) {
+      showToast(err.message || 'Error processing clarification.');
+      if (builderClarificationSession) {
+        builderClarificationSession.isSubmitting = false;
+        renderBuilderClarification();
+      }
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   // Builder Action: Enhance with AI
   if (builderEnhanceBtn) {
     builderEnhanceBtn.addEventListener('click', async () => {
@@ -310,15 +491,34 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!text.trim()) return;
 
       builderEnhanceBtn.disabled = true;
-      builderEnhanceBtn.innerHTML = '<span>Enhancing...</span>';
+      builderEnhanceBtn.innerHTML = '<span>Analyzing...</span>';
 
       try {
-        const response = await enhancePromptApi({
+        const response = await analyzePromptApi({
           prompt: text.trim(),
           targetAI: 'any',
         });
 
-        if (response && response.success && response.enhancedPrompt) {
+        if (!response || !response.success) {
+          showToast(response?.error || 'Enhancement analysis failed.');
+          return;
+        }
+
+        if (response.needsClarification && response.question) {
+          builderClarificationSession = {
+            originalPrompt: text.trim(),
+            currentQuestion: response.question,
+            clarificationHistory: response.clarificationHistory || [],
+            questionCount: response.questionCount || 1,
+            maxQuestions: response.maxQuestions || 3,
+            isSubmitting: false,
+          };
+          renderBuilderClarification();
+          showToast('Please clarify a few details.');
+        } else if (response.enhancedPrompt) {
+          builderClarificationSession = null;
+          renderBuilderClarification();
+
           builderOutputPrompt.value = response.enhancedPrompt;
           updatePromptStats(response.enhancedPrompt);
 
@@ -327,8 +527,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             builderWhyBetter.style.display = 'block';
           }
           showToast('Enhanced with TejasAI!');
-        } else {
-          showToast(response?.error || 'Enhancement failed.');
         }
       } catch (err) {
         showToast(err.message || 'Error calling AI service.');

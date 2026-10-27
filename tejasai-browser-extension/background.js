@@ -7,7 +7,13 @@
  * 3. Never logs or retains user prompt contents.
  */
 
-import { enhancePromptApi, checkServerHealth, DEFAULT_API_BASE_URL } from './api.js';
+import {
+  enhancePromptApi,
+  analyzePromptApi,
+  clarifyPromptApi,
+  checkServerHealth,
+  DEFAULT_API_BASE_URL,
+} from './api.js';
 
 export const DEFAULT_SETTINGS = {
   enabled: true,
@@ -58,6 +64,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         });
       });
     return true; // Keep message port open for async response
+  }
+
+  if (message.action === 'ANALYZE_PROMPT') {
+    handleAnalyzeRequest(message.payload)
+      .then(sendResponse)
+      .catch((err) => sendResponse({ success: false, error: err.message || 'Analysis error.' }));
+    return true;
+  }
+
+  if (message.action === 'CLARIFY_PROMPT') {
+    handleClarifyRequest(message.payload)
+      .then(sendResponse)
+      .catch((err) => sendResponse({ success: false, error: err.message || 'Clarification error.' }));
+    return true;
   }
 
   if (message.action === 'CHECK_HEALTH') {
@@ -165,3 +185,34 @@ async function handleCheckHealth() {
   const settings = await getMergedSettings();
   return await checkServerHealth(settings.apiBaseUrl || DEFAULT_API_BASE_URL);
 }
+
+async function handleAnalyzeRequest(payload) {
+  const settings = await getMergedSettings();
+  if (!settings.enabled) {
+    return { success: false, error: 'TejasAI extension is currently disabled.' };
+  }
+
+  return await analyzePromptApi({
+    prompt: payload?.prompt || '',
+    targetAI: payload?.targetAI || 'any',
+    apiBaseUrl: settings.apiBaseUrl || DEFAULT_API_BASE_URL,
+  });
+}
+
+async function handleClarifyRequest(payload) {
+  const settings = await getMergedSettings();
+  if (!settings.enabled) {
+    return { success: false, error: 'TejasAI extension is currently disabled.' };
+  }
+
+  return await clarifyPromptApi({
+    prompt: payload?.prompt || '',
+    targetAI: payload?.targetAI || 'any',
+    clarificationHistory: payload?.clarificationHistory || [],
+    currentQuestion: payload?.currentQuestion || null,
+    answer: payload?.answer,
+    skip: Boolean(payload?.skip),
+    apiBaseUrl: settings.apiBaseUrl || DEFAULT_API_BASE_URL,
+  });
+}
+

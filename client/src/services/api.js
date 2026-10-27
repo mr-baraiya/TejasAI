@@ -74,6 +74,134 @@ export async function enhancePromptApi(
 }
 
 /**
+ * Analyzes prompt completeness before enhancing.
+ * Returns either immediate enhancedPrompt (if sufficient) or Question 1 (if incomplete).
+ *
+ * @param {Object} payload
+ * @param {string} payload.prompt
+ * @param {string} [payload.targetAI='any']
+ * @param {AbortSignal} [signal]
+ */
+export async function analyzePromptApi({ prompt, targetAI = 'any' }, signal) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/enhance/analyze`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt,
+        targetAI,
+      }),
+      signal,
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      const errorMessage = data?.error || `Server responded with status ${response.status}`;
+      const error = new Error(errorMessage);
+      error.status = response.status;
+      error.code = data?.code || null;
+      error.category = data?.category || null;
+      error.isPolicyViolation = response.status === 422;
+      error.isConfigError = response.status === 503;
+      throw error;
+    }
+
+    if (!data || !data.success) {
+      throw new Error(data?.error || 'Analysis failed: Invalid response from server.');
+    }
+
+    return data;
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      const cancelError = new Error('Enhancement request was cancelled.');
+      cancelError.isCancelled = true;
+      throw cancelError;
+    }
+    if (!err.status && err.message && err.message.includes('Failed to fetch')) {
+      const connError = new Error('Could not connect to TejasAI backend server.');
+      connError.isConnectionError = true;
+      throw connError;
+    }
+    throw err;
+  }
+}
+
+/**
+ * Submits an answer to a clarification question or requests to skip to immediate enhancement.
+ *
+ * @param {Object} payload
+ * @param {string} payload.prompt
+ * @param {string} [payload.targetAI='any']
+ * @param {Array} [payload.clarificationHistory=[]]
+ * @param {Object|string} [payload.currentQuestion]
+ * @param {string|Object} [payload.answer]
+ * @param {boolean} [payload.skip=false]
+ * @param {AbortSignal} [signal]
+ */
+export async function clarifyPromptApi(
+  {
+    prompt,
+    targetAI = 'any',
+    clarificationHistory = [],
+    currentQuestion = null,
+    answer,
+    skip = false,
+  },
+  signal
+) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/enhance/clarify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt,
+        targetAI,
+        clarificationHistory,
+        currentQuestion,
+        answer,
+        skip,
+      }),
+      signal,
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      const errorMessage = data?.error || `Server responded with status ${response.status}`;
+      const error = new Error(errorMessage);
+      error.status = response.status;
+      error.code = data?.code || null;
+      error.isPolicyViolation = response.status === 422;
+      error.isConfigError = response.status === 503;
+      throw error;
+    }
+
+    if (!data || !data.success) {
+      throw new Error(data?.error || 'Clarification failed: Invalid response from server.');
+    }
+
+    return data;
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      const cancelError = new Error('Clarification request was cancelled.');
+      cancelError.isCancelled = true;
+      throw cancelError;
+    }
+    if (!err.status && err.message && err.message.includes('Failed to fetch')) {
+      const connError = new Error('Could not connect to TejasAI backend server.');
+      connError.isConnectionError = true;
+      throw connError;
+    }
+    throw err;
+  }
+}
+
+/**
  * Checks the status and Groq readiness of the backend server.
  *
  * @returns {Promise<{ status: string, groqConfigured: boolean, groqModel: string }>}

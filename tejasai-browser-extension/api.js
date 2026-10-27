@@ -206,3 +206,134 @@ export async function checkServerHealth(apiBaseUrl = DEFAULT_API_BASE_URL) {
     return null;
   }
 }
+
+/**
+ * Analyzes prompt completeness before enhancing in the browser extension.
+ * Returns either immediate enhancedPrompt (if sufficient) or Question 1 (if incomplete).
+ *
+ * @param {Object} options
+ * @param {string} options.prompt
+ * @param {string} [options.targetAI='any']
+ * @param {string} [options.apiBaseUrl]
+ */
+export async function analyzePromptApi({
+  prompt,
+  targetAI = 'any',
+  apiBaseUrl = DEFAULT_API_BASE_URL,
+}) {
+  if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+    return {
+      success: false,
+      error: 'Please enter a prompt first.',
+      statusCode: 400,
+    };
+  }
+
+  const cleanedPrompt = prompt.trim();
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 25000);
+  const cleanBaseUrl = (apiBaseUrl || DEFAULT_API_BASE_URL).replace(/\/+$/, '');
+
+  try {
+    const response = await fetch(`${cleanBaseUrl}/enhance/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt: cleanedPrompt,
+        targetAI,
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: data?.error || `Server responded with status ${response.status}`,
+        statusCode: response.status,
+      };
+    }
+
+    return data || { success: false, error: 'Empty response received.' };
+  } catch (err) {
+    clearTimeout(timeoutId);
+    return {
+      success: false,
+      error: err.name === 'AbortError' ? 'Request timed out.' : (err.message || 'Network error.'),
+      statusCode: 500,
+    };
+  }
+}
+
+/**
+ * Submits clarification answer or requests skip in browser extension.
+ *
+ * @param {Object} options
+ * @param {string} options.prompt
+ * @param {string} [options.targetAI='any']
+ * @param {Array} [options.clarificationHistory=[]]
+ * @param {Object|string} [options.currentQuestion]
+ * @param {string|Object} [options.answer]
+ * @param {boolean} [options.skip=false]
+ * @param {string} [options.apiBaseUrl]
+ */
+export async function clarifyPromptApi({
+  prompt,
+  targetAI = 'any',
+  clarificationHistory = [],
+  currentQuestion = null,
+  answer,
+  skip = false,
+  apiBaseUrl = DEFAULT_API_BASE_URL,
+}) {
+  if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+    return {
+      success: false,
+      error: 'Original prompt is required.',
+      statusCode: 400,
+    };
+  }
+
+  const cleanedPrompt = prompt.trim();
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 25000);
+  const cleanBaseUrl = (apiBaseUrl || DEFAULT_API_BASE_URL).replace(/\/+$/, '');
+
+  try {
+    const response = await fetch(`${cleanBaseUrl}/enhance/clarify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt: cleanedPrompt,
+        targetAI,
+        clarificationHistory,
+        currentQuestion,
+        answer,
+        skip,
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: data?.error || `Server responded with status ${response.status}`,
+        statusCode: response.status,
+      };
+    }
+
+    return data || { success: false, error: 'Empty response received.' };
+  } catch (err) {
+    clearTimeout(timeoutId);
+    return {
+      success: false,
+      error: err.name === 'AbortError' ? 'Request timed out.' : (err.message || 'Network error.'),
+      statusCode: 500,
+    };
+  }
+}

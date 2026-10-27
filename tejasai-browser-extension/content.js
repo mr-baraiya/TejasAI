@@ -284,7 +284,7 @@
         try {
           chrome.runtime.sendMessage(
             {
-              action: 'ENHANCE_PROMPT',
+              action: 'ANALYZE_PROMPT',
               payload: {
                 prompt: promptText.trim(),
                 targetAI: adapter.targetAI || 'any',
@@ -311,7 +311,7 @@
         }
       });
 
-      if (!response || !response.success || !response.enhancedPrompt) {
+      if (!response || !response.success) {
         const errorMsg = response?.error || 'Enhancement failed. Please try again.';
         const retryHandler = response?.recoverable ? () => performEnhance() : null;
         const toastType = response?.isPolicyViolation ? 'warning' : 'error';
@@ -319,50 +319,196 @@
         return;
       }
 
-      lastEnhancedResult = response.enhancedPrompt;
-
-      // Ensure we have fresh settings from background in case toggle changed in popup
-      try {
-        const fresh = await new Promise((resolve) => {
-          chrome.runtime.sendMessage({ action: 'GET_SETTINGS' }, (res) => {
-            if (chrome.runtime.lastError || !res) resolve(null);
-            else resolve(res);
-          });
-        });
-        if (fresh) {
-          settings = { ...settings, ...fresh };
-        }
-      } catch {
-        // fallback to current in-memory settings
+      // If prompt is incomplete, display clarification panel
+      if (response.needsClarification && response.question) {
+        showClarificationPanel(response, inputEl, promptText.trim());
+        return;
       }
 
-      const isAutoReplace = settings.autoReplace === true || settings.autoReplace === 'true';
-
-      // Auto-Replace mode: If user enabled "Auto-Replace Input", directly replace text without asking permission
-      if (isAutoReplace) {
-        const elToUpdate = adapter.findInput() || ((inputEl && inputEl.isConnected) ? inputEl : null);
-        if (elToUpdate) {
-          adapter.setText(elToUpdate, response.enhancedPrompt);
-          syncSaveButtonState();
-          showToast('Prompt enhanced & replaced!', 'success', () => {
-            const undoEl = adapter.findInput() || ((elToUpdate && elToUpdate.isConnected) ? elToUpdate : null);
-            if (undoEl) {
-              adapter.setText(undoEl, originalPromptCache);
-              syncSaveButtonState();
-            }
-            showToast('Restored original prompt.', 'normal');
-          }, 'Undo');
-          return;
-        }
-      }
-
-      // Permission mode: Present floating preview card with explicit Replace & Copy actions
-      showPreviewPanel(response, inputEl);
+      // If prompt was sufficient, apply enhanced result directly
+      await applyEnhancedResult(response, inputEl);
     } catch (err) {
       if (typeof console !== 'undefined' && console.debug) {
         console.debug('[TejasAI] Enhancement error caught:', err);
       }
       showToast(err.message || 'An unexpected error occurred during enhancement.', 'error', () => performEnhance());
+    } finally {
+      setButtonLoading(false);
+    }
+  async function applyEnhancedResult(response, inputEl) {
+    if (!response || !response.enhancedPrompt) return;
+    lastEnhancedResult = response.enhancedPrompt;
+
+    // Refresh settings
+    try {
+      const fresh = await new Promise((resolve) => {
+        chrome.runtime.sendMessage({ action: 'GET_SETTINGS' }, (res) => {
+          if (chrome.runtime.lastError || !res) resolve(null);
+          else resolve(res);
+        });
+      });
+      if (fresh) settings = { ...settings, ...fresh };
+    } catch {
+      // fallback
+    }
+
+    const isAutoReplace = settings.autoReplace === true || settings.autoReplace === 'true';
+    if (isAutoReplace) {
+      const elToUpdate = adapter.findInput() || ((inputEl && inputEl.isConnected) ? inputEl : null);
+      if (elToUpdate) {
+        adapter.setText(elToUpdate, response.enhancedPrompt);
+        syncSaveButtonState();
+        showToast('Prompt enhanced & replaced!', 'success', () => {
+          const undoEl = adapter.findInput() || ((elToUpdate && elToUpdate.isConnected) ? elToUpdate : null);
+          if (undoEl) {
+            adapter.setText(undoEl, originalPromptCache);
+            syncSaveButtonState();
+          }
+          showToast('Restored original prompt.', 'normal');
+        }, 'Undo');
+        return;
+      }
+    }
+
+    showPreviewPanel(response, inputEl);
+  }
+
+  function showClarificationPanel(data, targetInputEl, originalPrompt) {
+    dismissPreview();
+    const inputElement = targetInputEl || currentInputEl;
+    if (!inputElement) return;
+
+    const card = document.createElement('div');
+    card.className = `tejasai-clarify-card tejasai-preview-${adapter.id}`;
+    card.setAttribute('role', 'dialog');
+    card.setAttribute('aria-label', 'TejasAI Prompt Clarification');
+
+    const q = data.question || data.nextQuestion || {};
+    const qIndex = data.questionCount || data.questionIndex || 1;
+    const totalMax = data.maxQuestions || data.totalQuestionsMax || 3;
+    const history = data.clarificationHistory || [];
+    const questionText = q.question || q.text || 'Could you specify the primary purpose?';
+
+    let optionsList = Array.isArray(q.options) && q.options.length > 0 ? q.options : [];
+    if (optionsList.length === 0) {
+      if (q.type === 'yes_no') optionsList = ['Yes', 'No'];
+      else if (q.type === 'number') optionsList = ['1', '2', '3', '5'];
+      else optionsList = ['Option 1', 'Option 2'];
+    }
+
+    const optionsHtml = optionsList.map((opt) => `
+      <button type="button" class="tejasai-clarify-btn" data-answer="${escapeHtml(String(opt))}">
+        ${escapeHtml(String(opt))}
+      </button>
+    `).join('');
+
+    const hasOther = q.allowsOther || optionsList.includes('Other');
+
+    card.innerHTML = `
+      <div class="tejasai-clarify-header">
+        <span class="tejasai-clarify-badge">Clarification ${qIndex} of ${totalMax}</span>
+        <button type="button" class="tejasai-preview-close" aria-label="Dismiss clarification">✕</button>
+      </div>
+      <div class="tejasai-clarify-question">${escapeHtml(questionText)}</div>
+      <div class="tejasai-clarify-grid">
+        ${optionsHtml}
+      </div>
+      ${hasOther ? `
+        <div class="tejasai-clarify-other-row" style="margin-bottom: 10px; display: none;">
+          <input type="text" class="tejasai-clarify-other-input" placeholder="Briefly describe (optional)..." maxlength="120" style="width: 100%; box-sizing: border-box; padding: 6px 10px; font-size: 12px; border: 1px solid #EDE8E1; border-radius: 6px; outline: none;" />
+        </div>
+      ` : ''}
+      <div class="tejasai-clarify-footer">
+        <button type="button" class="tejasai-clarify-skip">Skip &amp; enhance now</button>
+        <span style="font-size: 11px; opacity: 0.6;">Smart Refinement</span>
+      </div>
+    `;
+
+    card.querySelector('.tejasai-preview-close').addEventListener('click', dismissPreview);
+
+    const otherRow = card.querySelector('.tejasai-clarify-other-row');
+    const otherInput = card.querySelector('.tejasai-clarify-other-input');
+
+    card.querySelectorAll('.tejasai-clarify-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const answer = btn.getAttribute('data-answer');
+        if (answer === 'Other' && otherRow && otherRow.style.display === 'none') {
+          otherRow.style.display = 'block';
+          otherInput?.focus();
+          btn.style.borderColor = '#C2410C';
+          btn.style.color = '#C2410C';
+          return;
+        }
+
+        let finalAnswer = answer;
+        if (answer === 'Other' && otherInput && otherInput.value.trim()) {
+          finalAnswer = `Other: ${otherInput.value.trim()}`;
+        }
+
+        btn.textContent = '...';
+        btn.disabled = true;
+        await submitClarificationAnswer(originalPrompt, q, finalAnswer, history, inputElement, false);
+      });
+    });
+
+    if (otherInput) {
+      otherInput.addEventListener('keydown', async (e) => {
+        if (e.key === 'Enter' && otherInput.value.trim()) {
+          e.preventDefault();
+          const val = `Other: ${otherInput.value.trim()}`;
+          otherInput.disabled = true;
+          await submitClarificationAnswer(originalPrompt, q, val, history, inputElement, false);
+        }
+      });
+    }
+
+    card.querySelector('.tejasai-clarify-skip').addEventListener('click', async () => {
+      const skipBtn = card.querySelector('.tejasai-clarify-skip');
+      skipBtn.textContent = 'Enhancing...';
+      await submitClarificationAnswer(originalPrompt, q, null, history, inputElement, true);
+    });
+
+    document.body.appendChild(card);
+    previewPanel = card;
+    updatePreviewPosition();
+  }
+
+  async function submitClarificationAnswer(prompt, currentQuestion, answer, history, inputElement, skip = false) {
+    setButtonLoading(true);
+    try {
+      const qText = currentQuestion ? (currentQuestion.question || currentQuestion.text || currentQuestion) : null;
+      const response = await new Promise((resolve) => {
+        chrome.runtime.sendMessage(
+          {
+            action: 'CLARIFY_PROMPT',
+            payload: {
+              prompt,
+              targetAI: adapter.targetAI || 'any',
+              clarificationHistory: history,
+              currentQuestion: qText,
+              answer: skip ? 'Skipped' : answer,
+              skip,
+            },
+          },
+          (res) => resolve(res)
+        );
+      });
+
+      if (!response || !response.success) {
+        showToast(response?.error || 'Clarification error.', 'error');
+        dismissPreview();
+        return;
+      }
+
+      if (response.needsClarification && (response.question || response.nextQuestion)) {
+        showClarificationPanel(response, inputElement, prompt);
+      } else if (response.enhancedPrompt) {
+        dismissPreview();
+        await applyEnhancedResult(response, inputElement);
+      }
+    } catch (err) {
+      showToast(err.message || 'Clarification failed.', 'error');
+      dismissPreview();
     } finally {
       setButtonLoading(false);
     }

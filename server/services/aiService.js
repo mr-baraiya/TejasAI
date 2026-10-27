@@ -548,6 +548,20 @@ export async function enhancePrompt({
   const groq = hasGroq ? new Groq({ apiKey: groqApiKey.trim() }) : null;
 
   const cleanedInput = cleanInput(prompt);
+
+  // Fast-path intent preservation for casual greetings & conversational pleasantries
+  const CASUAL_GREETING_REGEX = /^(hi|hello|hey|hey there|howdy|greetings|good morning|good afternoon|good evening|how are you|how are you doing|sup)[\s!.,?]*$/i;
+  if (!tweak && CASUAL_GREETING_REGEX.test(cleanedInput)) {
+    return {
+      enhancedPrompt: cleanedInput,
+      whyBetter: [
+        'Preserved conversational intent and natural greeting tone without unnecessary formalization',
+        'Maintained user tone and simplicity'
+      ],
+      engineUsed: 'direct-preservation',
+    };
+  }
+
   const comparisonInput = tweak && previousResult ? cleanInput(previousResult) : cleanedInput;
 
   // ── Attempt 1 ─────────────────────────────────────────────────────────────

@@ -283,8 +283,11 @@ export function OutputDisplay({
               </span>
             </div>
 
-            <div className="text-sm sm:text-base text-[#111827] font-normal leading-relaxed whitespace-pre-wrap selection:bg-[#C2410C] selection:text-white">
-              {enhancedPrompt}
+            {/* Highlighted Enhanced Prompt Canvas */}
+            <div className="p-4 sm:p-5 bg-[#FFFFFF] border border-[#EDE8E1] shadow-2xs">
+              <div className="text-sm sm:text-base text-[#111827] font-medium leading-relaxed whitespace-pre-wrap selection:bg-[#C2410C] selection:text-white">
+                {enhancedPrompt}
+              </div>
             </div>
           </div>
 

@@ -12,7 +12,12 @@ import { Footer } from './components/Footer';
 import { ErrorAlert } from './components/ErrorAlert';
 import { PromptBuilder } from './components/PromptBuilder';
 import { FavoritesDrawer } from './components/FavoritesDrawer';
-import { enhancePromptApi } from './services/api';
+import { ClarificationCard } from './components/ClarificationCard';
+import {
+  enhancePromptApi,
+  analyzePromptApi,
+  clarifyPromptApi,
+} from './services/api';
 import { getFavorites, FAVORITES_UPDATED_EVENT } from './services/favoritesService';
 import { Check, CaretUp } from '@phosphor-icons/react';
 
@@ -24,6 +29,7 @@ export default function App() {
   const [lastOriginalPrompt, setLastOriginalPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [clarificationSession, setClarificationSession] = useState(null);
 
   // Last 3 prompts in localStorage
   const [recentPrompts, setRecentPrompts] = useState(() => {
@@ -107,7 +113,7 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Main prompt enhancement
+  // Main prompt enhancement (with intelligent completeness analysis & clarification)
   const handleEnhance = async (overridePrompt = null, tweakOption = '', prevResult = '') => {
     const textToEnhance = (overridePrompt !== null ? overridePrompt : prompt).trim();
     if (!textToEnhance) return;
@@ -126,29 +132,153 @@ export default function App() {
     }
 
     try {
-      const data = await enhancePromptApi(
+      // If user is asking for a quick tweak, enhance directly
+      if (tweakOption) {
+        const data = await enhancePromptApi(
+          {
+            prompt: textToEnhance,
+            targetAI,
+            tweak: tweakOption,
+            previousResult: prevResult,
+          },
+          controller.signal
+        );
+
+        setEnhancedPrompt(data.enhancedPrompt);
+        setWhyBetter(data.whyBetter || []);
+        setTimeout(() => {
+          const resultsEl = document.getElementById('results-section');
+          if (resultsEl) resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 150);
+        return;
+      }
+
+      // 1. Analyze prompt completeness
+      const data = await analyzePromptApi(
         {
           prompt: textToEnhance,
           targetAI,
-          tweak: tweakOption,
-          previousResult: prevResult,
         },
         controller.signal
       );
 
-      setEnhancedPrompt(data.enhancedPrompt);
-      setWhyBetter(data.whyBetter || []);
+      // If prompt has sufficient information, enhance immediately
+      if (!data.needsClarification) {
+        setClarificationSession(null);
+        setEnhancedPrompt(data.enhancedPrompt);
+        setWhyBetter(data.whyBetter || []);
 
-      // Smooth-scroll to result upon arrival
-      setTimeout(() => {
-        const resultsEl = document.getElementById('results-section');
-        if (resultsEl) {
-          resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 150);
+        setTimeout(() => {
+          const resultsEl = document.getElementById('results-section');
+          if (resultsEl) resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 150);
+      } else {
+        // Incomplete prompt -> Start structured clarification (max 3 questions)
+        setClarificationSession({
+          prompt: textToEnhance,
+          questionIndex: data.questionIndex || 1,
+          totalQuestionsMax: data.totalQuestionsMax || 3,
+          question: data.question,
+          history: [],
+        });
+
+        setTimeout(() => {
+          const clarifyEl = document.getElementById('clarification-section');
+          if (clarifyEl) clarifyEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 150);
+      }
     } catch (err) {
       if (err.isCancelled) return;
       setError(err.message || 'Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
+      abortControllerRef.current = null;
+    }
+  };
+
+  // Submit answer to a clarification question
+  const handleSubmitClarificationAnswer = async ({ question, answer }) => {
+    if (!clarificationSession) return;
+
+    if (abortControllerRef.current) abortControllerRef.current.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const data = await clarifyPromptApi(
+        {
+          prompt: clarificationSession.prompt,
+          targetAI,
+          clarificationHistory: clarificationSession.history || [],
+          currentQuestion: question,
+          answer,
+          skip: false,
+        },
+        controller.signal
+      );
+
+      if (data.needsClarification && data.question) {
+        setClarificationSession({
+          prompt: clarificationSession.prompt,
+          questionIndex: data.questionIndex || (clarificationSession.questionIndex + 1),
+          totalQuestionsMax: data.totalQuestionsMax || 3,
+          question: data.question,
+          history: data.clarificationHistory || [],
+        });
+      } else {
+        // Sufficient now or completed
+        setClarificationSession(null);
+        setEnhancedPrompt(data.enhancedPrompt);
+        setWhyBetter(data.whyBetter || []);
+        setTimeout(() => {
+          const resultsEl = document.getElementById('results-section');
+          if (resultsEl) resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 150);
+      }
+    } catch (err) {
+      if (err.isCancelled) return;
+      setError(err.message || 'Clarification failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+      abortControllerRef.current = null;
+    }
+  };
+
+  // Skip remaining questions and enhance immediately
+  const handleSkipClarification = async () => {
+    if (!clarificationSession) return;
+
+    if (abortControllerRef.current) abortControllerRef.current.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const data = await clarifyPromptApi(
+        {
+          prompt: clarificationSession.prompt,
+          targetAI,
+          clarificationHistory: clarificationSession.history || [],
+          skip: true,
+        },
+        controller.signal
+      );
+
+      setClarificationSession(null);
+      setEnhancedPrompt(data.enhancedPrompt);
+      setWhyBetter(data.whyBetter || []);
+      setTimeout(() => {
+        const resultsEl = document.getElementById('results-section');
+        if (resultsEl) resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 150);
+    } catch (err) {
+      if (err.isCancelled) return;
+      setError(err.message || 'Enhancement failed. Please try again.');
     } finally {
       setIsLoading(false);
       abortControllerRef.current = null;
@@ -241,11 +371,11 @@ export default function App() {
               </h1>
 
               <p className="text-base sm:text-lg text-[#374151] max-w-[65ch] leading-relaxed">
-                TejasAI is the free AI prompt enhancer, prompt improver, and prompt generator. An intelligent AI writing assistant that transforms your thoughts into high-impact ChatGPT prompts, Claude instructions, and Gemini queries.
+                Turn rough thoughts into clear, high-impact prompts for ChatGPT, Claude, and Gemini—in seconds, without tedious prompt engineering.
               </p>
 
               <p className="text-sm sm:text-base text-[#6B7280] max-w-[65ch] leading-relaxed">
-                AI models give vague answers when given vague prompts. TejasAI quietly adds the right context, tone, and format so you get production-grade output on the first try—boosting your everyday AI productivity.
+                AI models give vague answers to vague instructions. TejasAI frames your intent with the right context, constraints, and structure so you get production-grade output on the first try.
               </p>
             </div>
 
@@ -286,6 +416,23 @@ export default function App() {
             </div>
 
           </section>
+
+          {/* Interactive Clarification Card (shown when prompt is incomplete and requires clarification) */}
+          {clarificationSession && (
+            <div id="clarification-section" className="scroll-mt-24 mb-6">
+              <ClarificationCard
+                prompt={clarificationSession.prompt}
+                questionIndex={clarificationSession.questionIndex}
+                totalQuestionsMax={clarificationSession.totalQuestionsMax}
+                question={clarificationSession.question}
+                clarificationHistory={clarificationSession.history}
+                onSubmitAnswer={handleSubmitClarificationAnswer}
+                onSkip={handleSkipClarification}
+                onCancel={() => setClarificationSession(null)}
+                isLoading={isLoading}
+              />
+            </div>
+          )}
 
           {/* Results Section (Smooth-scrolled to upon result arrival) */}
           <div id="results-section" className="scroll-mt-24">

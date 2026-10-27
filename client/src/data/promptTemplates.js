@@ -62,11 +62,11 @@ export const PROMPT_TEMPLATES = [
       },
     ],
     buildPrompt: (v) => {
-      const topicStr = v.topic && v.topic.trim() ? v.topic.trim() : '[Enter research domain in the form]';
-      const qStr = v.question && v.question.trim() ? v.question.trim() : '[Specify research inquiry in the form]';
+      const topicStr = v.topic && v.topic.trim() ? v.topic.trim() : '[Research Topic / Domain]';
+      const qStr = v.question && v.question.trim() ? v.question.trim() : '[Specific Research Question / Hypothesis]';
       let prompt = `Act as a senior research analyst and subject-matter expert in ${topicStr}.\n\n`;
       prompt += `### Core Research Inquiry:\n${qStr}\n\n`;
-      prompt += `### Scope & Methodology:\n${v.methodology || 'Executive Briefing'}\n\n`;
+      prompt += `### Scope & Methodology:\n${v.methodology || 'Executive Decision Brief'}\n\n`;
       if (v.constraints && v.constraints.trim()) {
         prompt += `### Key Dimensions to Analyze:\n${v.constraints.trim()}\n\n`;
       }
@@ -171,8 +171,8 @@ export const PROMPT_TEMPLATES = [
       },
     ],
     buildPrompt: (v) => {
-      const lang = v.language && v.language.trim() ? v.language.trim() : 'software engineering';
-      const taskDesc = v.task && v.task.trim() ? v.task.trim() : '[Describe your coding objective in the form to see your prompt update live]';
+      const lang = v.language && v.language.trim() ? v.language.trim() : '[Language / Framework]';
+      const taskDesc = v.task && v.task.trim() ? v.task.trim() : '[Task Description & Expected Logic]';
       let prompt = `You are a principal software engineer and expert in ${lang}. Please execute the following ${v.taskType || 'coding'} task:\n\n`;
       prompt += `### Objective:\n${taskDesc}\n\n`;
       if (v.context && v.context.trim()) {
@@ -273,14 +273,14 @@ export const PROMPT_TEMPLATES = [
       },
     ],
     buildPrompt: (v) => {
-      const topicStr = v.topic && v.topic.trim() ? v.topic.trim() : '[Enter your subject topic in the form to see your prompt update live]';
-      const goalStr = v.goal && v.goal.trim() ? v.goal.trim() : '[Specify the core learning objective in the form]';
+      const topicStr = v.topic && v.topic.trim() ? v.topic.trim() : '[Topic or Subject Matter]';
+      const goalStr = v.goal && v.goal.trim() ? v.goal.trim() : '[Core Learning Objective]';
       let prompt = `Act as a world-class educator and subject-matter expert in ${topicStr}.\n\n`;
       prompt += `### Target Learner:\n${v.audience || 'Student'}\n\n`;
       prompt += `### Core Learning Objective:\n${goalStr}\n\n`;
       prompt += `### Teaching Strategy & Format:\n`;
-      prompt += `- Method: ${v.format || 'Intuitive explanation'}\n`;
-      prompt += `- Tone: ${v.tone || 'Engaging and encouraging'}\n`;
+      prompt += `- Method: ${v.format || 'Intuitive analogy followed by structured breakdown'}\n`;
+      prompt += `- Tone: ${v.tone || 'Engaging, warm, and highly encouraging'}\n`;
       prompt += `- Ground all theoretical abstractions in tangible, memorable real-world examples.\n`;
       prompt += `- Conclude with a quick comprehension checkpoint (3 interactive questions with answers).`;
       return prompt;
@@ -380,9 +380,9 @@ export const PROMPT_TEMPLATES = [
       },
     ],
     buildPrompt: (v) => {
-      const topicStr = v.topic && v.topic.trim() ? v.topic.trim() : '[Enter your topic & angle in the form to see your prompt update live]';
-      const audienceStr = v.targetAudience && v.targetAudience.trim() ? v.targetAudience.trim() : 'General audience';
-      let prompt = `You are an elite copywriter and content strategist. Write a high-impact ${v.contentType || 'piece'}.\n\n`;
+      const topicStr = v.topic && v.topic.trim() ? v.topic.trim() : '[Topic & Main Thesis Angle]';
+      const audienceStr = v.targetAudience && v.targetAudience.trim() ? v.targetAudience.trim() : '[Target Reader Persona]';
+      let prompt = `You are an elite copywriter and content strategist. Write a high-impact ${v.contentType || 'piece'}:\n\n`;
       prompt += `### Core Topic & Angle:\n${topicStr}\n\n`;
       prompt += `### Target Reader:\n${audienceStr}\n\n`;
       prompt += `### Voice & Tone:\n${v.tone || 'Professional and engaging'}\n\n`;
@@ -493,10 +493,10 @@ export const PROMPT_TEMPLATES = [
       },
     ],
     buildPrompt: (v) => {
-      const prodStr = v.product && v.product.trim() ? v.product.trim() : '[Enter your product/offering in the form]';
-      const audStr = v.targetAudience && v.targetAudience.trim() ? v.targetAudience.trim() : '[Describe target customer in the form]';
-      const uspStr = v.valueProp && v.valueProp.trim() ? v.valueProp.trim() : '[Specify value proposition in the form]';
-      const ctaStr = v.cta && v.cta.trim() ? v.cta.trim() : '[Enter call to action in the form]';
+      const prodStr = v.product && v.product.trim() ? v.product.trim() : '[Product / Offering Name]';
+      const audStr = v.targetAudience && v.targetAudience.trim() ? v.targetAudience.trim() : '[Target Customer Persona & Pain Points]';
+      const uspStr = v.valueProp && v.valueProp.trim() ? v.valueProp.trim() : '[Core Value Proposition (USP)]';
+      const ctaStr = v.cta && v.cta.trim() ? v.cta.trim() : '[Call to Action (CTA)]';
       let prompt = `Act as an elite growth marketer and direct-response copywriter. Craft compelling ${v.channel || 'marketing copy'}:\n\n`;
       prompt += `### Product / Service:\n${prodStr}\n\n`;
       prompt += `### Campaign Goal:\n${v.goal || ''}\n\n`;
@@ -607,7 +607,7 @@ export const PROMPT_TEMPLATES = [
     ],
     buildPrompt: (v) => {
       const arCode = (v.aspectRatio || '16:9').split(' ')[0];
-      const subjectStr = v.subject && v.subject.trim() ? v.subject.trim() : '[Describe image subject in the form to see your prompt update live]';
+      const subjectStr = v.subject && v.subject.trim() ? v.subject.trim() : '[Main Subject, Action & Setting]';
       let prompt = `Create an image: ${v.style || 'A photographic image'} of ${subjectStr}.\n\n`;
       if (v.lighting && v.lighting.trim()) {
         prompt += `Lighting & Mood: ${v.lighting.trim()}.\n`;

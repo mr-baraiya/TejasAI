@@ -464,6 +464,134 @@ input:checked + .slider:before {
   line-height: 1.35;
 }
 
+/* Builder Clarification Card */
+.builder-clarify-card {
+  background: #FFFBF5;
+  border: 1px solid #FED7AA;
+  border-radius: 8px;
+  padding: 10px;
+  margin: 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.builder-clarify-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.builder-clarify-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #C2410C;
+  background: #FFEDD5;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.builder-clarify-question {
+  font-size: 12px;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.3;
+}
+
+.builder-clarify-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.builder-clarify-opt-btn {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 5px 9px;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.builder-clarify-opt-btn:hover {
+  border-color: #F97316;
+  color: #C2410C;
+  background: #FFF7ED;
+}
+
+.builder-clarify-opt-btn.active {
+  background: #F97316;
+  border-color: #EA580C;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.builder-clarify-other-input {
+  width: 100%;
+  font-size: 11px;
+  padding: 5px 8px;
+  border: 1px solid #FED7AA;
+  border-radius: 6px;
+  outline: none;
+  background: #FFFFFF;
+  margin-top: 2px;
+}
+
+.builder-clarify-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 4px;
+  border-top: 1px dashed #FED7AA;
+}
+
+.builder-clarify-skip-btn {
+  background: none;
+  border: none;
+  color: #9CA3AF;
+  font-size: 10.5px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 2px 4px;
+}
+
+.builder-clarify-skip-btn:hover {
+  color: #4B5563;
+}
+
+.builder-clarify-submit-btn {
+  background: #C2410C;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 5px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.builder-clarify-submit-btn:hover:not(:disabled) {
+  background: #9A3412;
+}
+
+.builder-clarify-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .builder-actions-grid {
   display: grid;
   grid-template-columns: 1fr 1.2fr 1fr 1fr;

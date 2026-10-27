@@ -335,6 +335,8 @@
     } finally {
       setButtonLoading(false);
     }
+  }
+
   async function applyEnhancedResult(response, inputEl) {
     if (!response || !response.enhancedPrompt) return;
     lastEnhancedResult = response.enhancedPrompt;

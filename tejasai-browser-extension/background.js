@@ -29,12 +29,20 @@ export const DEFAULT_SETTINGS = {
   apiBaseUrl: DEFAULT_API_BASE_URL,
 };
 
-// Initialize settings on installation if not present
+// Initialize settings on installation or refresh apiBaseUrl to deployed Vercel backend
 chrome.runtime.onInstalled.addListener(async (details) => {
   try {
     const existing = await chrome.storage.sync.get('tejasai_settings');
     if (!existing || !existing.tejasai_settings) {
       await chrome.storage.sync.set({ tejasai_settings: DEFAULT_SETTINGS });
+    } else {
+      const updated = {
+        ...DEFAULT_SETTINGS,
+        ...existing.tejasai_settings,
+        apiBaseUrl: DEFAULT_API_BASE_URL,
+      };
+      await chrome.storage.sync.set({ tejasai_settings: updated });
+      await chrome.storage.local.set({ tejasai_settings: updated });
     }
   } catch (err) {
     console.warn('[TejasAI Background] Storage init error:', err);
@@ -147,6 +155,7 @@ async function getMergedSettings() {
     return {
       ...DEFAULT_SETTINGS,
       ...raw,
+      apiBaseUrl: (raw.apiBaseUrl && !raw.apiBaseUrl.includes('localhost')) ? raw.apiBaseUrl : DEFAULT_API_BASE_URL,
       enabled: raw.enabled !== false,
       autoReplace: raw.autoReplace === true || raw.autoReplace === 'true',
       sites: {

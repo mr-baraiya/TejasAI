@@ -36,30 +36,78 @@ export function cleanInput(text) {
 }
 
 // ---------------------------------------------------------------------------
-// Groq â†’ Gemini fallback state
+// Groq ↔ Gemini fallback state
 //
-// When Groq returns a 429 (rate limit OR daily token exhaustion) we:
-//   1. Record groqCooldownUntil = now + 60 min.
-//   2. All subsequent requests route to Gemini until the window expires.
-//   3. Once expired, the next request automatically retries Groq.
+// When Groq returns a credit exhaustion, rate limit (429), or service error:
+//   1. Record groqCooldownUntil = now + 30 min.
+//   2. All subsequent requests route directly to Gemini until the window expires.
+//   3. Once expired, the next request automatically retries Groq as primary.
 // ---------------------------------------------------------------------------
-const GROQ_COOLDOWN_MS = 60 * 60 * 1000; // 60 minutes
+const GROQ_COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes
 let groqCooldownUntil = 0; // epoch ms; 0 = no cooldown active
 
-function isGroqOnCooldown() {
+export function isGroqOnCooldown() {
   return Date.now() < groqCooldownUntil;
 }
 
-function setGroqCooldown() {
-  groqCooldownUntil = Date.now() + GROQ_COOLDOWN_MS;
-  console.warn(`[Fallback] Groq rate/daily limit hit. Switching to Gemini until ${new Date(groqCooldownUntil).toISOString()}.`);
+export function setGroqCooldown(durationMs = GROQ_COOLDOWN_MS) {
+  groqCooldownUntil = Date.now() + durationMs;
+  console.warn(`[Fallback] Groq rate/credit limit reached. Switching to Gemini until ${new Date(groqCooldownUntil).toISOString()}.`);
 }
 
-function clearGroqCooldown() {
+export function clearGroqCooldown() {
   if (groqCooldownUntil !== 0) {
     groqCooldownUntil = 0;
-    console.info('[Fallback] Groq cooldown expired. Resuming Groq as primary engine.');
+    console.info('[Fallback] Groq cooldown expired/cleared. Resuming Groq as primary engine.');
   }
+}
+
+/**
+ * Checks if a Groq error is recoverable via Gemini fallback
+ * (e.g., credit exhausted, 402, 429, 401/403, 502/503/504, quota limits).
+ */
+export function isRecoverableGroqError(err) {
+  if (!err) return false;
+  const status = err.status || err.statusCode;
+  const msg = (err.message || '').toLowerCase();
+  const code = (err.error?.error?.code || err.code || '').toLowerCase();
+  const type = (err.error?.error?.type || '').toLowerCase();
+
+  // Status codes for quota, credits, auth, and server issues
+  if (status === 429 || status === 402 || status === 403 || status === 401) return true;
+  if (status >= 500 && status <= 504) return true;
+
+  if (
+    msg.includes('rate limit') ||
+    msg.includes('rate_limit') ||
+    msg.includes('quota') ||
+    msg.includes('credit') ||
+    msg.includes('balance') ||
+    msg.includes('payment') ||
+    msg.includes('tokens per day') ||
+    msg.includes('tpd') ||
+    msg.includes('rpm') ||
+    msg.includes('rpd') ||
+    msg.includes('billing') ||
+    msg.includes('deactivated') ||
+    msg.includes('capacity') ||
+    msg.includes('overloaded') ||
+    msg.includes('service unavailable') ||
+    msg.includes('model_not_found') ||
+    msg.includes('timeout')
+  ) {
+    return true;
+  }
+
+  if (code.includes('rate_limit') || code.includes('quota') || code.includes('insufficient') || code.includes('credit')) {
+    return true;
+  }
+
+  if (type.includes('rate_limit') || type.includes('quota') || type.includes('insufficient')) {
+    return true;
+  }
+
+  return false;
 }
 
 /**
@@ -221,13 +269,17 @@ export function validateOutput(rawText, originalInput) {
 }
 
 // ---------------------------------------------------------------------------
-// Groq call
+// Groq call (Economical & fast prompt improvement models)
 // ---------------------------------------------------------------------------
 async function callGroqChat(groq, primaryModel, messages, timeoutMs) {
+  // Use lightweight models with low price and high token efficiency:
+  // 1. primaryModel (e.g. qwen/qwen3.8-27b)
+  // 2. openai/gpt-oss-20b (lightweight 20B, high speed, cheap)
+  // 3. openai/gpt-oss-120b (120B open source model)
   const modelChain = [
     primaryModel,
-    'openai/gpt-oss-120b',
     'openai/gpt-oss-20b',
+    'openai/gpt-oss-120b',
   ].filter((m, i, arr) => arr.indexOf(m) === i && Boolean(m));
 
   let lastError;
@@ -256,8 +308,15 @@ async function callGroqChat(groq, primaryModel, messages, timeoutMs) {
       lastError = err;
 
       const isRateLimit = err.status === 429;
+      const isCreditOver = err.status === 402 || (err.message && (err.message.includes('credit') || err.message.includes('quota') || err.message.includes('balance')));
       const isNotFound = err.status === 404 || (err.message && err.message.includes('model'));
       const isServerDown = err.status === 503 || err.status === 502;
+
+      // If credits are over on account level, do not loop other Groq models — throw to trigger Gemini fallback immediately
+      if (isCreditOver) {
+        console.warn(`[Groq Credits Over] Model '${currentModel}' indicated credits/quota exhausted. Breaking Groq chain to fallback to Gemini...`);
+        throw err;
+      }
 
       const isJsonValidateFailed =
         err.status === 400 &&
@@ -322,7 +381,7 @@ async function callGroqChat(groq, primaryModel, messages, timeoutMs) {
         console.warn(
           `[Groq Resilient Failover] Model '${currentModel}' returned ${err.status} (${
             err.message?.includes('TPD') ? 'Daily token limit' : 'Rate limit / Service busy'
-          }). Seamlessly failing over to '${nextModel}'...`
+          }). Seamlessly failing over to next model '${nextModel}'...`
         );
         if (isRateLimit) {
           await new Promise((r) => setTimeout(r, 400));
@@ -337,15 +396,15 @@ async function callGroqChat(groq, primaryModel, messages, timeoutMs) {
 }
 
 // ---------------------------------------------------------------------------
-// Gemini fallback call
+// Gemini fallback call (gemini-2.5-flash: high tokens, low cost, fast)
 // ---------------------------------------------------------------------------
-async function callGeminiChat(messages, timeoutMs) {
+export async function callGeminiChat(messages, timeoutMs) {
   const geminiApiKey = process.env.GEMINI_API_KEY;
   if (!geminiApiKey || geminiApiKey.trim() === '' || geminiApiKey === 'your_gemini_api_key_here') {
     throw new Error('Gemini API key is not configured.');
   }
 
-  const geminiModel = process.env.GEMINI_FALLBACK_MODEL || 'gemini-3.5-flash-lite';
+  const geminiModel = process.env.GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash';
   const genAI = new GoogleGenerativeAI(geminiApiKey.trim());
 
   const systemMsg = messages.find((m) => m.role === 'system');
@@ -378,67 +437,86 @@ async function callGeminiChat(messages, timeoutMs) {
   );
 
   const result = await Promise.race([
-    chat.sendMessage(lastUserMsg.content),
+    chat.sendMessage(lastUserMsg ? lastUserMsg.content : ''),
     timeoutPromise,
   ]);
 
   const text = result.response.text();
-  console.info(`[Gemini Fallback] Request served via ${geminiModel}.`);
+  console.info(`[Gemini Fallback] Request served successfully via ${geminiModel}.`);
   return text;
 }
 
 // ---------------------------------------------------------------------------
-// Unified AI call: Groq primary → Gemini fallback (with auto-recovery)
+// Unified AI call: Groq primary ↔ Gemini fallback (with auto-recovery)
 // ---------------------------------------------------------------------------
-async function callAI(messages, timeoutMs, groq, groqModel) {
-  // Still in cooldown window — route directly to Gemini
-  if (isGroqOnCooldown()) {
-    console.info('[Fallback] Groq on cooldown — routing to Gemini.');
+export async function callAI(messages, timeoutMs, groq, groqModel) {
+  const hasGroqKey = Boolean(process.env.GROQ_API_KEY && process.env.GROQ_API_KEY.trim() && process.env.GROQ_API_KEY !== 'your_groq_api_key_here');
+  const hasGeminiKey = Boolean(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim() && process.env.GEMINI_API_KEY !== 'your_gemini_api_key_here');
+
+  if (!hasGroqKey && !hasGeminiKey) {
+    const err = new Error('No AI provider configured. Please provide GROQ_API_KEY or GEMINI_API_KEY in server/.env.');
+    err.statusCode = 503;
+    throw err;
+  }
+
+  // 1. If Groq is on cooldown due to exhausted credits / rate limits, route directly to Gemini
+  if (isGroqOnCooldown() && hasGeminiKey) {
+    console.info(`[Fallback] Groq is currently on cooldown (credits/limits exhausted). Routing request to Gemini (${process.env.GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash'})...`);
+    try {
+      const text = await callGeminiChat(messages, timeoutMs);
+      return { text, engine: 'gemini' };
+    } catch (geminiErr) {
+      console.warn(`[Fallback] Gemini returned error while Groq was on cooldown (${geminiErr.message}). Retrying Groq...`);
+      if (hasGroqKey && groq) {
+        clearGroqCooldown();
+        const text = await callGroqChat(groq, groqModel, messages, timeoutMs);
+        return { text, engine: 'groq' };
+      }
+      throw geminiErr;
+    }
+  }
+
+  // 2. Try Groq as primary engine
+  if (hasGroqKey && groq) {
+    try {
+      const text = await callGroqChat(groq, groqModel, messages, timeoutMs);
+      return { text, engine: 'groq' };
+    } catch (groqErr) {
+      console.warn(`[Groq Primary Engine Failed]: status=${groqErr.status || groqErr.statusCode || 'N/A'}, message="${groqErr.message}"`);
+
+      // If Gemini key is available and error is recoverable (credits over, rate limit, quota, outage)
+      if (hasGeminiKey && isRecoverableGroqError(groqErr)) {
+        setGroqCooldown();
+        console.warn(`[Fallback Activated] Groq credit/limit/outage detected. Seamlessly falling back to Gemini (${process.env.GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash'})...`);
+        try {
+          const text = await callGeminiChat(messages, timeoutMs);
+          return { text, engine: 'gemini' };
+        } catch (geminiErr) {
+          console.error('[Gemini Fallback Error]:', geminiErr.status || geminiErr.statusCode, geminiErr.message);
+          throw geminiErr;
+        }
+      }
+
+      // If no fallback available or unrecoverable error, rethrow
+      throw groqErr;
+    }
+  }
+
+  // 3. If only Gemini is configured, use Gemini directly
+  if (hasGeminiKey) {
     const text = await callGeminiChat(messages, timeoutMs);
     return { text, engine: 'gemini' };
   }
 
-  // Cooldown expired — clear it and retry Groq
-  clearGroqCooldown();
-
-  try {
-    const text = await callGroqChat(groq, groqModel, messages, timeoutMs);
-    return { text, engine: 'groq' };
-  } catch (err) {
-    const isRateLimit =
-      err.status === 429 ||
-      err.statusCode === 429 ||
-      err.error?.error?.code === 'rate_limit_exceeded' ||
-      err.message?.includes('rate_limit_exceeded') ||
-      err.message?.includes('TPD') ||
-      err.message?.includes('tokens per day');
-
-    if (isRateLimit) {
-      // Activate 60-minute cooldown and switch to Gemini
-      setGroqCooldown();
-
-      const geminiKey = process.env.GEMINI_API_KEY;
-      if (!geminiKey || geminiKey.trim() === '' || geminiKey === 'your_gemini_api_key_here') {
-        // No Gemini key — surface a clean error instead of crashing
-        const rateError = new Error('Daily request limit reached. Please try again later.');
-        rateError.statusCode = 429;
-        throw rateError;
-      }
-
-      console.warn('[Fallback] Groq rate/daily limit hit → Switching to Gemini fallback...');
-      const text = await callGeminiChat(messages, timeoutMs);
-      return { text, engine: 'gemini' };
-    }
-
-    // All other Groq errors — rethrow unchanged
-    throw err;
-  }
+  const err = new Error('AI engine unavailable. Please try again.');
+  err.statusCode = 503;
+  throw err;
 }
 
 /**
  * Enhances a given prompt. Uses Groq as the primary engine and automatically
- * falls back to Gemini when Groq hits a rate or daily token limit.
- * Automatically shifts back to Groq once the 60-minute cooldown expires.
+ * falls back to Gemini when Groq credits are over or rate/token limits are hit.
+ * Automatically shifts back to Groq once the cooldown window expires.
  *
  * @param {Object} options
  * @param {string} options.prompt - The cleaned user prompt.
@@ -453,17 +531,21 @@ export async function enhancePrompt({
   tweak = '',
   previousResult = '',
 }) {
-  const apiKey = process.env.GROQ_API_KEY;
+  const groqApiKey = process.env.GROQ_API_KEY;
+  const geminiApiKey = process.env.GEMINI_API_KEY;
 
-  if (!apiKey || apiKey.trim() === '' || apiKey === 'your_groq_api_key_here') {
-    const error = new Error('Groq API key is not configured.');
+  const hasGroq = Boolean(groqApiKey && groqApiKey.trim() && groqApiKey !== 'your_groq_api_key_here');
+  const hasGemini = Boolean(geminiApiKey && geminiApiKey.trim() && geminiApiKey !== 'your_gemini_api_key_here');
+
+  if (!hasGroq && !hasGemini) {
+    const error = new Error('AI service is not configured. Please set GROQ_API_KEY or GEMINI_API_KEY in server/.env');
     error.statusCode = 503;
     throw error;
   }
 
   const model = process.env.GROQ_MODEL || 'qwen/qwen3.8-27b';
   const timeoutMs = parseInt(process.env.AI_TIMEOUT_MS, 10) || 45000;
-  const groq = new Groq({ apiKey: apiKey.trim() });
+  const groq = hasGroq ? new Groq({ apiKey: groqApiKey.trim() }) : null;
 
   const cleanedInput = cleanInput(prompt);
   const comparisonInput = tweak && previousResult ? cleanInput(previousResult) : cleanedInput;
@@ -475,13 +557,13 @@ export async function enhancePrompt({
   try {
     aiRes1 = await callAI(messages, timeoutMs, groq, model);
   } catch (err) {
-    console.error('[AI Engine Error]:', err.status, err.message, err.error?.error?.message || '');
+    console.error('[AI Engine Error]:', err.status || err.statusCode, err.message, err.error?.error?.message || '');
 
     if (err.name === 'AbortError') {
       const e = new Error('Request timed out. Please try again.'); e.statusCode = 504; throw e;
     }
     if (err.status === 401 || err.status === 403) {
-      const e = new Error('Authentication with AI engine failed.'); e.statusCode = 401; throw e;
+      const e = new Error('Authentication with AI engine failed. Please check your API keys.'); e.statusCode = 401; throw e;
     }
     if (err.statusCode === 429 || err.status === 429) {
       const e = new Error(err.message || 'Too many requests. Please wait a moment and try again.'); e.statusCode = 429; throw e;

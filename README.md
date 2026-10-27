@@ -122,8 +122,8 @@ A slide-over drawer on the web and a dedicated tab in the extension allow users 
                      v                                 v
 +---------------------------+             +---------------------------+
 |    Groq LPU Cloud         |             |    Google Gemini Flash    |
-|   (qwen/qwen3.8-27b)      |             |  (gemini-3.5-flash-lite)  |
-|  Low-latency inference    |             |  Automatic rate-limit     |
+|   (qwen/qwen3.8-27b)      |             |     (gemini-2.5-flash)    |
+|  Low-latency inference    |             |  Automatic credit/rate-limit|
 |   under 300 milliseconds  |             |  overflow protection      |
 +---------------------------+             +---------------------------+
 ```
@@ -261,7 +261,7 @@ GROQ_MODEL=qwen/qwen3.8-27b
 
 # Optional: Automatic fallback redundancy
 GEMINI_API_KEY=your_gemini_api_key_here
-GEMINI_FALLBACK_MODEL=gemini-3.5-flash-lite
+GEMINI_FALLBACK_MODEL=gemini-2.5-flash
 
 # Optional: Prompt analytics database
 DATABASE_URL=

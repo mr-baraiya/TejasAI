@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { X, ShieldCheck, FileText, ShieldWarning } from '@phosphor-icons/react';
+import { ContactModal } from './ContactModal';
 
 export function Footer() {
-  const [modalType, setModalType] = useState(null); // 'privacy' | 'terms' | 'policy' | null
+  const [modalType, setModalType] = useState(null); // 'privacy' | 'terms' | 'policy' | 'contact' | null
 
-  // Support direct public URLs (/privacy, /terms, /policy, /content-policy) and hash links
+  // Support direct public URLs (/privacy, /terms, /policy, /content-policy, /contact) and hash links
   useEffect(() => {
     const handleUrlChange = () => {
       const path = window.location.pathname.toLowerCase().replace(/\/+$/, '');
@@ -16,17 +17,28 @@ export function Footer() {
         setModalType('terms');
       } else if (path === '/policy' || path === '/content-policy' || hash === '#policy') {
         setModalType('policy');
+      } else if (path === '/contact' || hash === '#contact') {
+        setModalType('contact');
       } else if (path === '' || path === '/') {
         setModalType(null);
+      }
+    };
+
+    const handleOpenContact = () => {
+      setModalType('contact');
+      if (window.location.pathname !== '/contact') {
+        window.history.pushState(null, '', '/contact');
       }
     };
 
     handleUrlChange();
     window.addEventListener('popstate', handleUrlChange);
     window.addEventListener('hashchange', handleUrlChange);
+    window.addEventListener('open-contact-modal', handleOpenContact);
     return () => {
       window.removeEventListener('popstate', handleUrlChange);
       window.removeEventListener('hashchange', handleUrlChange);
+      window.removeEventListener('open-contact-modal', handleOpenContact);
     };
   }, []);
 
@@ -89,31 +101,35 @@ export function Footer() {
               >
                 Content Policy
               </button>
-              <a
-                href="mailto:baraiyavishalbhai32@gmail.com"
-                className="text-[#6B7280] hover:text-[#111827] transition-colors"
+              <button
+                type="button"
+                onClick={() => openModal('contact')}
+                className="text-[#6B7280] hover:text-[#111827] cursor-pointer transition-colors font-medium"
               >
-                Support
-              </a>
+                Contact
+              </button>
             </div>
 
           </div>
 
-          {/* Editorial Semantic Keyword Index & Independent Disclaimer Banner */}
-          <div className="space-y-2 text-xs text-[#6B7280] leading-relaxed">
-            <p>
-              <strong>TejasAI</strong> — Free AI prompt enhancer, prompt improver, and AI writing assistant. Generate structured ChatGPT prompts and accelerate your AI productivity.
+          {/* Brand Summary & Independent Legal Disclaimer */}
+          <div className="pt-6 border-t border-[#EDE8E1] space-y-2 text-xs leading-relaxed text-[#6B7280]">
+            <p className="text-[#4B5563]">
+              <strong className="text-[#111827] font-semibold">TejasAI</strong> is an open-source prompt optimization suite designed to transform everyday instructions into high-precision, production-grade prompts across modern AI systems.
             </p>
-            <p className="text-[11px] text-[#9CA3AF] text-center sm:text-left">
-              <strong>Disclaimer:</strong> TejasAI is an independent prompt optimization tool. It is not affiliated with, sponsored by, or endorsed by OpenAI, Google, Anthropic, Perplexity AI, DeepSeek, xAI, or any of their respective affiliates. All product names, logos, and brands (ChatGPT, Gemini, Claude, Perplexity, DeepSeek, Grok) are property of their respective trademark holders.
+            <p className="text-[11px] text-[#9CA3AF]">
+              <strong className="text-[#6B7280] font-medium">Disclaimer:</strong> TejasAI is an independent developer utility and is not affiliated with, sponsored by, or endorsed by OpenAI, Google, Anthropic, Perplexity AI, DeepSeek, xAI, or their respective affiliates. ChatGPT, Claude, Gemini, Perplexity, DeepSeek, and Grok brand names and trademarks belong exclusively to their respective owners.
             </p>
           </div>
 
         </div>
       </footer>
 
+      {/* Contact & Feedback Modal */}
+      <ContactModal isOpen={modalType === 'contact'} onClose={closeModal} />
+
       {/* Comprehensive Privacy & Terms Modal */}
-      {modalType && (
+      {modalType && modalType !== 'contact' && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs"
           onClick={closeModal}

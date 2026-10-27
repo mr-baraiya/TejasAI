@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import enhanceRoutes from './routes/enhance.js';
+import contactRoutes from './routes/contact.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { initDB } from './services/db.js';
 
@@ -95,6 +96,8 @@ app.get('/api/health', healthHandler);
 app.get('/health', healthHandler);
 
 // Mount main routes under both /api and / to handle direct calls & serverless rewrites seamlessly
+app.use('/api', contactRoutes);
+app.use('/', contactRoutes);
 app.use('/api', enhanceRoutes);
 app.use('/', enhanceRoutes);
 

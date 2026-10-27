@@ -45,7 +45,7 @@ const FAQS = [
 ];
 
 export function FaqSection() {
-  const [openIdx, setOpenIdx] = useState(0);
+  const [openIdx, setOpenIdx] = useState(-1);
 
   const toggleFaq = (idx) => {
     setOpenIdx((prev) => (prev === idx ? -1 : idx));
@@ -65,12 +65,18 @@ export function FaqSection() {
           </p>
           <div className="pt-2 text-xs sm:text-sm text-[#6B7280]">
             Have a different question?{' '}
-            <a
-              href="mailto:baraiyavishalbhai32@gmail.com"
-              className="font-medium text-[#C2410C] hover:text-[#9A3412] underline underline-offset-2"
+            <button
+              type="button"
+              onClick={() => {
+                if (window.location.pathname !== '/contact') {
+                  window.history.pushState(null, '', '/contact');
+                }
+                window.dispatchEvent(new CustomEvent('open-contact-modal'));
+              }}
+              className="font-medium text-[#C2410C] hover:text-[#9A3412] underline underline-offset-2 cursor-pointer transition-colors"
             >
-              Email support
-            </a>
+              Contact
+            </button>
           </div>
         </div>
 
@@ -83,15 +89,15 @@ export function FaqSection() {
                 <button
                   type="button"
                   onClick={() => toggleFaq(idx)}
-                  className="w-full py-5 flex items-center justify-between text-left cursor-pointer group transition-colors"
+                  className="w-full py-4 sm:py-4.5 flex items-center justify-between text-left cursor-pointer group transition-colors"
                   aria-expanded={isOpen}
                 >
-                  <span className="text-base sm:text-lg font-medium text-[#111827] group-hover:text-[#C2410C] transition-colors pr-6">
+                  <span className="text-sm sm:text-[15px] font-medium text-[#111827] group-hover:text-[#C2410C] transition-colors pr-6">
                     {faq.q}
                   </span>
                   <span className="shrink-0 text-[#9CA3AF] group-hover:text-[#C2410C] transition-colors">
                     <Plus
-                      className={`w-5 h-5 transition-transform duration-200 ${
+                      className={`w-4 h-4 transition-transform duration-200 ${
                         isOpen ? 'rotate-45 text-[#C2410C]' : ''
                       }`}
                       weight="bold"
@@ -100,7 +106,7 @@ export function FaqSection() {
                 </button>
 
                 {isOpen && (
-                  <div className="pb-6 pr-6 text-sm sm:text-base text-[#4B5563] leading-relaxed">
+                  <div className="pb-5 pr-6 text-xs sm:text-sm text-[#4B5563] leading-relaxed">
                     {faq.a}
                   </div>
                 )}

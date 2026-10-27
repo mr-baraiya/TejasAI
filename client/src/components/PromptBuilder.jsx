@@ -5,7 +5,7 @@ import { enhancePromptApi } from '../services/api';
 import { isFavorite, toggleFavorite } from '../services/favoritesService';
 
 export function PromptBuilder({ onSendToMain, onShowToast }) {
-  const [activeCategoryId, setActiveCategoryId] = useState('coding');
+  const [activeCategoryId, setActiveCategoryId] = useState('research');
 
   const currentTemplate = useMemo(() => {
     return PROMPT_TEMPLATES.find((t) => t.id === activeCategoryId) || PROMPT_TEMPLATES[0];
@@ -72,20 +72,6 @@ export function PromptBuilder({ onSendToMain, onShowToast }) {
     if (isEditingManually) {
       setIsEditingManually(false);
     }
-  };
-
-  // Load sample preset
-  const handleLoadExample = (example) => {
-    setFormValues((prev) => ({
-      ...prev,
-      [activeCategoryId]: {
-        ...prev[activeCategoryId],
-        ...example.values,
-      },
-    }));
-    setIsEditingManually(false);
-    setEnhancedResult(null);
-    if (onShowToast) onShowToast(`Loaded preset: "${example.name}"`);
   };
 
   // Reset current form to defaults
@@ -168,7 +154,7 @@ export function PromptBuilder({ onSendToMain, onShowToast }) {
   return (
     <section id="prompt-builder" className="scroll-mt-24 space-y-8">
       {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#EDE8E1] pb-6">
+      <div className="border-b border-[#EDE8E1] pb-6">
         <div>
           <h2 className="font-serif text-2xl sm:text-3xl font-semibold text-[#111827]">
             Build structured prompts for any domain.
@@ -177,25 +163,6 @@ export function PromptBuilder({ onSendToMain, onShowToast }) {
             Choose a tailored framework, fill in your requirements, and generate production-ready prompts designed for ChatGPT, Claude, and Gemini.
           </p>
         </div>
-
-        {/* Preset sample links */}
-        {currentTemplate.examples && currentTemplate.examples.length > 0 && (
-          <div className="flex items-center gap-2 text-xs shrink-0 flex-wrap">
-            <span className="text-[#9CA3AF]">Presets:</span>
-            {currentTemplate.examples.map((ex, i) => (
-              <React.Fragment key={ex.name}>
-                {i > 0 && <span className="text-[#D1D5DB]">&bull;</span>}
-                <button
-                  type="button"
-                  onClick={() => handleLoadExample(ex)}
-                  className="text-[#6B7280] hover:text-[#111827] underline underline-offset-4 decoration-[#D1D5DB] hover:decoration-[#111827] transition-colors cursor-pointer"
-                >
-                  {ex.name}
-                </button>
-              </React.Fragment>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Category Tab Bar (Clean editorial navigation, zero clip-art icons) */}
@@ -237,7 +204,7 @@ export function PromptBuilder({ onSendToMain, onShowToast }) {
               onClick={handleReset}
               className="text-xs text-[#9CA3AF] hover:text-[#C2410C] transition-colors cursor-pointer"
             >
-              Reset defaults
+              Reset
             </button>
           </div>
 

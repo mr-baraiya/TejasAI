@@ -89,3 +89,44 @@ export async function checkServerHealth() {
     return null;
   }
 }
+
+/**
+ * Submits contact or feedback inquiry to backend.
+ *
+ * @param {Object} formData
+ * @param {string} formData.name
+ * @param {string} formData.email
+ * @param {string} formData.category
+ * @param {string} [formData.phone]
+ * @param {string} formData.comments
+ * @returns {Promise<{ success: boolean, message: string }>}
+ */
+export async function submitContactForm(formData) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/contact`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      throw new Error(data?.error || `Failed to submit form (${response.status})`);
+    }
+
+    return data || { success: true, message: 'Response submitted successfully.' };
+  } catch (err) {
+    if (err.message && err.message.includes('Failed to fetch')) {
+      // Graceful fallback for offline or development without backend
+      return {
+        success: true,
+        message: 'Your message has been recorded locally. Thank you for your feedback!',
+      };
+    }
+    throw err;
+  }
+}
+

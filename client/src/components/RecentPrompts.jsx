@@ -7,6 +7,7 @@ export function RecentPrompts({
   onClearRecent,
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [hoveredIndex, setHoveredIndex] = useState(null);
 
   if (!recentPrompts || recentPrompts.length === 0) {
     return null;
@@ -43,22 +44,45 @@ export function RecentPrompts({
           </div>
 
           <div className="divide-y divide-[#EDE8E1]/60">
-            {recentPrompts.map((item, index) => (
-              <button
-                key={index}
-                type="button"
-                onClick={() => onSelectPrompt(item)}
-                className="w-full text-left py-2 px-0.5 text-xs sm:text-sm text-[#4B5563] hover:text-[#111827] flex items-center justify-between group transition-colors cursor-pointer"
-              >
-                <span className="truncate pr-4 leading-relaxed">
-                  &ldquo;{item}&rdquo;
-                </span>
-                <span className="text-[11px] font-mono text-[#C2410C] opacity-0 group-hover:opacity-100 transition-opacity shrink-0 flex items-center gap-0.5">
-                  <span>Restore</span>
-                  <ArrowUpRight className="w-3 h-3" weight="bold" />
-                </span>
-              </button>
-            ))}
+            {recentPrompts.map((item, index) => {
+              const isHovered = hoveredIndex === index;
+              return (
+                <div
+                  key={index}
+                  className="w-full py-2 px-0.5 text-xs sm:text-sm flex items-center justify-between"
+                >
+                  <button
+                    type="button"
+                    onClick={() => onSelectPrompt(item)}
+                    onMouseEnter={() => setHoveredIndex(index)}
+                    onMouseLeave={() => setHoveredIndex(null)}
+                    onFocus={() => setHoveredIndex(index)}
+                    onBlur={() => setHoveredIndex(null)}
+                    className="truncate pr-4 text-left text-[#4B5563] hover:text-[#111827] cursor-pointer flex-1"
+                    title={item}
+                  >
+                    &ldquo;{item}&rdquo;
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onSelectPrompt(item)}
+                    onMouseEnter={() => setHoveredIndex(index)}
+                    onMouseLeave={() => setHoveredIndex(null)}
+                    onFocus={() => setHoveredIndex(index)}
+                    onBlur={() => setHoveredIndex(null)}
+                    style={{
+                      opacity: isHovered ? 1 : 0,
+                      visibility: isHovered ? 'visible' : 'hidden',
+                      pointerEvents: isHovered ? 'auto' : 'none',
+                    }}
+                    className="text-[11px] font-mono text-[#C2410C] hover:text-[#9A3412] shrink-0 flex items-center gap-0.5 cursor-pointer transition-opacity duration-150"
+                  >
+                    <span>Restore</span>
+                    <ArrowUpRight className="w-3 h-3" weight="bold" />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

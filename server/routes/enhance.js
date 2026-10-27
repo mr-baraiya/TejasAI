@@ -65,6 +65,7 @@ router.post('/enhance', async (req, res, next) => {
       success: true,
       enhancedPrompt: result.enhancedPrompt,
       whyBetter: result.whyBetter,
+      engineUsed: result.engineUsed,
       meta: {
         targetAI,
         tweak: tweak || null,

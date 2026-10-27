@@ -1,9 +1,83 @@
 /**
  * TejasAI - Dynamic Prompt Builder Templates
- * Categories: Coding, Education, Writing, Marketing, Research, Image Generation.
+ * Categories: Research (Default & First), Coding, Education, Writing, Marketing, Image Generation.
+ * All text and textarea fields default to empty strings with clear descriptive placeholders.
  */
 
 export const PROMPT_TEMPLATES = [
+  {
+    id: 'research',
+    name: 'Research',
+    icon: 'Search',
+    tagline: 'Deep analytical briefs, literature synthesis & tradeoffs',
+    description: 'Investigate complex questions, compare methodologies, uncover counter-arguments, and summarize findings.',
+    fields: [
+      {
+        id: 'topic',
+        label: 'Research Topic / Domain',
+        type: 'text',
+        placeholder: 'Specify the research domain, technology, or academic topic to investigate...',
+        defaultValue: '',
+        required: true,
+      },
+      {
+        id: 'question',
+        label: 'Specific Research Question / Hypothesis',
+        type: 'textarea',
+        placeholder: 'What specific research question, hypothesis, or tradeoff analysis must this brief answer?...',
+        defaultValue: '',
+        required: true,
+      },
+      {
+        id: 'methodology',
+        label: 'Analytical Scope & Depth',
+        type: 'select',
+        options: [
+          'Executive Decision Brief (Synthesis & Tradeoffs)',
+          'Comprehensive Literature Review & Empirical Analysis',
+          'Comparative Benchmark Matrix with Pros & Cons',
+          'Risk Assessment, Red Teaming & Counter-Arguments',
+        ],
+        defaultValue: 'Comparative Benchmark Matrix with Pros & Cons',
+        required: true,
+      },
+      {
+        id: 'constraints',
+        label: 'Required Dimensions & Perspective',
+        type: 'textarea',
+        placeholder: 'List specific dimensions to analyze (e.g. commercial viability, supply chain risks, regulatory hurdles, cost metrics)...',
+        defaultValue: '',
+        required: false,
+      },
+    ],
+    examples: [
+      {
+        name: 'Battery Tech Comparative Analysis',
+        values: {
+          topic: 'State of Solid-State Lithium Batteries vs Sodium-Ion for Grid Storage',
+          question: 'Compare commercialization timelines, Levelized Cost of Storage (LCOS), raw material supply risks, and cycle longevity between solid-state and sodium-ion technologies through 2030.',
+          methodology: 'Comparative Benchmark Matrix with Pros & Cons',
+          constraints: 'Include supply chain dependency on rare earth metals, thermal stability metrics, manufacturing capex hurdles, and major commercial players.',
+        },
+      },
+    ],
+    buildPrompt: (v) => {
+      const topicStr = v.topic && v.topic.trim() ? v.topic.trim() : '[Enter research domain in the form]';
+      const qStr = v.question && v.question.trim() ? v.question.trim() : '[Specify research inquiry in the form]';
+      let prompt = `Act as a senior research analyst and subject-matter expert in ${topicStr}.\n\n`;
+      prompt += `### Core Research Inquiry:\n${qStr}\n\n`;
+      prompt += `### Scope & Methodology:\n${v.methodology || 'Executive Briefing'}\n\n`;
+      if (v.constraints && v.constraints.trim()) {
+        prompt += `### Key Dimensions to Analyze:\n${v.constraints.trim()}\n\n`;
+      }
+      prompt += `### Analytical Standards:\n`;
+      prompt += `- Provide rigorous, objective analysis supported by verifiable domain mechanisms and key quantitative metrics.\n`;
+      prompt += `- Address counter-arguments, technological bottlenecks, and critical uncertainties.\n`;
+      prompt += `- Conclude with an executive summary and a structured comparison table.`;
+      return prompt;
+    },
+  },
+
   {
     id: 'coding',
     name: 'Coding',
@@ -30,32 +104,32 @@ export const PROMPT_TEMPLATES = [
         id: 'language',
         label: 'Language / Framework',
         type: 'text',
-        placeholder: 'e.g. React 19, Python 3.12, Node.js, Go, TypeScript, SQL',
-        defaultValue: 'React & TypeScript',
+        placeholder: 'Specify language, framework, or runtime (e.g. React 19, Python 3.12, Node.js, Go, TypeScript, SQL)...',
+        defaultValue: '',
         required: true,
       },
       {
         id: 'task',
         label: 'Task Description / Goal',
         type: 'textarea',
-        placeholder: 'Describe exactly what you want the code to do, its input/output, and key logic...',
-        defaultValue: 'Build a debounced search input component with cancelable async fetch and keyboard navigation.',
+        placeholder: 'Describe your goal in detail: what should the code accomplish, expected inputs, outputs, and key logic...',
+        defaultValue: '',
         required: true,
       },
       {
         id: 'context',
         label: 'Existing Code / Environment Context (Optional)',
         type: 'textarea',
-        placeholder: 'Paste error stack traces, relevant schema, existing snippet, or library constraints...',
-        defaultValue: 'Using Tailwind CSS for styling and native AbortController for fetch cancellation.',
+        placeholder: 'Paste relevant existing code, schemas, error logs, library constraints, or architecture notes (optional)...',
+        defaultValue: '',
         required: false,
       },
       {
         id: 'requirements',
         label: 'Constraints & Quality Standards',
         type: 'text',
-        placeholder: 'e.g. Full TypeScript types, zero external runtime deps, handle error and empty states',
-        defaultValue: 'Type-safe with TypeScript, handle loading/error/empty states, accessible ARIA attributes.',
+        placeholder: 'Specify performance targets, type safety, error handling, or test requirements (e.g. Type-safe, zero external deps)...',
+        defaultValue: '',
         required: false,
       },
       {
@@ -97,8 +171,10 @@ export const PROMPT_TEMPLATES = [
       },
     ],
     buildPrompt: (v) => {
-      let prompt = `You are a principal software engineer and expert in ${v.language || 'software engineering'}. Please execute the following ${v.taskType || 'coding'} task:\n\n`;
-      prompt += `### Objective:\n${v.task || ''}\n\n`;
+      const lang = v.language && v.language.trim() ? v.language.trim() : 'software engineering';
+      const taskDesc = v.task && v.task.trim() ? v.task.trim() : '[Describe your coding objective in the form to see your prompt update live]';
+      let prompt = `You are a principal software engineer and expert in ${lang}. Please execute the following ${v.taskType || 'coding'} task:\n\n`;
+      prompt += `### Objective:\n${taskDesc}\n\n`;
       if (v.context && v.context.trim()) {
         prompt += `### Context & Tech Stack:\n${v.context.trim()}\n\n`;
       }
@@ -121,8 +197,8 @@ export const PROMPT_TEMPLATES = [
         id: 'topic',
         label: 'Topic / Subject Matter',
         type: 'text',
-        placeholder: 'e.g. Backpropagation in Neural Networks, Photosynthesis, Bayesian Inference',
-        defaultValue: 'How Transformer Models and Self-Attention Work',
+        placeholder: 'Enter the concept, theory, or topic you want explained (e.g. Transformer Self-Attention, Bayesian Inference, Photosynthesis)...',
+        defaultValue: '',
         required: true,
       },
       {
@@ -143,8 +219,8 @@ export const PROMPT_TEMPLATES = [
         id: 'goal',
         label: 'Core Learning Goal',
         type: 'textarea',
-        placeholder: 'What specific intuition, formula, or practical takeaway should the learner master?',
-        defaultValue: 'Understand why attention vectors allow words to dynamically contextualize each other unlike RNNs.',
+        placeholder: 'What core intuition, mental model, or practical takeaway should the learner master?...',
+        defaultValue: '',
         required: true,
       },
       {
@@ -197,9 +273,11 @@ export const PROMPT_TEMPLATES = [
       },
     ],
     buildPrompt: (v) => {
-      let prompt = `Act as a world-class educator and subject-matter expert in ${v.topic || 'the subject'}.\n\n`;
+      const topicStr = v.topic && v.topic.trim() ? v.topic.trim() : '[Enter your subject topic in the form to see your prompt update live]';
+      const goalStr = v.goal && v.goal.trim() ? v.goal.trim() : '[Specify the core learning objective in the form]';
+      let prompt = `Act as a world-class educator and subject-matter expert in ${topicStr}.\n\n`;
       prompt += `### Target Learner:\n${v.audience || 'Student'}\n\n`;
-      prompt += `### Core Learning Objective:\n${v.goal || ''}\n\n`;
+      prompt += `### Core Learning Objective:\n${goalStr}\n\n`;
       prompt += `### Teaching Strategy & Format:\n`;
       prompt += `- Method: ${v.format || 'Intuitive explanation'}\n`;
       prompt += `- Tone: ${v.tone || 'Engaging and encouraging'}\n`;
@@ -235,16 +313,16 @@ export const PROMPT_TEMPLATES = [
         id: 'topic',
         label: 'Topic & Core Angle',
         type: 'textarea',
-        placeholder: 'What is the piece about? What is the main thesis or value proposition?',
-        defaultValue: 'Introduce TejasAI prompt enhancer to engineering team leads to cut AI hallucination and rework.',
+        placeholder: 'Enter the main thesis, angle, or core message of your writing piece...',
+        defaultValue: '',
         required: true,
       },
       {
         id: 'targetAudience',
         label: 'Target Reader Persona',
         type: 'text',
-        placeholder: 'e.g. Busy CTOs, senior engineers, SaaS founders, marketing directors',
-        defaultValue: 'VP of Engineering / CTO at seed-to-series-B startups',
+        placeholder: 'Describe your target reader persona (e.g. Busy CTOs, engineering managers, SaaS founders, marketing leaders)...',
+        defaultValue: '',
         required: true,
       },
       {
@@ -264,16 +342,16 @@ export const PROMPT_TEMPLATES = [
         id: 'keyPoints',
         label: 'Key Points / Structure',
         type: 'textarea',
-        placeholder: 'List essential arguments, proof points, or narrative beats...',
-        defaultValue: '1. Developers waste 20m/day fighting vague AI answers\n2. TejasAI structures prompts automatically\n3. Zero retention, fast browser extension\n4. Low-friction ask: 5-minute loom or chrome extension link',
+        placeholder: 'List essential arguments, proof points, narrative beats, or outline steps (one per line)...',
+        defaultValue: '',
         required: false,
       },
       {
         id: 'constraints',
         label: 'Length & Style Constraints',
         type: 'text',
-        placeholder: 'e.g. Under 120 words, strong hook, no corporate jargon, single clear CTA',
-        defaultValue: 'Under 130 words, 3rd-grade reading level, zero buzzwords, single clear low-friction call to action.',
+        placeholder: 'Specify constraints (e.g. Under 150 words, punchy opening hook, no corporate jargon, single clear CTA)...',
+        defaultValue: '',
         required: false,
       },
     ],
@@ -302,9 +380,11 @@ export const PROMPT_TEMPLATES = [
       },
     ],
     buildPrompt: (v) => {
+      const topicStr = v.topic && v.topic.trim() ? v.topic.trim() : '[Enter your topic & angle in the form to see your prompt update live]';
+      const audienceStr = v.targetAudience && v.targetAudience.trim() ? v.targetAudience.trim() : 'General audience';
       let prompt = `You are an elite copywriter and content strategist. Write a high-impact ${v.contentType || 'piece'}.\n\n`;
-      prompt += `### Core Topic & Angle:\n${v.topic || ''}\n\n`;
-      prompt += `### Target Reader:\n${v.targetAudience || 'General audience'}\n\n`;
+      prompt += `### Core Topic & Angle:\n${topicStr}\n\n`;
+      prompt += `### Target Reader:\n${audienceStr}\n\n`;
       prompt += `### Voice & Tone:\n${v.tone || 'Professional and engaging'}\n\n`;
       if (v.keyPoints && v.keyPoints.trim()) {
         prompt += `### Key Points to Cover:\n${v.keyPoints.trim()}\n\n`;
@@ -331,8 +411,8 @@ export const PROMPT_TEMPLATES = [
         id: 'product',
         label: 'Product / Service Name & Offering',
         type: 'text',
-        placeholder: 'e.g. TejasAI - The intelligent browser prompt enhancer for developers',
-        defaultValue: 'TejasAI Browser Extension & Web App',
+        placeholder: 'Enter your product or service name and a brief summary of what it does...',
+        defaultValue: '',
         required: true,
       },
       {
@@ -353,16 +433,16 @@ export const PROMPT_TEMPLATES = [
         id: 'targetAudience',
         label: 'Target Customer Persona (ICP)',
         type: 'textarea',
-        placeholder: 'Who is your ideal customer? What is their sharpest pain point right now?',
-        defaultValue: 'Software developers, content creators, and founders who use ChatGPT, Gemini, and Claude daily but get frustratingly vague answers.',
+        placeholder: 'Describe your ideal customer persona (ICP) and their most frustrating pain point right now...',
+        defaultValue: '',
         required: true,
       },
       {
         id: 'valueProp',
         label: 'Core Value Proposition (USP)',
         type: 'textarea',
-        placeholder: 'What makes your offering 10x better than the alternative?',
-        defaultValue: 'One-click AI prompt enhancement right inside your AI tool composer. Turns 5-word vague queries into production-grade prompts without leaving the tab.',
+        placeholder: 'What makes your offering unique and 10x better than existing alternatives (USP)?...',
+        defaultValue: '',
         required: true,
       },
       {
@@ -383,8 +463,8 @@ export const PROMPT_TEMPLATES = [
         id: 'cta',
         label: 'Call to Action (CTA)',
         type: 'text',
-        placeholder: 'e.g. Download the free extension, get started in 30 seconds',
-        defaultValue: 'Add TejasAI to Chrome for free — link in comments.',
+        placeholder: 'Enter your call to action (e.g. Install the free extension, book a demo, start free trial)...',
+        defaultValue: '',
         required: true,
       },
     ],
@@ -413,88 +493,21 @@ export const PROMPT_TEMPLATES = [
       },
     ],
     buildPrompt: (v) => {
+      const prodStr = v.product && v.product.trim() ? v.product.trim() : '[Enter your product/offering in the form]';
+      const audStr = v.targetAudience && v.targetAudience.trim() ? v.targetAudience.trim() : '[Describe target customer in the form]';
+      const uspStr = v.valueProp && v.valueProp.trim() ? v.valueProp.trim() : '[Specify value proposition in the form]';
+      const ctaStr = v.cta && v.cta.trim() ? v.cta.trim() : '[Enter call to action in the form]';
       let prompt = `Act as an elite growth marketer and direct-response copywriter. Craft compelling ${v.channel || 'marketing copy'}:\n\n`;
-      prompt += `### Product / Service:\n${v.product || ''}\n\n`;
+      prompt += `### Product / Service:\n${prodStr}\n\n`;
       prompt += `### Campaign Goal:\n${v.goal || ''}\n\n`;
-      prompt += `### Target Customer & Pain Points:\n${v.targetAudience || ''}\n\n`;
-      prompt += `### Value Proposition (USP):\n${v.valueProp || ''}\n\n`;
-      prompt += `### Call to Action:\n${v.cta || ''}\n\n`;
+      prompt += `### Target Customer & Pain Points:\n${audStr}\n\n`;
+      prompt += `### Value Proposition (USP):\n${uspStr}\n\n`;
+      prompt += `### Call to Action:\n${ctaStr}\n\n`;
       prompt += `### Copywriting Strategy:\n`;
       prompt += `- Emphasize transformation and time saved over generic feature lists.\n`;
       prompt += `- Agitate the primary friction point before revealing the effortless solution.\n`;
       prompt += `- Keep paragraphs short, punchy, and highly scannable.\n`;
       prompt += `- Provide 2 alternative headline variants alongside the full copy.`;
-      return prompt;
-    },
-  },
-
-  {
-    id: 'research',
-    name: 'Research',
-    icon: 'Search',
-    tagline: 'Deep analytical briefs, literature synthesis & tradeoffs',
-    description: 'Investigate complex questions, compare methodologies, uncover counter-arguments, and summarize findings.',
-    fields: [
-      {
-        id: 'topic',
-        label: 'Research Topic / Domain',
-        type: 'text',
-        placeholder: 'e.g. Next-Generation Battery Chemistries, Zero-Knowledge Cryptography',
-        defaultValue: 'State of Solid-State Lithium Batteries vs Sodium-Ion for Grid Storage',
-        required: true,
-      },
-      {
-        id: 'question',
-        label: 'Specific Research Question / Hypothesis',
-        type: 'textarea',
-        placeholder: 'What core analytical question must this research answer?',
-        defaultValue: 'Compare commercialization timelines, Levelized Cost of Storage (LCOS), raw material supply risks, and cycle longevity between solid-state and sodium-ion technologies through 2030.',
-        required: true,
-      },
-      {
-        id: 'methodology',
-        label: 'Analytical Scope & Depth',
-        type: 'select',
-        options: [
-          'Executive Decision Brief (Synthesis & Tradeoffs)',
-          'Comprehensive Literature Review & Empirical Analysis',
-          'Comparative Benchmark Matrix with Pros & Cons',
-          'Risk Assessment, Red Teaming & Counter-Arguments',
-        ],
-        defaultValue: 'Comparative Benchmark Matrix with Pros & Cons',
-        required: true,
-      },
-      {
-        id: 'constraints',
-        label: 'Required Dimensions & Perspective',
-        type: 'textarea',
-        placeholder: 'Specific metrics, technological barriers, regulatory aspects, or perspectives to include...',
-        defaultValue: 'Include supply chain dependency on rare earth metals, thermal stability metrics, manufacturing capex hurdles, and major commercial players.',
-        required: false,
-      },
-    ],
-    examples: [
-      {
-        name: 'Battery Tech Comparative Analysis',
-        values: {
-          topic: 'State of Solid-State Lithium Batteries vs Sodium-Ion for Grid Storage',
-          question: 'Compare commercialization timelines, Levelized Cost of Storage (LCOS), raw material supply risks, and cycle longevity between solid-state and sodium-ion technologies through 2030.',
-          methodology: 'Comparative Benchmark Matrix with Pros & Cons',
-          constraints: 'Include supply chain dependency on rare earth metals, thermal stability metrics, manufacturing capex hurdles, and major commercial players.',
-        },
-      },
-    ],
-    buildPrompt: (v) => {
-      let prompt = `Act as a senior research analyst and subject-matter expert in ${v.topic || 'the domain'}.\n\n`;
-      prompt += `### Core Research Inquiry:\n${v.question || ''}\n\n`;
-      prompt += `### Scope & Methodology:\n${v.methodology || 'Executive Briefing'}\n\n`;
-      if (v.constraints && v.constraints.trim()) {
-        prompt += `### Key Dimensions to Analyze:\n${v.constraints.trim()}\n\n`;
-      }
-      prompt += `### Analytical Standards:\n`;
-      prompt += `- Provide rigorous, objective analysis supported by verifiable domain mechanisms and key quantitative metrics.\n`;
-      prompt += `- Address counter-arguments, technological bottlenecks, and critical uncertainties.\n`;
-      prompt += `- Conclude with an executive summary and a structured comparison table.`;
       return prompt;
     },
   },
@@ -510,8 +523,8 @@ export const PROMPT_TEMPLATES = [
         id: 'subject',
         label: 'Main Subject & Action',
         type: 'textarea',
-        placeholder: 'Describe the main subject, characters, objects, and activity in detail...',
-        defaultValue: 'A solitary artisan ceramicist shaping a delicate clay teapot on a spinning wheel in an old sunlit studio.',
+        placeholder: 'Describe the main subject, characters, foreground/background action, and focal details in vivid detail...',
+        defaultValue: '',
         required: true,
       },
       {
@@ -533,16 +546,16 @@ export const PROMPT_TEMPLATES = [
         id: 'lighting',
         label: 'Lighting & Atmosphere',
         type: 'text',
-        placeholder: 'e.g. Golden hour streaming through dusty window, volumetric sunbeams, warm ambient glow',
-        defaultValue: 'Golden afternoon sunlight streaming through tall factory windows, illuminated dust motes, soft shadow falloff.',
+        placeholder: 'Specify lighting style & mood (e.g. Golden hour rim lighting, volumetric sunbeams, warm ambient glow)...',
+        defaultValue: '',
         required: false,
       },
       {
         id: 'composition',
         label: 'Composition & Camera Angle',
         type: 'text',
-        placeholder: 'e.g. Medium close-up, 85mm f/1.4 lens, shallow depth of field, rule of thirds',
-        defaultValue: 'Medium close-up shot, 50mm f/1.8 lens, shallow depth of field, intimate eye-level angle, focused hands.',
+        placeholder: 'Specify camera lens & angle (e.g. 50mm f/1.8 lens, shallow depth of field, low-angle dynamic shot, rule of thirds)...',
+        defaultValue: '',
         required: false,
       },
       {
@@ -563,8 +576,8 @@ export const PROMPT_TEMPLATES = [
         id: 'negativePrompt',
         label: 'Negative Prompt (What to Avoid)',
         type: 'text',
-        placeholder: 'e.g. oversaturated, blurry, bad anatomy, deformed hands, text, watermark',
-        defaultValue: 'blurry, oversaturated, deformed hands, artificial plastic skin, text, watermark',
+        placeholder: 'Specify elements to exclude (e.g. blurry, oversaturated, deformed hands, artificial plastic skin, text, watermark)...',
+        defaultValue: '',
         required: false,
       },
     ],
@@ -594,7 +607,8 @@ export const PROMPT_TEMPLATES = [
     ],
     buildPrompt: (v) => {
       const arCode = (v.aspectRatio || '16:9').split(' ')[0];
-      let prompt = `Create an image: ${v.style || 'A photographic image'} of ${v.subject || ''}.\n\n`;
+      const subjectStr = v.subject && v.subject.trim() ? v.subject.trim() : '[Describe image subject in the form to see your prompt update live]';
+      let prompt = `Create an image: ${v.style || 'A photographic image'} of ${subjectStr}.\n\n`;
       if (v.lighting && v.lighting.trim()) {
         prompt += `Lighting & Mood: ${v.lighting.trim()}.\n`;
       }

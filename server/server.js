@@ -7,7 +7,8 @@ const server = app.listen(PORT, () => {
   console.log(`=========================================`);
   console.log(`  TejasAI Backend Server running!        `);
   console.log(`  Port: http://localhost:${PORT}         `);
-  console.log(`  Model: ${process.env.GROQ_MODEL || 'qwen/qwen3.8-27b'}`);
+  console.log(`  Primary: Groq (${process.env.GROQ_MODEL || 'qwen/qwen3.8-27b'})`);
+  console.log(`  Fallback: Gemini (${process.env.GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash'})`);
   console.log(`  Mode: ${process.env.NODE_ENV || 'development'}`);
   console.log(`=========================================`);
 });

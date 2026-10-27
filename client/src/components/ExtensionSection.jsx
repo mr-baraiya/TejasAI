@@ -7,17 +7,11 @@ import React, { useState } from 'react';
  */
 export function ExtensionSection() {
   const [copiedChrome, setCopiedChrome] = useState(false);
-  const [copiedEdge, setCopiedEdge] = useState(false);
 
-  const handleCopy = (text, type) => {
+  const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
-    if (type === 'chrome') {
-      setCopiedChrome(true);
-      setTimeout(() => setCopiedChrome(false), 2000);
-    } else {
-      setCopiedEdge(true);
-      setTimeout(() => setCopiedEdge(false), 2000);
-    }
+    setCopiedChrome(true);
+    setTimeout(() => setCopiedChrome(false), 2000);
   };
 
   return (
@@ -106,25 +100,17 @@ export function ExtensionSection() {
                 Open extensions and enable developer mode
               </h4>
               <p className="text-xs sm:text-sm text-[#4B5563] leading-relaxed">
-                Navigate to your browser&apos;s extension manager and turn on the Developer mode toggle in the top-right corner:
+                Navigate to{' '}
+                <button
+                  type="button"
+                  onClick={() => handleCopy('chrome://extensions')}
+                  className="font-mono text-[#C2410C] hover:text-[#9A3412] underline underline-offset-2 cursor-pointer inline"
+                >
+                  chrome://extensions
+                </button>
+                {copiedChrome && <span className="text-[#C2410C] font-mono text-xs ml-1">(copied)</span>}
+                {' '}and turn on the Developer mode toggle in the top-right corner.
               </p>
-              <div className="flex flex-wrap items-center gap-3 pt-1 text-xs">
-                <button
-                  type="button"
-                  onClick={() => handleCopy('chrome://extensions', 'chrome')}
-                  className="font-mono text-[#C2410C] hover:text-[#9A3412] underline underline-offset-2 cursor-pointer"
-                >
-                  chrome://extensions {copiedChrome ? '(copied)' : ''}
-                </button>
-                <span className="text-[#D1D5DB]">&bull;</span>
-                <button
-                  type="button"
-                  onClick={() => handleCopy('edge://extensions', 'edge')}
-                  className="font-mono text-[#C2410C] hover:text-[#9A3412] underline underline-offset-2 cursor-pointer"
-                >
-                  edge://extensions {copiedEdge ? '(copied)' : ''}
-                </button>
-              </div>
             </div>
 
             {/* Step 03 */}

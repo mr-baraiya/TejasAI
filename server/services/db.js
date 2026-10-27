@@ -59,8 +59,21 @@ export async function initDB() {
       );
 
       CREATE INDEX IF NOT EXISTS prompts_created_at_idx ON prompts (created_at DESC);
+
+      CREATE TABLE IF NOT EXISTS contact_submissions (
+        id            BIGSERIAL PRIMARY KEY,
+        created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        name          TEXT        NOT NULL,
+        email         TEXT        NOT NULL,
+        category      TEXT        NOT NULL,
+        phone         TEXT,
+        comments      TEXT        NOT NULL,
+        request_ip    TEXT
+      );
+
+      CREATE INDEX IF NOT EXISTS contact_created_at_idx ON contact_submissions (created_at DESC);
     `);
-    console.info('[DB] ✅ Prompts table ready (Neon PostgreSQL).');
+    console.info('[DB] ✅ Prompts and Contact tables ready (Neon PostgreSQL).');
   } catch (err) {
     console.error('[DB] Table init failed:', err.message);
   }
@@ -108,5 +121,46 @@ export async function logPrompt({
   } catch (err) {
     // Never propagate — DB logging is best-effort
     console.error('[DB] logPrompt failed:', err.message);
+  }
+}
+
+/**
+ * Fire-and-forget contact and feedback submission logging.
+ *
+ * @param {Object} data
+ * @param {string} data.name
+ * @param {string} data.email
+ * @param {string} data.category
+ * @param {string} [data.phone]
+ * @param {string} data.comments
+ * @param {string} [data.requestIp]
+ */
+export async function logContactSubmission({
+  name,
+  email,
+  category,
+  phone = null,
+  comments,
+  requestIp = null,
+}) {
+  const db = getPool();
+  if (!db) return;
+
+  try {
+    await db.query(
+      `INSERT INTO contact_submissions
+         (name, email, category, phone, comments, request_ip)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        name,
+        email,
+        category,
+        phone || null,
+        comments,
+        requestIp || null,
+      ]
+    );
+  } catch (err) {
+    console.error('[DB] logContactSubmission failed:', err.message);
   }
 }
